@@ -1,6 +1,6 @@
 # Fast Access and Simple Transfer File Explorer
 
-Fast Access and Simple Transfer File Explorer is a lightweight, user-friendly file explorer designed for quick navigation and efficient file management. It provides an intuitive interface for browsing, accessing, and transferring files, making it easy to organize and move your data with minimal effort. Ideal for users who need a fast and simple solution for everyday file operations.
+Fast Access and Simple Transfer File Explorer (FAST File Explorer) is a lightweight, user-friendly file explorer designed for quick navigation and efficient file management. It provides an intuitive interface for browsing, accessing, and transferring files, making it easy to organize and move your data with minimal effort. Ideal for users who need a fast and simple solution for everyday file operations.
 
 ## How Fast File Explorer Compares to Windows File Explorer
 
