@@ -1,8 +1,8 @@
 {
-  "name": "my-app",
-  "productName": "my-app",
+  "name": "fast-file-explorer",
+  "productName": "Fast File Explorer",
   "version": "1.0.0",
-  "description": "My Electron application description",
+  "description": "Fast File Explorer is a powerful tool for quickly navigating and managing your file system.",
   "main": ".vite/build/main.js",
   "scripts": {
     "start": "electron-forge start",
@@ -18,7 +18,15 @@
   },
   "license": "MIT",
   "dependencies": {
-    "electron-squirrel-startup": "^1.0.1"
+    "@electron-forge/plugin-vite": "^7.8.2",
+    "@types/react": "^19.1.9",
+    "electron-squirrel-startup": "^1.0.1",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "sass": "^1.89.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2",
+    "vite": "^7.0.6"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.8.2",
@@ -29,6 +37,8 @@
     "@electron-forge/plugin-auto-unpack-natives": "^7.8.2",
     "@electron-forge/plugin-fuses": "^7.8.2",
     "@electron/fuses": "^2.0.0",
+    "@types/electron-squirrel-startup": "^1.0.2",
     "electron": "37.2.5"
-  }
+  },
+  "type": "module"
 }

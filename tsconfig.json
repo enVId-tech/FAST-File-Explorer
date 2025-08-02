@@ -1,15 +1,20 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "commonjs",
-    "allowJs": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "noImplicitAny": true,
-    "sourceMap": true,
-    "baseUrl": ".",
-    "outDir": "dist",
+    "target": "es2020", // Or a target supported by your Electron version
+    "module": "esnext", // Or "esnext" if using modules
     "moduleResolution": "node",
-    "resolveJsonModule": true
-  }
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "jsx": "react", // If you're using React
+    "outDir": "./dist", // Output directory for compiled JavaScript
+    "baseUrl": "./src", // Base directory for module resolution
+    "paths": {
+      "*": ["./*"] // Allows imports relative to the src folder
+    }
+  },
+  "include": [
+    "src/**/*" // Include all TypeScript files in the src directory
+  ]
 }
