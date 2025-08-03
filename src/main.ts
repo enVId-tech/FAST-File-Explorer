@@ -13,6 +13,8 @@ const createWindow = () => {
     width: 800,
     height: 600,
     webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
       preload: path.join(__dirname, 'preload.js'),
     },
   });
@@ -52,8 +54,8 @@ app.on('activate', () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
-ipcMain.handle('test', async (event, str: string) => {
-  console.log('Received from renderer:', str);
+ipcMain.handle('test', async () => {
+  console.log('Received from renderer:');
   // Simulate some processing and return a response
   await new Promise(resolve => setTimeout(resolve, 1000));
   console.log('Test IPC called');

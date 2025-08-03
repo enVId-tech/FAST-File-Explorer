@@ -26,4 +26,6 @@
  * ```
  */
 
-import './renderer';
+import './renderer.tsx';
+
+console.log('Renderer process started');

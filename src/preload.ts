@@ -5,5 +5,5 @@ import { contextBridge, ipcRenderer } from 'electron';
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld('electronAPI', {
-    testAPI: (str: string) => ipcRenderer.invoke('test', str)
+    testAPI: () => ipcRenderer.invoke('test')
 });
