@@ -1,0 +1,418 @@
+// Windows 11 File Explorer Styles
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f3f3f3;
+  overflow: hidden;
+}
+
+.file-explorer {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #fafafa;
+  color: #323130;
+}
+
+// Title Bar
+.title-bar {
+  height: 32px;
+  background: #f3f3f3;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+  border-bottom: 1px solid #e1e1e1;
+  -webkit-app-region: drag;
+
+  .title-bar-content {
+    display: flex;
+    align-items: center;
+    
+    .app-name {
+      font-size: 13px;
+      font-weight: 400;
+      color: #323130;
+    }
+  }
+
+  .window-controls {
+    display: flex;
+    -webkit-app-region: no-drag;
+    
+    .control-button {
+      width: 46px;
+      height: 32px;
+      border: none;
+      background: transparent;
+      font-size: 10px;
+      font-family: 'Segoe UI', sans-serif;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      &:hover {
+        background: #e5e5e5;
+      }
+      
+      &.close:hover {
+        background: #e81123;
+        color: white;
+      }
+    }
+  }
+}
+
+// Menu Bar
+.menu-bar {
+  height: 30px;
+  background: #fafafa;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  border-bottom: 1px solid #e1e1e1;
+
+  .menu-items {
+    display: flex;
+    gap: 16px;
+    
+    .menu-item {
+      font-size: 13px;
+      padding: 6px 8px;
+      cursor: pointer;
+      border-radius: 4px;
+      
+      &:hover {
+        background: #e5e5e5;
+      }
+    }
+  }
+}
+
+// Toolbar
+.toolbar {
+  height: 40px;
+  background: #fafafa;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  border-bottom: 1px solid #e1e1e1;
+  gap: 8px;
+
+  .toolbar-section {
+    display: flex;
+    gap: 4px;
+  }
+
+  .toolbar-button {
+    height: 32px;
+    padding: 0 12px;
+    border: 1px solid transparent;
+    background: transparent;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    
+    &:hover {
+      background: #e5e5e5;
+      border-color: #d1d1d1;
+    }
+  }
+
+  .address-bar-container {
+    flex: 1;
+    margin: 0 8px;
+    
+    .address-bar {
+      height: 32px;
+      background: white;
+      border: 1px solid #d1d1d1;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      gap: 4px;
+      
+      .path-segment {
+        font-size: 13px;
+        color: #605e5c;
+        cursor: pointer;
+        padding: 2px 4px;
+        border-radius: 2px;
+        
+        &:hover {
+          background: #e5e5e5;
+        }
+      }
+      
+      .path-separator {
+        font-size: 11px;
+        color: #8a8886;
+      }
+    }
+  }
+}
+
+// Ribbon
+.ribbon {
+  background: #fafafa;
+  border-bottom: 1px solid #e1e1e1;
+
+  .ribbon-tabs {
+    height: 32px;
+    display: flex;
+    border-bottom: 1px solid #e1e1e1;
+    
+    .ribbon-tab {
+      padding: 8px 16px;
+      font-size: 13px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      
+      &:hover {
+        background: #e5e5e5;
+      }
+      
+      &.active {
+        border-bottom-color: #0078d4;
+        background: white;
+      }
+    }
+  }
+
+  .ribbon-content {
+    height: 96px;
+    background: white;
+    display: flex;
+    padding: 8px;
+    gap: 16px;
+    
+    .ribbon-group {
+      display: flex;
+      gap: 4px;
+      padding-right: 16px;
+      border-right: 1px solid #e1e1e1;
+      
+      &:last-child {
+        border-right: none;
+      }
+      
+      .ribbon-button {
+        width: 64px;
+        height: 80px;
+        border: 1px solid transparent;
+        background: transparent;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        padding: 8px 4px;
+        
+        &:hover {
+          background: #e5e5e5;
+          border-color: #d1d1d1;
+        }
+        
+        .ribbon-icon {
+          font-size: 24px;
+        }
+        
+        span {
+          font-size: 11px;
+          text-align: center;
+          line-height: 1.2;
+        }
+      }
+    }
+  }
+}
+
+// Main Content
+.main-content {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+// Sidebar
+.sidebar {
+  width: 250px;
+  background: #f9f9f9;
+  border-right: 1px solid #e1e1e1;
+  overflow-y: auto;
+  padding: 8px 0;
+
+  .sidebar-section {
+    margin-bottom: 16px;
+    
+    .sidebar-header {
+      font-size: 13px;
+      font-weight: 600;
+      color: #323130;
+      padding: 8px 16px 4px 16px;
+      margin-bottom: 4px;
+    }
+    
+    .sidebar-item {
+      font-size: 13px;
+      padding: 6px 16px 6px 32px;
+      cursor: pointer;
+      color: #605e5c;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      
+      &:hover {
+        background: #e5e5e5;
+      }
+    }
+  }
+}
+
+// File List
+.file-list-container {
+  flex: 1;
+  background: white;
+  overflow: auto;
+}
+
+.file-list {
+  height: 100%;
+  
+  &.list {
+    .file-list-header {
+      height: 32px;
+      background: #f9f9f9;
+      border-bottom: 1px solid #e1e1e1;
+      display: grid;
+      grid-template-columns: 1fr 200px 120px 100px;
+      align-items: center;
+      padding: 0 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #323130;
+      
+      .column-header {
+        cursor: pointer;
+        
+        &:hover {
+          color: #0078d4;
+        }
+      }
+    }
+    
+    .file-items {
+      .file-item {
+        height: 32px;
+        display: grid;
+        grid-template-columns: 1fr 200px 120px 100px;
+        align-items: center;
+        padding: 0 16px;
+        font-size: 13px;
+        cursor: pointer;
+        border-bottom: 1px solid #f3f3f3;
+        
+        &:hover {
+          background: #f3f3f3;
+        }
+        
+        .file-icon {
+          margin-right: 8px;
+          font-size: 16px;
+        }
+        
+        .file-name {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        
+        .file-date, .file-type, .file-size {
+          color: #605e5c;
+        }
+      }
+    }
+  }
+  
+  &.grid {
+    .file-items {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 16px;
+      padding: 16px;
+      
+      .file-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 12px 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        text-align: center;
+        
+        &:hover {
+          background: #f3f3f3;
+        }
+        
+        .file-icon {
+          font-size: 48px;
+          margin-bottom: 8px;
+        }
+        
+        .file-name {
+          font-size: 13px;
+          word-break: break-word;
+          line-height: 1.2;
+        }
+      }
+    }
+  }
+}
+
+// Status Bar
+.status-bar {
+  height: 24px;
+  background: #f9f9f9;
+  border-top: 1px solid #e1e1e1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+  font-size: 12px;
+  color: #605e5c;
+}
+
+// Scrollbar styling for webkit browsers
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 6px;
+  
+  &:hover {
+    background: #a8a8a8;
+  }
+}
+
+::-webkit-scrollbar-corner {
+  background: #f1f1f1;
+}
