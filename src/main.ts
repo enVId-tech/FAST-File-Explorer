@@ -7,11 +7,56 @@ if (started) {
   app.quit();
 }
 
+// In this file you can include the rest of your app's specific main process
+// code. You can also put them in separate files and import them here.
+ipcMain.handle('test', async () => {
+  console.log('Received from renderer:');
+  // Simulate some processing and return a response
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  console.log('Test IPC called');
+  return 'Test response from main process';
+});
+
+ipcMain.handle('window-minimize', () => {
+  const focusedWindow = BrowserWindow.getFocusedWindow();
+
+  if (focusedWindow) {
+    focusedWindow.minimize();
+  }
+});
+
+ipcMain.handle('window-maximize', () => {
+  const focusedWindow = BrowserWindow.getFocusedWindow();
+
+  if (focusedWindow) {
+    focusedWindow.maximize();
+  }
+});
+
+ipcMain.handle('window-unmaximize', () => {
+  const focusedWindow = BrowserWindow.getFocusedWindow();
+
+  if (focusedWindow) {
+    focusedWindow.unmaximize();
+  }
+});
+
+ipcMain.handle('window-close', () => {
+  const focusedWindow = BrowserWindow.getFocusedWindow();
+
+  if (focusedWindow) {
+    focusedWindow.close();
+  }
+});
+
+
 const createWindow = () => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
+    frame: false,
+    titleBarStyle: 'hidden',
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -50,14 +95,4 @@ app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }
-});
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and import them here.
-ipcMain.handle('test', async () => {
-  console.log('Received from renderer:');
-  // Simulate some processing and return a response
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  console.log('Test IPC called');
-  return 'Test response from main process';
 });
