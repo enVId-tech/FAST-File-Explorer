@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './main.scss';
 import { FaFolder, FaFileAlt, FaFileExcel, FaFilePowerpoint, FaFileWord, FaFileImage, FaFileCode, FaCopy, FaCut, FaPaste, FaTrash, FaEdit, FaFolderPlus, FaCog, FaWindowMinimize, FaWindowMaximize, FaTimes, FaArrowLeft, FaArrowRight, FaArrowUp, FaSearch, FaThLarge, FaBars, FaDesktop, FaHdd, FaCompactDisc, FaNetworkWired, FaMusic, FaVideo, FaRegFile } from 'react-icons/fa';
+import { handleMinimize, handleMaximize, handleClose } from './components/window_handlers/handlers'; // Assuming these functions are defined in a separate file
 
 interface FileItem {
     name: string;
@@ -15,22 +16,10 @@ export default function Main(): React.JSX.Element {
     const [viewMode, setViewMode] = useState('list');
     const [isMaximized, setIsMaximized] = useState(false);
 
-    // Window control handlers (assumes Electron preload exposes window API)
-    const handleMinimize = () => {
-        window.electronAPI.window.minimize();
-    };
-    const handleMaximize = () => {
-        if (isMaximized) {
-            window.electronAPI.window.unmaximize();
-            setIsMaximized(false);
-        } else {
-            window.electronAPI.window.maximize();
-            setIsMaximized(true);
-        }
-    };
-    const handleClose = () => {
-        window.electronAPI.window.close();
-    };
+    // Window control handlers
+    const minimize = () => handleMinimize();
+    const maximize = () => isMaximized ? handleMaximize(isMaximized, setIsMaximized) : handleMaximize(isMaximized, setIsMaximized);
+    const close = () => handleClose();
 
     // Sample files and folders
     const fileItems: FileItem[] = [
@@ -55,11 +44,11 @@ export default function Main(): React.JSX.Element {
                     <span className="app-name">File Explorer</span>
                 </div>
                 <div className="window-controls">
-                    <button className="control-button minimize" onClick={handleMinimize}><FaWindowMinimize /></button>
-                    <button className="control-button maximize" onClick={handleMaximize}>
+                    <button className="control-button minimize" onClick={minimize}><FaWindowMinimize /></button>
+                    <button className="control-button maximize" onClick={maximize}>
                         {isMaximized ? <FaRegFile /> : <FaWindowMaximize />}
                     </button>
-                    <button className="control-button close" onClick={handleClose}><FaTimes /></button>
+                    <button className="control-button close" onClick={close}><FaTimes /></button>
                 </div>
             </div>
 
