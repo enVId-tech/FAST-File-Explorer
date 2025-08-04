@@ -20,24 +20,49 @@ const createWindow = () => {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
+      webSecurity: true,
+      allowRunningInsecureContent: false,
+      experimentalFeatures: false,
       preload: path.join(__dirname, 'preload.js'),
     },
   });
 
   // and load the index.html of the app.
+  // Note: NODE_ENV is not production in development mode
+  const isDevelopment = process.env.NODE_ENV !== 'production';
+  
   if (process.env.MAIN_WINDOW_VITE_DEV_SERVER_URL) {
+    // Use the environment variable set by Electron Forge Vite plugin
     mainWindow.loadURL(process.env.MAIN_WINDOW_VITE_DEV_SERVER_URL);
+  } else if (isDevelopment) {
+    // Fallback: Connect directly to the Vite dev server (port 5173 is the default)
+    mainWindow.loadURL('http://localhost:5173/');
   } else {
-    mainWindow.loadFile(path.join(__dirname, `../renderer/index.html`));
+    // Production: Load from the built files
+    mainWindow.loadFile(path.join(__dirname, '../renderer/main_window/index.html'));
   }
 
-  // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  // Open the DevTools in development only.
+  if (process.env.NODE_ENV === 'development' || process.env.MAIN_WINDOW_VITE_DEV_SERVER_URL) {
+    mainWindow.webContents.openDevTools();
+  }
 };
 
 app.whenReady().then(() => {
   createWindow();
   initializeIpcHandlers(mainWindow);
+
+  // Security: Prevent navigation to external URLs
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    if (!url.startsWith('file://') && !url.startsWith('http://localhost') && !url.startsWith('https://localhost')) {
+      event.preventDefault();
+    }
+  });
+
+  // Security: Prevent new window creation
+  mainWindow.webContents.setWindowOpenHandler(() => {
+    return { action: 'deny' };
+  });
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common

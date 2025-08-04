@@ -19,56 +19,6 @@ body {
   color: #323130;
 }
 
-// Title Bar
-.title-bar {
-  height: 32px;
-  background: #f3f3f3;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 16px;
-  border-bottom: 1px solid #e1e1e1;
-  -webkit-app-region: drag;
-
-  .title-bar-content {
-    display: flex;
-    align-items: center;
-    
-    .app-name {
-      font-size: 13px;
-      font-weight: 400;
-      color: #323130;
-    }
-  }
-
-  .window-controls {
-    display: flex;
-    -webkit-app-region: no-drag;
-    
-    .control-button {
-      width: 46px;
-      height: 32px;
-      border: none;
-      background: transparent;
-      font-size: 10px;
-      font-family: 'Segoe UI', sans-serif;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      
-      &:hover {
-        background: #e5e5e5;
-      }
-      
-      &.close:hover {
-        background: #e81123;
-        color: white;
-      }
-    }
-  }
-}
-
 // Menu Bar
 .menu-bar {
   height: 30px;

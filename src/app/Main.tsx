@@ -1,191 +1,120 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './main.scss';
-import { FaFolder, FaFileAlt, FaFileExcel, FaFilePowerpoint, FaFileWord, FaFileImage, FaFileCode, FaCopy, FaCut, FaPaste, FaTrash, FaEdit, FaFolderPlus, FaCog, FaWindowMinimize, FaWindowMaximize, FaTimes, FaArrowLeft, FaArrowRight, FaArrowUp, FaSearch, FaThLarge, FaBars, FaDesktop, FaHdd, FaCompactDisc, FaNetworkWired, FaMusic, FaVideo, FaRegFile } from 'react-icons/fa';
-import { handleMinimize, handleMaximize, handleClose } from './components/window_handlers/handlers'; // Assuming these functions are defined in a separate file
+import './components/TabBar.scss';
+import { handleMinimize, handleMaximize, handleClose } from './components/window_handlers/handlers';
+import { TabBar } from './components/TabBar';
+import { TabContent } from './components/TabContent';
 
-interface FileItem {
-    name: string;
-    type: 'file' | 'folder';
-    size?: string;
-    dateModified: string;
-    icon: React.ReactNode;
+interface Tab {
+    id: string;
+    title: string;
+    url: string;
+    isActive: boolean;
 }
 
 export default function Main(): React.JSX.Element {
     const [currentPath, setCurrentPath] = useState('This PC > Documents');
     const [viewMode, setViewMode] = useState('list');
     const [isMaximized, setIsMaximized] = useState(false);
+    const [tabs, setTabs] = useState<Tab[]>([
+        { id: 'tab-1', title: 'This PC', url: 'home', isActive: true },
+        // { id: 'tab-1', title: 'This PC', url: 'internal:home', isActive: true },
+        // { id: 'tab-2', title: 'Documents', url: 'C:\\Users\\Documents', isActive: false },
+    ]);
+    const [activeTabId, setActiveTabId] = useState('tab-1');
 
     // Window control handlers
     const minimize = () => handleMinimize();
-    const maximize = () => isMaximized ? handleMaximize(isMaximized, setIsMaximized) : handleMaximize(isMaximized, setIsMaximized);
+    const maximize = () => handleMaximize(isMaximized, setIsMaximized);
     const close = () => handleClose();
 
-    // Sample files and folders
-    const fileItems: FileItem[] = [
-        { name: 'Desktop', type: 'folder', dateModified: '1/15/2024 3:42 PM', icon: <FaFolder /> },
-        { name: 'Documents', type: 'folder', dateModified: '2/1/2024 9:15 AM', icon: <FaFolder /> },
-        { name: 'Downloads', type: 'folder', dateModified: '2/2/2024 2:30 PM', icon: <FaFolder /> },
-        { name: 'Pictures', type: 'folder', dateModified: '1/28/2024 11:22 AM', icon: <FaFolder /> },
-        { name: 'Music', type: 'folder', dateModified: '1/20/2024 4:18 PM', icon: <FaFolder /> },
-        { name: 'Videos', type: 'folder', dateModified: '1/25/2024 7:45 PM', icon: <FaFolder /> },
-        { name: 'Report.docx', type: 'file', size: '245 KB', dateModified: '2/1/2024 10:30 AM', icon: <FaFileWord /> },
-        { name: 'Presentation.pptx', type: 'file', size: '2.1 MB', dateModified: '1/30/2024 4:15 PM', icon: <FaFilePowerpoint /> },
-        { name: 'Budget.xlsx', type: 'file', size: '89 KB', dateModified: '1/29/2024 2:45 PM', icon: <FaFileExcel /> },
-        { name: 'Photo.jpg', type: 'file', size: '3.2 MB', dateModified: '1/28/2024 6:20 PM', icon: <FaFileImage /> },
-        { name: 'Script.js', type: 'file', size: '12 KB', dateModified: '2/2/2024 1:10 PM', icon: <FaFileCode /> },
-    ];
+    // Tab management handlers
+    const handleTabSelect = async (tabId: string) => {
+        setActiveTabId(tabId);
+        setTabs(prev => prev.map(tab => ({ ...tab, isActive: tab.id === tabId })));
+        
+        // TODO: Re-enable when internal:home is implemented
+        // try {
+        //     await window.electronAPI?.tabSwitch(tabId);
+        // } catch (error) {
+        //     console.error('Failed to switch tab:', error);
+        // }
+    };
+
+    const handleTabClose = async (tabId: string) => {
+        if (tabs.length <= 1) return; // Don't close the last tab
+        
+        // TODO: Re-enable when internal:home is implemented
+        // try {
+        //     await window.electronAPI?.tabClose(tabId);
+        // } catch (error) {
+        //     console.error('Failed to close tab:', error);
+        // }
+        
+        setTabs(prev => {
+            const newTabs = prev.filter(tab => tab.id !== tabId);
+            if (tabId === activeTabId && newTabs.length > 0) {
+                const newActiveTab = newTabs[0];
+                setActiveTabId(newActiveTab.id);
+                handleTabSelect(newActiveTab.id);
+            }
+            return newTabs;
+        });
+    };
+
+    const handleNewTab = async () => {
+        // Create new tab locally for now (renders same Main component content)
+        const newTabId = `tab-${Date.now()}`;
+        const newTab: Tab = {
+            id: newTabId,
+            title: 'New Tab',
+            url: 'home',
+            isActive: false
+        };
+        setTabs(prev => [...prev, newTab]);
+        
+        // TODO: Re-enable when internal:home is implemented
+        // try {
+        //     const newTab = await window.electronAPI?.tabAdd('internal:home');
+        //     if (newTab) {
+        //         const tab: Tab = {
+        //             id: newTab.id,
+        //             title: newTab.title || 'New Tab',
+        //             url: newTab.url,
+        //             isActive: false
+        //         };
+        //         setTabs(prev => [...prev, tab]);
+        //     }
+        // } catch (error) {
+        //     console.error('Failed to create new tab:', error);
+        // }
+    };
 
     return (
         <div className="file-explorer">
-            {/* Title Bar */}
-            <div className="title-bar">
-                <div className="title-bar-content">
-                    <span className="app-name">File Explorer</span>
-                </div>
-                <div className="window-controls">
-                    <button className="control-button minimize" onClick={minimize}><FaWindowMinimize /></button>
-                    <button className="control-button maximize" onClick={maximize}>
-                        {isMaximized ? <FaRegFile /> : <FaWindowMaximize />}
-                    </button>
-                    <button className="control-button close" onClick={close}><FaTimes /></button>
-                </div>
-            </div>
+            {/* Tab Bar replaces Title Bar */}
+            <TabBar
+                tabs={tabs}
+                activeTabId={activeTabId}
+                isMaximized={isMaximized}
+                onTabSelect={handleTabSelect}
+                onTabClose={handleTabClose}
+                onNewTab={handleNewTab}
+                onMinimize={minimize}
+                onMaximize={maximize}
+                onClose={close}
+            />
 
-            {/* Toolbar */}
-            <div className="toolbar">
-                <div className="toolbar-section">
-                    <button className="toolbar-button"><FaArrowLeft /> Back</button>
-                    <button className="toolbar-button"><FaArrowRight /> Forward</button>
-                    <button className="toolbar-button"><FaArrowUp /> Up</button>
-                </div>
-                <div className="address-bar-container">
-                    <div className="address-bar">
-                        <span className="path-segment">This PC</span>
-                        <span className="path-separator">&gt;</span>
-                        <span className="path-segment">Documents</span>
-                    </div>
-                </div>
-                <div className="toolbar-section">
-                    <button className="toolbar-button"><FaSearch /></button>
-                    <button className="toolbar-button" onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}>
-                        {viewMode === 'list' ? <FaThLarge /> : <FaBars />}
-                    </button>
-                </div>
-            </div>
-
-            {/* Ribbon (when expanded) */}
-            <div className="ribbon">
-                <div className="ribbon-tabs">
-                    <span className="ribbon-tab active">Home</span>
-                    <span className="ribbon-tab">Share</span>
-                    <span className="ribbon-tab">View</span>
-                </div>
-                <div className="ribbon-content">
-                    <div className="ribbon-group">
-                        <button className="ribbon-button">
-                            <div className="ribbon-icon"><FaCopy /></div>
-                            <span>Copy</span>
-                        </button>
-                        <button className="ribbon-button">
-                            <div className="ribbon-icon"><FaCut /></div>
-                            <span>Cut</span>
-                        </button>
-                        <button className="ribbon-button">
-                            <div className="ribbon-icon"><FaPaste /></div>
-                            <span>Paste</span>
-                        </button>
-                    </div>
-                    <div className="ribbon-group">
-                        <button className="ribbon-button">
-                            <div className="ribbon-icon"><FaTrash /></div>
-                            <span>Delete</span>
-                        </button>
-                        <button className="ribbon-button">
-                            <div className="ribbon-icon"><FaEdit /></div>
-                            <span>Rename</span>
-                        </button>
-                    </div>
-                    <div className="ribbon-group">
-                        <button className="ribbon-button">
-                            <div className="ribbon-icon"><FaFolderPlus /></div>
-                            <span>New folder</span>
-                        </button>
-                        <button className="ribbon-button">
-                            <div className="ribbon-icon"><FaCog /></div>
-                            <span>Properties</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            {/* Main Content */}
-            <div className="main-content">
-                {/* Sidebar */}
-                <div className="sidebar">
-                    <div className="sidebar-section">
-                        <div className="sidebar-header">Quick access</div>
-                        <div className="sidebar-item"><FaFolder /> Desktop</div>
-                        <div className="sidebar-item"><FaFolder /> Downloads</div>
-                        <div className="sidebar-item"><FaFolder /> Documents</div>
-                        <div className="sidebar-item"><FaFolder /> Pictures</div>
-                    </div>
-                    <div className="sidebar-section">
-                        <div className="sidebar-header">This PC</div>
-                        <div className="sidebar-item"><FaFolder /> Desktop</div>
-                        <div className="sidebar-item"><FaFolder /> Documents</div>
-                        <div className="sidebar-item"><FaFolder /> Downloads</div>
-                        <div className="sidebar-item"><FaMusic /> Music</div>
-                        <div className="sidebar-item"><FaFolder /> Pictures</div>
-                        <div className="sidebar-item"><FaVideo /> Videos</div>
-                        <div className="sidebar-item"><FaHdd /> Local Disk (C:)</div>
-                        <div className="sidebar-item"><FaCompactDisc /> DVD Drive (D:)</div>
-                    </div>
-                    <div className="sidebar-section">
-                        <div className="sidebar-header">Network</div>
-                        <div className="sidebar-item"><FaNetworkWired /> Network</div>
-                    </div>
-                </div>
-
-                {/* File List */}
-                <div className="file-list-container">
-                    <div className={`file-list ${viewMode}`}>
-                        {viewMode === 'list' && (
-                            <div className="file-list-header">
-                                <div className="column-header name">Name</div>
-                                <div className="column-header date">Date modified</div>
-                                <div className="column-header type">Type</div>
-                                <div className="column-header size">Size</div>
-                            </div>
-                        )}
-                        <div className="file-items">
-                            {fileItems.map((item, index) => (
-                                <div key={index} className="file-item">
-                                    <div className="file-icon">{item.icon}</div>
-                                    <div className="file-name">{item.name}</div>
-                                    {viewMode === 'list' && (
-                                        <>
-                                            <div className="file-date">{item.dateModified}</div>
-                                            <div className="file-type">{item.type === 'folder' ? 'File folder' : 'File'}</div>
-                                            <div className="file-size">{item.size || ''}</div>
-                                        </>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Status Bar */}
-            <div className="status-bar">
-                <div className="status-left">
-                    <span>{fileItems.length} items</span>
-                </div>
-                <div className="status-right">
-                    <span>Size: 6.2 MB</span>
-                </div>
-            </div>
+            {/* Render content for each tab */}
+            {tabs.map((tab) => (
+                <TabContent
+                    key={tab.id}
+                    tabId={tab.id}
+                    isActive={tab.id === activeTabId}
+                    viewMode={viewMode}
+                    setViewMode={setViewMode}
+                />
+            ))}
         </div>
     );
 }

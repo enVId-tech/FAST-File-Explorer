@@ -7,8 +7,9 @@ let mainWindow: BrowserWindow | null = null;
 export const initializeTabHandlers = (window: BrowserWindow) => {
     mainWindow = window;
     
+    // TODO: Re-enable when internal:home is implemented
     // Create initial home tab
-    TabManager.addTab(tabs, mainWindow, 'internal:home');
+    // TabManager.addTab(tabs, mainWindow, 'internal:home');
 };
 
 // Tab management IPC handlers
