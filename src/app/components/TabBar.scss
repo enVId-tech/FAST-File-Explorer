@@ -17,6 +17,7 @@
     overflow-x: auto;
     scrollbar-width: none;
     -ms-overflow-style: none;
+    min-width: 0; /* Allow container to shrink */
 }
 
 .tabs-container::-webkit-scrollbar {
@@ -26,8 +27,9 @@
 .tab {
     display: flex;
     align-items: center;
-    min-width: 180px;
-    max-width: 240px;
+    flex: 1 1 240px; /* Allow tabs to grow and shrink, with 240px preferred size */
+    min-width: 56px; /* Minimum size (icon + padding + close button) */
+    max-width: 240px; /* Maximum size when few tabs */
     height: 32px;
     padding: 0 12px;
     margin-right: 1px;
@@ -39,6 +41,7 @@
     transition: all 0.2s ease;
     -webkit-app-region: no-drag;
     position: relative;
+    box-sizing: border-box;
 }
 
 .tab:hover {
@@ -60,11 +63,103 @@
     overflow: hidden;
     text-overflow: ellipsis;
     margin-right: 8px;
+    min-width: 0; /* Allow text to shrink */
+    transition: all 0.2s ease;
 }
 
 .tab.active .tab-title {
     color: #1f2937;
     font-weight: 500;
+}
+
+/* Hide text when tab becomes very small */
+.tab {
+    &.medium {
+        flex: 1 1 120px;
+        max-width: 180px;
+        
+        .tab-title {
+            font-size: 12px;
+        }
+    }
+    
+    &.small {
+        flex: 1 1 80px;
+        max-width: 120px;
+        
+        .tab-title {
+            display: none;
+        }
+        
+        .tab-close-button {
+            margin-right: 0;
+            opacity: 1; /* Always show close button on small tabs */
+            position: relative;
+            z-index: 1;
+        }
+        
+        .tab-icon {
+            margin-right: 6px;
+            font-size: 16px;
+        }
+        
+        justify-content: space-between;
+        padding: 0 8px;
+    }
+    
+    &.very-small {
+        flex: 1 1 56px;
+        max-width: 80px;
+        padding: 0 4px;
+        
+        .tab-title {
+            display: none;
+        }
+        
+        .tab-close-button {
+            opacity: 1; /* Always show close button */
+            margin-left: 4px;
+        }
+        
+        .tab-icon {
+            margin-right: 0;
+            font-size: 14px;
+        }
+        
+        justify-content: space-between;
+    }
+    
+    &.overflow {
+        flex: 0 0 56px; /* Fixed width when overflowing */
+        min-width: 56px;
+        max-width: 56px;
+        padding: 0 4px;
+        
+        .tab-title {
+            display: none;
+        }
+        
+        .tab-close-button {
+            opacity: 1; /* Always show close button */
+            margin-left: 4px;
+        }
+        
+        .tab-icon {
+            margin-right: 0;
+            font-size: 12px;
+        }
+        
+        justify-content: space-between;
+    }
+}
+
+/* Override for tabs container when overflowing */
+.tabs-container.overflowing {
+    overflow-x: auto;
+    
+    .tab.overflow {
+        flex-shrink: 0;
+    }
 }
 
 .tab-close-button {
@@ -80,7 +175,8 @@
     color: #6b7280;
     font-size: 10px;
     transition: all 0.2s ease;
-    opacity: 0;
+    opacity: 1; /* Always visible */
+    flex-shrink: 0; /* Prevent shrinking */
 }
 
 .tab:hover .tab-close-button {
@@ -90,6 +186,17 @@
 .tab-close-button:hover {
     background-color: #ef4444;
     color: white;
+}
+
+.tab-icon {
+    color: #6b7280;
+    font-size: 14px;
+    flex-shrink: 0;
+    margin-right: 6px;
+}
+
+.tab.active .tab-icon {
+    color: #3b82f6;
 }
 
 .new-tab-button {

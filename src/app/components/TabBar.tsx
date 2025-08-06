@@ -1,5 +1,5 @@
-import React from 'react';
-import { FaTimes, FaPlus, FaWindowMinimize, FaWindowMaximize, FaRegFile } from 'react-icons/fa';
+import React, { useEffect, useRef, useState } from 'react';
+import { FaTimes, FaPlus, FaWindowMinimize, FaWindowMaximize, FaRegFile, FaFolder } from 'react-icons/fa';
 
 interface Tab {
     id: string;
@@ -31,15 +31,79 @@ export const TabBar: React.FC<TabBarProps> = ({
     onMaximize,
     onClose
 }) => {
+    const tabsContainerRef = useRef<HTMLDivElement>(null);
+    const [tabSizeClass, setTabSizeClass] = useState<string>('');
+
+    // Calculate tab sizes based on available space
+    useEffect(() => {
+        const calculateTabSizes = () => {
+            if (!tabsContainerRef.current) return;
+
+            const containerWidth = tabsContainerRef.current.offsetWidth;
+            const newTabButtonWidth = 48; // Approximate width of new tab button + margin
+            const availableWidth = containerWidth - newTabButtonWidth;
+            const tabCount = tabs.length;
+            
+            if (tabCount === 0) return;
+
+            // Calculate ideal width per tab (including margins)
+            const tabMarginAndBorder = 2; // 1px margin-right + border
+            const idealTabWidth = (availableWidth - (tabCount * tabMarginAndBorder)) / tabCount;
+
+            // Define breakpoints
+            const LARGE_TAB_WIDTH = 180;
+            const MEDIUM_TAB_WIDTH = 120;
+            const SMALL_TAB_WIDTH = 80;
+            const VERY_SMALL_TAB_WIDTH = 56; // Updated to match new minimum (icon + padding + close button)
+
+            if (idealTabWidth >= LARGE_TAB_WIDTH) {
+                setTabSizeClass('');
+            } else if (idealTabWidth >= MEDIUM_TAB_WIDTH) {
+                setTabSizeClass('medium');
+            } else if (idealTabWidth >= SMALL_TAB_WIDTH) {
+                setTabSizeClass('small');
+            } else if (idealTabWidth >= VERY_SMALL_TAB_WIDTH) {
+                setTabSizeClass('very-small');
+            } else {
+                // When tabs would be smaller than minimum, allow overflow
+                setTabSizeClass('overflow');
+            }
+        };
+
+        calculateTabSizes();
+        window.addEventListener('resize', calculateTabSizes);
+
+        return () => {
+            window.removeEventListener('resize', calculateTabSizes);
+        };
+    }, [tabs.length]);
+
+    // Apply different styling based on tab count and available space
+    const getTabClassName = (tab: Tab) => {
+        const baseClass = `tab ${tab.id === activeTabId ? 'active' : ''}`;
+        
+        if (tabSizeClass === 'overflow') {
+            return `${baseClass} very-small overflow`;
+        }
+        
+        return `${baseClass} ${tabSizeClass}`;
+    };
+
     return (
         <div className="tab-bar">
-            <div className="tabs-container">
+            <div 
+                className={`tabs-container ${tabSizeClass === 'overflow' ? 'overflowing' : ''}`} 
+                ref={tabsContainerRef}
+            >
                 {tabs.map((tab) => (
                     <div
                         key={tab.id}
-                        className={`tab ${tab.id === activeTabId ? 'active' : ''}`}
+                        className={getTabClassName(tab)}
                         onClick={() => onTabSelect(tab.id)}
                     >
+                        {(tabSizeClass === 'small' || tabSizeClass === 'very-small' || tabSizeClass === 'overflow') ? (
+                            <FaFolder className="tab-icon" />
+                        ) : null}
                         <span className="tab-title">{tab.title}</span>
                         <button
                             className="tab-close-button"

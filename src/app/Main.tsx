@@ -32,7 +32,7 @@ export default function Main(): React.JSX.Element {
     const handleTabSelect = async (tabId: string) => {
         setActiveTabId(tabId);
         setTabs(prev => prev.map(tab => ({ ...tab, isActive: tab.id === tabId })));
-        
+
         // TODO: Re-enable when internal:home is implemented
         // try {
         //     await window.electronAPI?.tabSwitch(tabId);
@@ -42,24 +42,48 @@ export default function Main(): React.JSX.Element {
     };
 
     const handleTabClose = async (tabId: string) => {
-        if (tabs.length <= 1) return; // Don't close the last tab
-        
+        if (tabs.length <= 1) {
+            // If this is the last tab, close the application window
+            close();
+            return;
+        }
+
         // TODO: Re-enable when internal:home is implemented
         // try {
         //     await window.electronAPI?.tabClose(tabId);
         // } catch (error) {
         //     console.error('Failed to close tab:', error);
         // }
-        
-        setTabs(prev => {
-            const newTabs = prev.filter(tab => tab.id !== tabId);
-            if (tabId === activeTabId && newTabs.length > 0) {
-                const newActiveTab = newTabs[0];
-                setActiveTabId(newActiveTab.id);
-                handleTabSelect(newActiveTab.id);
+
+        // Prev is the current active tab
+        setActiveTabId(prev => {
+            const currentIndex = tabs.findIndex(tab => tab.id === prev);
+            if (currentIndex === -1) return prev; // If not found, return current active tab
+
+            // If it was the first tab, switch to the next one
+            if (currentIndex === 0) {
+                return tabs[1].id;
             }
-            return newTabs;
+
+            // If it was the last tab, switch to the previous one
+            if (currentIndex === tabs.length - 1) {
+                return tabs[currentIndex - 1].id;
+            }
+
+            // If it neither first or last, switch to the next tab
+            if (currentIndex < tabs.length - 1) {
+                return tabs[currentIndex + 1].id;
+            }
+
+            // Always return prev as fallback
+            return prev;
         });
+
+        setTabs(prev => {
+            return prev.filter(tab => tab.id !== tabId);
+        });
+
+
     };
 
     const handleNewTab = async () => {
@@ -69,10 +93,12 @@ export default function Main(): React.JSX.Element {
             id: newTabId,
             title: 'New Tab',
             url: 'home',
-            isActive: false
+            isActive: true
         };
-        setTabs(prev => [...prev, newTab]);
         
+        setTabs(prev => [...prev.map(tab => ({ ...tab, isActive: false })), newTab]);
+        setActiveTabId(newTabId);
+
         // TODO: Re-enable when internal:home is implemented
         // try {
         //     const newTab = await window.electronAPI?.tabAdd('internal:home');
@@ -89,6 +115,27 @@ export default function Main(): React.JSX.Element {
         //     console.error('Failed to create new tab:', error);
         // }
     };
+
+    useEffect(() => {
+        const handleKeydown = (event: KeyboardEvent) => {
+            if (event.key === 't' && (event.ctrlKey || event.metaKey)) {
+                event.preventDefault();
+                handleNewTab();
+            }
+
+            if (event.key === 'w' && (event.ctrlKey || event.metaKey)) {
+                event.preventDefault();
+                // Close the currently active tab
+                handleTabClose(activeTabId);
+            }
+        };
+
+        window.addEventListener('keydown', handleKeydown);
+
+        return () => {
+            window.removeEventListener('keydown', handleKeydown);
+        };
+    }, [activeTabId, tabs.length]); // Include dependencies to ensure current state is used
 
     return (
         <div className="file-explorer">
