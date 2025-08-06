@@ -16,12 +16,26 @@ export default function Main(): React.JSX.Element {
     const [currentPath, setCurrentPath] = useState('This PC > Documents');
     const [viewMode, setViewMode] = useState('list');
     const [isMaximized, setIsMaximized] = useState(false);
+    const [theme, setTheme] = useState<'default' | 'win11-dark' | 'win10-light' | 'win10-dark'>('default');
     const [tabs, setTabs] = useState<Tab[]>([
         { id: 'tab-1', title: 'This PC', url: 'home', isActive: true },
-        // { id: 'tab-1', title: 'This PC', url: 'internal:home', isActive: true },
-        // { id: 'tab-2', title: 'Documents', url: 'C:\\Users\\Documents', isActive: false },
     ]);
     const [activeTabId, setActiveTabId] = useState('tab-1');
+
+    // Apply theme to document element
+    useEffect(() => {
+        document.documentElement.setAttribute('data-theme', theme);
+    }, [theme]);
+
+    const getThemeDisplayName = () => {
+        switch (theme) {
+            case 'default': return 'Windows 11 Light';
+            case 'win11-dark': return 'Windows 11 Dark';
+            case 'win10-light': return 'Windows 10 Light';
+            case 'win10-dark': return 'Windows 10 Dark';
+            default: return 'Default';
+        }
+    };
 
     // Window control handlers
     const minimize = () => handleMinimize();
@@ -160,6 +174,8 @@ export default function Main(): React.JSX.Element {
                     isActive={tab.id === activeTabId}
                     viewMode={viewMode}
                     setViewMode={setViewMode}
+                    theme={theme}
+                    setTheme={setTheme}
                 />
             ))}
         </div>

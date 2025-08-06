@@ -1,4 +1,130 @@
-// Windows 11 File Explorer Styles
+// Modern File Explorer Styles with Enhanced Theme Support
+:root {
+  // Windows 11 Light Theme (Default)
+  --primary-bg: #f3f3f3;
+  --secondary-bg: #ffffff;
+  --surface-bg: #fafafa;
+  --accent-color: #0078d4;
+  --accent-hover: #106ebe;
+  --accent-active: #005a9e;
+  --text-primary: #323130;
+  --text-secondary: #605e5c;
+  --text-tertiary: #8a8886;
+  --border-color: #e1dfdd;
+  --border-hover: #c7c7c7;
+  --hover-bg: #f3f2f1;
+  --selection-bg: rgba(0, 120, 212, 0.1);
+  --selection-border: rgba(0, 120, 212, 0.3);
+  --shadow-small: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-medium: 0 2px 8px rgba(0, 0, 0, 0.15);
+  --shadow-large: 0 4px 16px rgba(0, 0, 0, 0.2);
+  
+  // Gradients
+  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gradient-accent: linear-gradient(135deg, #0078d4 0%, #106ebe 100%);
+  --gradient-surface: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+  
+  // UI Properties
+  --border-radius: 8px;
+  --border-radius-small: 4px;
+  --spacing-small: 8px;
+  --spacing-medium: 16px;
+  --spacing-large: 24px;
+}
+
+// Windows 11 Dark Theme - Exact Windows 11 File Explorer Colors
+[data-theme="win11-dark"] {
+  --primary-bg: #1c1c1c;
+  --secondary-bg: #202020;
+  --surface-bg: #242424;
+  --accent-color: #0078d4;
+  --accent-hover: #106ebe;
+  --accent-active: #005a9e;
+  --text-primary: #ffffff;
+  --text-secondary: #c8c8c8;
+  --text-tertiary: #8a8a8a;
+  --border-color: #323130;
+  --border-hover: #404040;
+  --hover-bg: #2c2c2c;
+  --selection-bg: rgba(0, 120, 212, 0.06);
+  --selection-border: rgba(0, 120, 212, 0.2);
+  --shadow-small: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.6);
+  --shadow-large: 0 8px 25px rgba(0, 0, 0, 0.7);
+  
+  --gradient-primary: linear-gradient(135deg, #0078d4 0%, #005a9e 100%);
+  --gradient-accent: linear-gradient(135deg, #0078d4 0%, #106ebe 100%);
+  --gradient-surface: linear-gradient(180deg, #202020 0%, #1c1c1c 100%);
+  
+  --border-radius: 3px;
+  --border-radius-small: 2px;
+  --spacing-small: 8px;
+  --spacing-medium: 16px;
+  --spacing-large: 24px;
+}
+
+// Windows 10 Light Theme
+[data-theme="win10-light"] {
+  --primary-bg: #e1e1e1;
+  --secondary-bg: #ffffff;
+  --surface-bg: #f0f0f0;
+  --accent-color: #0078d4;
+  --accent-hover: #106ebe;
+  --accent-active: #005a9e;
+  --text-primary: #000000;
+  --text-secondary: #333333;
+  --text-tertiary: #666666;
+  --border-color: #cccccc;
+  --border-hover: #999999;
+  --hover-bg: #e5f3ff;
+  --selection-bg: rgba(0, 120, 212, 0.15);
+  --selection-border: #0078d4;
+  --shadow-small: 0 1px 2px rgba(0, 0, 0, 0.1);
+  --shadow-medium: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-large: 0 4px 8px rgba(0, 0, 0, 0.15);
+  
+  --gradient-primary: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  --gradient-accent: linear-gradient(135deg, #0078d4 0%, #40a9ff 100%);
+  --gradient-surface: linear-gradient(180deg, #ffffff 0%, #f5f5f5 100%);
+  
+  --border-radius: 2px;
+  --border-radius-small: 2px;
+  --spacing-small: 6px;
+  --spacing-medium: 12px;
+  --spacing-large: 18px;
+}
+
+// Windows 10 Dark Theme - Exact Windows 10 File Explorer Colors
+[data-theme="win10-dark"] {
+  --primary-bg: #1f1f1f;
+  --secondary-bg: #2b2b2b;
+  --surface-bg: #2f2f2f;
+  --accent-color: #0078d4;
+  --accent-hover: #106ebe;
+  --accent-active: #005a9e;
+  --text-primary: #ffffff;
+  --text-secondary: #c8c8c8;
+  --text-tertiary: #8a8a8a;
+  --border-color: #3f3f3f;
+  --border-hover: #484848;
+  --hover-bg: #333333;
+  --selection-bg: rgba(0, 120, 212, 0.06);
+  --selection-border: rgba(0, 120, 212, 0.2);
+  --shadow-small: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.6);
+  --shadow-large: 0 8px 25px rgba(0, 0, 0, 0.7);
+  
+  --gradient-primary: linear-gradient(135deg, #0078d4 0%, #005a9e 100%);
+  --gradient-accent: linear-gradient(135deg, #0078d4 0%, #106ebe 100%);
+  --gradient-surface: linear-gradient(180deg, #2b2b2b 0%, #1f1f1f 100%);
+  
+  --border-radius: 2px;
+  --border-radius-small: 1px;
+  --spacing-small: 6px;
+  --spacing-medium: 12px;
+  --spacing-large: 18px;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -6,364 +132,1064 @@
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #f3f3f3;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif;
+  background: var(--primary-bg);
   overflow: hidden;
+  color: var(--text-primary);
+  transition: all 0.3s ease;
 }
 
 .file-explorer {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #fafafa;
-  color: #323130;
+  background: var(--surface-bg);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-large);
 }
 
-// Menu Bar
-.menu-bar {
-  height: 30px;
-  background: #fafafa;
-  display: flex;
-  align-items: center;
-  padding: 0 8px;
-  border-bottom: 1px solid #e1e1e1;
-
-  .menu-items {
-    display: flex;
-    gap: 16px;
+// Theme-Specific UI Adaptations
+[data-theme="win10-light"], [data-theme="win10-dark"] {
+  .tab-bar {
+    height: 40px; // Shorter tab bar for Win10 style
     
-    .menu-item {
-      font-size: 13px;
-      padding: 6px 8px;
-      cursor: pointer;
-      border-radius: 4px;
+    .tab {
+      border-radius: var(--border-radius-small);
+      height: 28px;
+    }
+  }
+  
+  .toolbar {
+    height: 48px; // Shorter toolbar
+    padding: 0 var(--spacing-medium);
+    
+    .toolbar-button {
+      height: 32px;
+      border-radius: var(--border-radius-small);
+      box-shadow: none;
+      border: 1px solid var(--border-color);
       
       &:hover {
-        background: #e5e5e5;
+        transform: none; // Remove elevation effects
+        box-shadow: none;
+        border-color: var(--accent-color);
+      }
+    }
+  }
+  
+  .ribbon {
+    .ribbon-content {
+      height: 60px; // Shorter ribbon
+      
+      .ribbon-button {
+        border-radius: var(--border-radius-small);
+        
+        &:hover {
+          transform: none;
+        }
+      }
+    }
+  }
+  
+  .sidebar {
+    .sidebar-item {
+      border-radius: var(--border-radius-small);
+      
+      &:hover {
+        transform: none;
+      }
+    }
+  }
+  
+  .file-grid .file-item,
+  .file-list .file-item {
+    border-radius: var(--border-radius-small);
+    
+    &:hover {
+      transform: none;
+    }
+  }
+  
+  .details-panel {
+    box-shadow: var(--shadow-small);
+  }
+}
+
+// Windows 11 specific enhancements
+[data-theme="default"], [data-theme="win11-dark"] {
+  .tab-bar, .toolbar, .ribbon-content, .sidebar, .file-grid .file-item, .file-list .file-item {
+    border-radius: var(--border-radius);
+  }
+}
+
+// Settings Dropdown Styles
+.settings-dropdown {
+  position: relative;
+  display: inline-block;
+  margin-left: var(--spacing-small);
+}
+
+.settings-button {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-small);
+  height: 40px;
+  padding: 0 var(--spacing-medium);
+  background: var(--secondary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-small);
+  
+  &:hover {
+    background: var(--hover-bg);
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-medium);
+    transform: translateY(-1px);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  .dropdown-arrow {
+    font-size: 10px;
+    transition: transform 0.2s ease;
+  }
+  
+  &.open .dropdown-arrow {
+    transform: rotate(180deg);
+  }
+}
+
+.settings-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 1000;
+  min-width: 200px;
+  background: var(--secondary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-large);
+  margin-top: 4px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+  
+  .menu-section {
+    padding: var(--spacing-small) 0;
+    border-bottom: 1px solid var(--border-color);
+    
+    &:last-child {
+      border-bottom: none;
+    }
+    
+    .menu-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 0 var(--spacing-medium) var(--spacing-small) var(--spacing-medium);
+    }
+  }
+  
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-medium);
+    padding: var(--spacing-medium);
+    cursor: pointer;
+    color: var(--text-primary);
+    font-size: 13px;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: var(--hover-bg);
+    }
+    
+    &.active {
+      background: var(--selection-bg);
+      color: var(--accent-color);
+      font-weight: 600;
+      
+      &::after {
+        content: '✓';
+        margin-left: auto;
+        font-size: 12px;
+      }
+    }
+    
+    .menu-icon {
+      width: 16px;
+      font-size: 14px;
+      text-align: center;
+      color: var(--accent-color);
+    }
+    
+    .menu-text {
+      flex: 1;
+      
+      .menu-description {
+        font-size: 11px;
+        color: var(--text-tertiary);
+        margin-top: 2px;
       }
     }
   }
 }
 
-// Toolbar
+// Main Content Layout
+.main-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.content-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+// Modern Toolbar
 .toolbar {
-  height: 40px;
-  background: #fafafa;
+  height: 56px;
+  background: var(--gradient-surface);
   display: flex;
   align-items: center;
-  padding: 0 8px;
-  border-bottom: 1px solid #e1e1e1;
-  gap: 8px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border-color);
+  gap: 12px;
+  box-shadow: var(--shadow-small);
 
   .toolbar-section {
     display: flex;
-    gap: 4px;
+    gap: 6px;
+    align-items: center;
   }
 
   .toolbar-button {
-    height: 32px;
-    padding: 0 12px;
+    height: 40px;
+    padding: 0 16px;
     border: 1px solid transparent;
-    background: transparent;
-    border-radius: 4px;
+    background: var(--secondary-bg);
+    border-radius: 8px;
     font-size: 13px;
+    font-weight: 500;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 8px;
+    color: var(--text-primary);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow-small);
     
     &:hover {
-      background: #e5e5e5;
-      border-color: #d1d1d1;
+      background: var(--hover-bg);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-medium);
+      border-color: var(--border-hover);
+    }
+    
+    &:active {
+      transform: translateY(0);
+    }
+    
+    &.primary {
+      background: var(--gradient-accent);
+      color: white;
+      
+      &:hover {
+        background: var(--accent-hover);
+      }
     }
   }
 
   .address-bar-container {
     flex: 1;
-    margin: 0 8px;
+    margin: 0 16px;
     
     .address-bar {
-      height: 32px;
-      background: white;
-      border: 1px solid #d1d1d1;
-      border-radius: 4px;
+      height: 40px;
+      background: var(--secondary-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
       display: flex;
       align-items: center;
-      padding: 0 8px;
-      gap: 4px;
+      padding: 0 12px;
+      gap: 6px;
+      box-shadow: var(--shadow-small);
+      transition: all 0.2s ease;
+      
+      &:focus-within {
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 2px var(--selection-bg);
+      }
       
       .path-segment {
         font-size: 13px;
-        color: #605e5c;
+        color: var(--text-secondary);
         cursor: pointer;
-        padding: 2px 4px;
-        border-radius: 2px;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
         
         &:hover {
-          background: #e5e5e5;
+          background: var(--hover-bg);
+          color: var(--text-primary);
+        }
+        
+        &.active {
+          color: var(--accent-color);
+          font-weight: 500;
         }
       }
       
       .path-separator {
-        font-size: 11px;
-        color: #8a8886;
+        color: var(--text-tertiary);
+        font-size: 12px;
       }
     }
   }
 }
 
-// Ribbon
+// Modern Ribbon
 .ribbon {
-  background: #fafafa;
-  border-bottom: 1px solid #e1e1e1;
-
+  background: var(--secondary-bg);
+  border-bottom: 1px solid var(--border-color);
+  
   .ribbon-tabs {
     height: 32px;
     display: flex;
-    border-bottom: 1px solid #e1e1e1;
+    align-items: center;
+    padding: 0 16px;
+    background: var(--primary-bg);
+    border-bottom: 1px solid var(--border-color);
     
     .ribbon-tab {
-      padding: 8px 16px;
+      padding: 6px 16px;
       font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
       cursor: pointer;
-      border-bottom: 2px solid transparent;
+      border-radius: 6px 6px 0 0;
+      transition: all 0.2s ease;
       
       &:hover {
-        background: #e5e5e5;
+        background: var(--hover-bg);
+        color: var(--text-primary);
       }
       
       &.active {
-        border-bottom-color: #0078d4;
-        background: white;
+        background: var(--secondary-bg);
+        color: var(--accent-color);
+        border: 1px solid var(--border-color);
+        border-bottom: 1px solid var(--secondary-bg);
+        margin-bottom: -1px;
       }
     }
   }
-
+  
   .ribbon-content {
-    height: 96px;
-    background: white;
+    height: 72px;
     display: flex;
-    padding: 8px;
-    gap: 16px;
+    align-items: center;
+    padding: 0 16px;
+    gap: 24px;
     
     .ribbon-group {
       display: flex;
-      gap: 4px;
-      padding-right: 16px;
-      border-right: 1px solid #e1e1e1;
+      gap: 8px;
+      align-items: center;
+      position: relative;
       
-      &:last-child {
-        border-right: none;
+      &::after {
+        content: '';
+        position: absolute;
+        right: -12px;
+        top: 10px;
+        height: 52px;
+        width: 1px;
+        background: var(--border-color);
       }
       
-      .ribbon-button {
-        width: 64px;
-        height: 80px;
-        border: 1px solid transparent;
-        background: transparent;
-        border-radius: 4px;
-        cursor: pointer;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 4px;
-        padding: 8px 4px;
-        
-        &:hover {
-          background: #e5e5e5;
-          border-color: #d1d1d1;
-        }
-        
-        .ribbon-icon {
-          font-size: 24px;
-        }
-        
-        span {
-          font-size: 11px;
-          text-align: center;
-          line-height: 1.2;
-        }
+      &:last-child::after {
+        display: none;
+      }
+    }
+    
+    .ribbon-button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 12px;
+      border: none;
+      background: transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--text-primary);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      min-width: 64px;
+      
+      &:hover {
+        background: var(--hover-bg);
+        transform: translateY(-1px);
+      }
+      
+      &:active {
+        transform: translateY(0);
+      }
+      
+      .ribbon-icon {
+        font-size: 20px;
+        color: var(--accent-color);
+        margin-bottom: 2px;
+      }
+      
+      span {
+        font-size: 11px;
+        font-weight: 500;
+        text-align: center;
+        line-height: 1.2;
       }
     }
   }
 }
-
-// Main Content
-.main-content {
+// File Explorer Content Area
+.file-explorer-content {
   flex: 1;
   display: flex;
-  overflow: hidden;
+  background: var(--secondary-bg);
 }
 
 // Sidebar
 .sidebar {
-  width: 250px;
-  background: #f9f9f9;
-  border-right: 1px solid #e1e1e1;
+  width: 280px;
+  background: var(--primary-bg);
+  border-right: 1px solid var(--border-color);
   overflow-y: auto;
-  padding: 8px 0;
+  padding: 16px 0;
+  box-shadow: var(--shadow-small);
 
   .sidebar-section {
-    margin-bottom: 16px;
+    margin-bottom: 24px;
     
     .sidebar-header {
-      font-size: 13px;
-      font-weight: 600;
-      color: #323130;
-      padding: 8px 16px 4px 16px;
-      margin-bottom: 4px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 0 20px 8px 20px;
+      margin-bottom: 8px;
     }
     
     .sidebar-item {
-      font-size: 13px;
-      padding: 6px 16px 6px 32px;
+      font-size: 14px;
+      padding: 12px 20px;
       cursor: pointer;
-      color: #605e5c;
+      color: var(--text-primary);
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px;
+      transition: all 0.2s ease;
+      border-radius: 0 24px 24px 0;
+      margin-right: 12px;
       
       &:hover {
-        background: #e5e5e5;
+        background: var(--hover-bg);
+        transform: translateX(4px);
+      }
+      
+      &.active {
+        background: var(--selection-bg);
+        color: var(--accent-color);
+        font-weight: 600;
+        border-left: 3px solid var(--accent-color);
+      }
+      
+      .sidebar-icon {
+        font-size: 16px;
+        width: 20px;
+        text-align: center;
+        color: var(--accent-color);
       }
     }
   }
 }
 
-// File List
-.file-list-container {
+// Main File Area
+.file-area {
   flex: 1;
-  background: white;
-  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
-.file-list {
-  height: 100%;
+.file-list-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  background: var(--secondary-bg);
+}
+
+// Grid View
+.file-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 16px;
+  padding: 8px;
   
-  &.list {
-    .file-list-header {
-      height: 32px;
-      background: #f9f9f9;
-      border-bottom: 1px solid #e1e1e1;
-      display: grid;
-      grid-template-columns: 1fr 200px 120px 100px;
+  .file-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 8px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid transparent;
+    
+    &:hover {
+      background: var(--hover-bg);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-medium);
+    }
+    
+    &.selected {
+      background: var(--selection-bg);
+      border-color: var(--selection-border);
+      transform: translateY(-1px);
+    }
+    
+    .file-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+      color: var(--accent-color);
+    }
+    
+    .file-name {
+      font-size: 12px;
+      font-weight: 500;
+      text-align: center;
+      color: var(--text-primary);
+      line-height: 1.3;
+      word-break: break-word;
+    }
+  }
+}
+
+// List View
+.file-list {
+  display: flex;
+  flex-direction: column;
+  
+  .file-list-header {
+    display: grid;
+    grid-template-columns: 3fr 1fr 1fr 1fr;
+    gap: 16px;
+    padding: 12px 16px;
+    background: var(--primary-bg);
+    border-bottom: 1px solid var(--border-color);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    
+    .header-cell {
+      display: flex;
       align-items: center;
-      padding: 0 16px;
-      font-size: 13px;
-      font-weight: 600;
-      color: #323130;
+      gap: 4px;
+      cursor: pointer;
       
-      .column-header {
-        cursor: pointer;
+      &:hover {
+        color: var(--text-primary);
+      }
+    }
+  }
+  
+  .file-item {
+    display: grid;
+    grid-template-columns: 3fr 1fr 1fr 1fr;
+    gap: 16px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: var(--hover-bg);
+    }
+    
+    &.selected {
+      background: var(--selection-bg);
+      border-left: 3px solid var(--accent-color);
+    }
+    
+    .file-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      
+      .file-icon {
+        font-size: 20px;
+        color: var(--accent-color);
+        width: 24px;
+        text-align: center;
+      }
+      
+      .file-name {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-primary);
+      }
+    }
+    
+    .file-size, .file-date, .file-type {
+      font-size: 13px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+    }
+  }
+}
+
+// Details Panel
+.details-panel {
+  width: 320px;
+  background: var(--primary-bg);
+  border-left: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: var(--shadow-medium);
+  
+  .details-header {
+    padding: 20px;
+    background: var(--gradient-surface);
+    border-bottom: 1px solid var(--border-color);
+    
+    h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    
+    .details-subtitle {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+  }
+  
+  .details-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    
+    .details-section {
+      margin-bottom: 24px;
+      
+      .section-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
         
-        &:hover {
-          color: #0078d4;
+        &::before {
+          content: '';
+          width: 3px;
+          height: 16px;
+          background: var(--gradient-accent);
+          border-radius: 2px;
+        }
+      }
+      
+      .details-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        
+        .detail-label {
+          font-size: 13px;
+          color: var(--text-secondary);
+          font-weight: 500;
+          min-width: 80px;
+        }
+        
+        .detail-value {
+          font-size: 13px;
+          color: var(--text-primary);
+          text-align: right;
+          word-break: break-word;
         }
       }
     }
     
-    .file-items {
-      .file-item {
-        height: 32px;
-        display: grid;
-        grid-template-columns: 32px 1fr 200px 120px 100px;
-        justify-items: start;
-        align-items: center;
-        padding: 0 16px;
-        font-size: 13px;
-        cursor: pointer;
-        border-bottom: 1px solid #f3f3f3;
-        
-        &:hover {
-          background: #f3f3f3;
-        }
-        
-        .file-icon {
-          margin-right: 8px;
-          font-size: 16px;
-        }
-        
-        .file-name {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-        
-        .file-date, .file-type, .file-size {
-          color: #605e5c;
-        }
+    .file-preview {
+      text-align: center;
+      padding: 20px;
+      background: var(--secondary-bg);
+      border-radius: 12px;
+      margin-bottom: 20px;
+      
+      .preview-icon {
+        font-size: 48px;
+        color: var(--accent-color);
+        margin-bottom: 12px;
+        display: block;
+      }
+      
+      .preview-name {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+      }
+      
+      .preview-type {
+        font-size: 12px;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
     }
   }
+}
+// Responsive Design
+@media (max-width: 1024px) {
+  .details-panel {
+    width: 280px;
+  }
   
-  &.grid {
-    .file-items {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-      gap: 16px;
-      padding: 16px;
-      
-      .file-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 12px 8px;
-        border-radius: 4px;
-        cursor: pointer;
-        text-align: center;
-        
-        &:hover {
-          background: #f3f3f3;
-        }
-        
-        .file-icon {
-          font-size: 48px;
-          margin-bottom: 8px;
-        }
-        
-        .file-name {
-          font-size: 13px;
-          word-break: break-word;
-          line-height: 1.2;
-        }
-      }
-    }
+  .sidebar {
+    width: 240px;
+  }
+}
+
+@media (max-width: 768px) {
+  .details-panel {
+    display: none;
+  }
+  
+  .sidebar {
+    width: 200px;
+  }
+  
+  .file-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 12px;
   }
 }
 
 // Status Bar
 .status-bar {
-  height: 24px;
-  background: #f9f9f9;
-  border-top: 1px solid #e1e1e1;
+  height: 32px;
+  background: var(--primary-bg);
+  border-top: 1px solid var(--border-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0 16px;
   font-size: 12px;
-  color: #605e5c;
+  color: var(--text-secondary);
+  
+  .status-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    &.right {
+      margin-left: auto;
+    }
+  }
 }
 
 // Scrollbar styling for webkit browsers
 ::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: var(--primary-bg);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 6px;
+  background: var(--border-color);
+  border-radius: 4px;
   
   &:hover {
-    background: #a8a8a8;
+    background: var(--border-hover);
   }
 }
 
 ::-webkit-scrollbar-corner {
-  background: #f1f1f1;
+  background: var(--primary-bg);
+}
+
+// Animations
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.slide-in-right {
+  animation: slideInRight 0.3s ease-out;
+}
+
+// Dark theme specific enhancements - VS Code Style
+[data-theme="win11-dark"], [data-theme="win10-dark"] {
+  .toolbar {
+    background: var(--secondary-bg);
+    border-bottom: 1px solid var(--border-color);
+    
+    .toolbar-button {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-secondary);
+      
+      &:hover {
+        background: var(--hover-bg);
+        border-color: var(--border-hover);
+        color: var(--text-primary);
+      }
+      
+      &.primary {
+        background: var(--accent-color);
+        border-color: var(--accent-color);
+        color: white;
+        
+        &:hover {
+          background: var(--accent-hover);
+        }
+      }
+    }
+  }
+  
+  .ribbon {
+    background: var(--surface-bg);
+    border-bottom: 1px solid var(--border-color);
+    
+    .ribbon-tab {
+      color: var(--text-secondary);
+      background: transparent;
+      
+      &.active {
+        color: var(--text-primary);
+        background: var(--secondary-bg);
+        border-bottom: 2px solid var(--accent-color);
+      }
+      
+      &:hover:not(.active) {
+        background: var(--hover-bg);
+        color: var(--text-primary);
+      }
+    }
+    
+    .ribbon-button {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-secondary);
+      
+      &:hover {
+        background: var(--hover-bg);
+        border-color: var(--border-hover);
+        color: var(--text-primary);
+      }
+    }
+  }
+  
+  .sidebar {
+    background: var(--surface-bg);
+    border-right: 1px solid var(--border-color);
+    
+    .sidebar-header {
+      color: var(--text-tertiary);
+    }
+    
+    .sidebar-item {
+      color: var(--text-secondary);
+      
+      &:hover {
+        background: var(--hover-bg);
+        color: var(--text-primary);
+      }
+      
+      &.active {
+        background: var(--selection-bg);
+        color: var(--text-primary);
+        border-left: 2px solid var(--accent-color);
+      }
+    }
+  }
+  
+  .file-item {
+    color: var(--text-primary);
+    background: transparent;
+    border: 1px solid transparent;
+    
+    &:hover {
+      background: var(--hover-bg);
+      border-color: var(--border-hover);
+    }
+    
+    &.selected {
+      background: var(--selection-bg);
+      border-color: var(--selection-border);
+      color: var(--text-primary);
+      
+      // Ensure text remains visible on selection
+      .file-name {
+        color: var(--text-primary);
+        font-weight: 500;
+      }
+      
+      .file-icon {
+        opacity: 1;
+      }
+    }
+  }
+  
+  .file-list-header {
+    background: var(--surface-bg);
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    
+    .header-cell {
+      &:hover {
+        background: var(--hover-bg);
+        color: var(--text-primary);
+      }
+    }
+  }
+  
+  .details-panel {
+    background: var(--surface-bg);
+    border-left: 1px solid var(--border-color);
+    color: var(--text-primary);
+    
+    .property-group {
+      background: var(--secondary-bg);
+      border: 1px solid var(--border-color);
+      
+      .property-label {
+        color: var(--text-tertiary);
+      }
+      
+      .property-value {
+        color: var(--text-primary);
+      }
+    }
+  }
+  
+  .status-bar {
+    background: var(--accent-color);
+    color: white;
+    border-top: none;
+    
+    .status-item {
+      color: rgba(255, 255, 255, 0.9);
+    }
+  }
+  
+  // Enhanced settings dropdown for dark themes
+  .settings-menu {
+    background: var(--surface-bg);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+    
+    .menu-section {
+      border-bottom: 1px solid var(--border-color);
+      
+      .menu-title {
+        color: var(--text-tertiary);
+      }
+    }
+    
+    .menu-item {
+      background: transparent;
+      color: var(--text-primary);
+      border-radius: var(--border-radius-small);
+      margin: 2px var(--spacing-small);
+      
+      &:hover {
+        background: var(--hover-bg);
+        color: var(--text-primary);
+      }
+      
+      &.active {
+        background: var(--selection-bg);
+        border-left: 3px solid var(--accent-color);
+        
+        .menu-icon {
+          color: var(--accent-color);
+        }
+      }
+      
+      .menu-icon {
+        color: var(--text-secondary);
+      }
+      
+      .menu-description {
+        color: var(--text-tertiary);
+      }
+    }
+  }
+  
+  .settings-button {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    
+    &:hover, &.open {
+      background: var(--hover-bg);
+      border-color: var(--accent-color);
+      color: var(--text-primary);
+    }
+  }
 }

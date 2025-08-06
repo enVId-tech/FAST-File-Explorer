@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { FaFolder, FaFileExcel, FaFilePowerpoint, FaFileWord, FaFileImage, FaFileCode, FaFile, FaCopy, FaCut, FaPaste, FaTrash, FaEdit, FaFolderPlus, FaCog, FaArrowLeft, FaArrowRight, FaArrowUp, FaSearch, FaThLarge, FaBars, FaHdd, FaDesktop, FaDownload, FaMusic, FaVideo, FaFilePdf, FaSortAlphaDown, FaSortAlphaUp, FaSortNumericDown, FaSortNumericUp, FaChevronDown, FaPalette, FaSun, FaMoon, FaWindows } from 'react-icons/fa';
+import React, { useState } from 'react';
+import { FaFolder, FaFileExcel, FaFilePowerpoint, FaFileWord, FaFileImage, FaFileCode, FaFile, FaCopy, FaCut, FaPaste, FaTrash, FaEdit, FaFolderPlus, FaCog, FaArrowLeft, FaArrowRight, FaArrowUp, FaSearch, FaThLarge, FaBars, FaHdd, FaDesktop, FaDownload, FaMusic, FaVideo, FaFilePdf, FaSortAlphaDown, FaSortAlphaUp, FaSortNumericDown, FaSortNumericUp } from 'react-icons/fa';
 import { DetailsPanel } from './DetailsPanel';
 
 interface FileItem {
@@ -20,68 +20,15 @@ interface TabContentProps {
     isActive: boolean;
     viewMode: string;
     setViewMode: (mode: string) => void;
-    theme: 'default' | 'win11-dark' | 'win10-light' | 'win10-dark';
-    setTheme: (theme: 'default' | 'win11-dark' | 'win10-light' | 'win10-dark') => void;
 }
 
-export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMode, setViewMode, theme, setTheme }) => {
+export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMode, setViewMode }) => {
     const [selectedItem, setSelectedItem] = useState<FileItem | null>(null);
     const [showDetailsPanel, setShowDetailsPanel] = useState(true);
     const [sortBy, setSortBy] = useState<'name' | 'size' | 'date' | 'type'>('name');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-    const [showSettingsMenu, setShowSettingsMenu] = useState(false);
-    const settingsRef = useRef<HTMLDivElement>(null);
 
-    // Close settings menu when clicking outside
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
-                setShowSettingsMenu(false);
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, []);
-
-    // Theme configuration
-    const themes = [
-        {
-            id: 'default' as const,
-            name: 'Windows 11 Light',
-            description: 'Modern Windows 11 design',
-            icon: <FaWindows />
-        },
-        {
-            id: 'win11-dark' as const,
-            name: 'Windows 11 Dark',
-            description: 'Dark mode with modern styling',
-            icon: <FaMoon />
-        },
-        {
-            id: 'win10-light' as const,
-            name: 'Windows 10 Light',
-            description: 'Classic Windows 10 interface',
-            icon: <FaSun />
-        },
-        {
-            id: 'win10-dark' as const,
-            name: 'Windows 10 Dark',
-            description: 'Windows 10 with dark theme',
-            icon: <FaMoon />
-        }
-    ];
-
-    const handleThemeChange = (newTheme: typeof theme) => {
-        setTheme(newTheme);
-        setShowSettingsMenu(false);
-    };
-
-    const getCurrentTheme = () => {
-        return themes.find(t => t.id === theme) || themes[0];
-    };
+    // Enhanced sample files and folders with placeholder data
     const fileItems: FileItem[] = [
         { 
             name: 'Desktop', 
@@ -301,38 +248,6 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
                     </div>
                     <div className="toolbar-section">
                         <button className="toolbar-button"><FaSearch /></button>
-                        
-                        {/* Settings Dropdown */}
-                        <div className="settings-dropdown" ref={settingsRef}>
-                            <button 
-                                className={`settings-button ${showSettingsMenu ? 'open' : ''}`}
-                                onClick={() => setShowSettingsMenu(!showSettingsMenu)}
-                            >
-                                <FaPalette />
-                                <span>{getCurrentTheme().name}</span>
-                                <FaChevronDown className="dropdown-arrow" />
-                            </button>
-                            
-                            <div className={`settings-menu ${showSettingsMenu ? 'open' : ''}`}>
-                                <div className="menu-section">
-                                    <div className="menu-title">Interface Themes</div>
-                                    {themes.map((themeOption) => (
-                                        <div
-                                            key={themeOption.id}
-                                            className={`menu-item ${theme === themeOption.id ? 'active' : ''}`}
-                                            onClick={() => handleThemeChange(themeOption.id)}
-                                        >
-                                            <div className="menu-icon">{themeOption.icon}</div>
-                                            <div className="menu-text">
-                                                <div>{themeOption.name}</div>
-                                                <div className="menu-description">{themeOption.description}</div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                        
                         <button 
                             className="toolbar-button" 
                             onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
@@ -348,15 +263,12 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
                     </div>
                 </div>
 
-                {/* Modern Ribbon - Show different content based on theme */}
+                {/* Modern Ribbon */}
                 <div className="ribbon">
                     <div className="ribbon-tabs">
                         <span className="ribbon-tab active">Home</span>
                         <span className="ribbon-tab">Share</span>
                         <span className="ribbon-tab">View</span>
-                        {(theme === 'win10-light' || theme === 'win10-dark') && (
-                            <span className="ribbon-tab">Manage</span>
-                        )}
                     </div>
                     <div className="ribbon-content">
                         <div className="ribbon-group">
@@ -393,28 +305,6 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
                                 <span>Properties</span>
                             </button>
                         </div>
-                        
-                        {/* Additional Windows 10 style controls */}
-                        {(theme === 'win10-light' || theme === 'win10-dark') && (
-                            <>
-                                <div className="ribbon-group">
-                                    <button className="ribbon-button">
-                                        <div className="ribbon-icon"><FaThLarge /></div>
-                                        <span>Layout</span>
-                                    </button>
-                                    <button className="ribbon-button">
-                                        <div className="ribbon-icon"><FaBars /></div>
-                                        <span>Details</span>
-                                    </button>
-                                </div>
-                                <div className="ribbon-group">
-                                    <button className="ribbon-button">
-                                        <div className="ribbon-icon"><FaSearch /></div>
-                                        <span>Search</span>
-                                    </button>
-                                </div>
-                            </>
-                        )}
                     </div>
                 </div>
 

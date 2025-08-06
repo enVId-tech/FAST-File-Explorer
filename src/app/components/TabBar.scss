@@ -1,13 +1,15 @@
-/* Tab Bar Styles */
+/* Modern Tab Bar Styles with Theme Support */
 .tab-bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #f3f3f3;
-    border-bottom: 1px solid #d1d5db;
-    height: 40px;
+    background: var(--gradient-surface);
+    border-bottom: 1px solid var(--border-color);
+    height: 48px; /* Increased height for better touch targets */
     -webkit-app-region: drag;
     user-select: none;
+    box-shadow: var(--shadow-small);
+    backdrop-filter: blur(10px);
 }
 
 .tabs-container {
@@ -17,7 +19,8 @@
     overflow-x: auto;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    min-width: 0; /* Allow container to shrink */
+    min-width: 0;
+    padding: 6px 8px;
 }
 
 .tabs-container::-webkit-scrollbar {
@@ -27,49 +30,72 @@
 .tab {
     display: flex;
     align-items: center;
-    flex: 1 1 240px; /* Allow tabs to grow and shrink, with 240px preferred size */
-    min-width: 56px; /* Minimum size (icon + padding + close button) */
-    max-width: 240px; /* Maximum size when few tabs */
-    height: 32px;
+    flex: 1 1 240px;
+    min-width: 56px;
+    max-width: 240px;
+    height: 36px; /* Increased height */
     padding: 0 12px;
-    margin-right: 1px;
-    background-color: #e5e7eb;
-    border: 1px solid #d1d5db;
-    border-bottom: none;
-    border-radius: 6px 6px 0 0;
+    margin-right: 2px;
+    background: var(--secondary-bg);
+    border: 1px solid transparent;
+    border-radius: 8px 8px 0 0; /* More rounded corners */
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Smoother transition */
     -webkit-app-region: no-drag;
     position: relative;
     box-sizing: border-box;
+    box-shadow: var(--shadow-small);
+    
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: transparent;
+        border-radius: 8px 8px 0 0;
+        transition: all 0.3s ease;
+    }
 }
 
 .tab:hover {
-    background-color: #f9fafb;
+    background: var(--hover-bg);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-medium);
+    
+    &::before {
+        background: var(--accent-hover);
+    }
 }
 
 .tab.active {
-    background-color: #ffffff;
-    border-color: #3b82f6;
+    background: var(--secondary-bg);
+    border-color: var(--accent-color);
     z-index: 1;
+    box-shadow: var(--shadow-medium);
+    
+    &::before {
+        background: var(--gradient-accent);
+    }
 }
 
 .tab-title {
     flex: 1;
     font-size: 13px;
-    font-weight: 400;
-    color: #374151;
+    font-weight: 500;
+    color: var(--text-primary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     margin-right: 8px;
-    min-width: 0; /* Allow text to shrink */
+    min-width: 0;
     transition: all 0.2s ease;
 }
 
 .tab.active .tab-title {
-    color: #1f2937;
-    font-weight: 500;
+    color: var(--accent-color);
+    font-weight: 600;
 }
 
 /* Hide text when tab becomes very small */
@@ -166,94 +192,111 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     border: none;
-    background: none;
-    border-radius: 3px;
+    background: var(--hover-bg);
+    border-radius: 50%;
     cursor: pointer;
-    color: #6b7280;
+    color: var(--text-secondary);
     font-size: 10px;
-    transition: all 0.2s ease;
-    opacity: 1; /* Always visible */
-    flex-shrink: 0; /* Prevent shrinking */
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 1;
+    flex-shrink: 0;
+    
+    &:hover {
+        background: #ef4444;
+        color: white;
+        transform: scale(1.1);
+        box-shadow: var(--shadow-small);
+    }
+    
+    &:active {
+        transform: scale(0.95);
+    }
 }
 
 .tab:hover .tab-close-button {
     opacity: 1;
-}
-
-.tab-close-button:hover {
-    background-color: #ef4444;
-    color: white;
+    background: var(--secondary-bg);
 }
 
 .tab-icon {
-    color: #6b7280;
+    color: var(--text-secondary);
     font-size: 14px;
     flex-shrink: 0;
     margin-right: 6px;
+    transition: all 0.2s ease;
 }
 
 .tab.active .tab-icon {
-    color: #3b82f6;
+    color: var(--accent-color);
 }
 
 .new-tab-button {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     margin-left: 8px;
     border: none;
-    background: none;
-    border-radius: 4px;
+    background: var(--secondary-bg);
+    border-radius: 8px;
     cursor: pointer;
-    color: #6b7280;
-    font-size: 12px;
-    transition: all 0.2s ease;
+    color: var(--text-secondary);
+    font-size: 14px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     -webkit-app-region: no-drag;
-}
-
-.new-tab-button:hover {
-    background-color: #e5e7eb;
-    color: #374151;
+    box-shadow: var(--shadow-small);
+    
+    &:hover {
+        background: var(--hover-bg);
+        color: var(--accent-color);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-medium);
+    }
+    
+    &:active {
+        transform: translateY(0);
+    }
 }
 
 .window-controls {
     display: flex;
     align-items: center;
     -webkit-app-region: no-drag;
+    gap: 2px;
+    padding-right: 8px;
 }
 
 .control-button {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border: none;
-    background: none;
+    background: transparent;
     cursor: pointer;
-    color: #6b7280;
+    color: var(--text-secondary);
     font-size: 12px;
-    transition: all 0.2s ease;
-}
-
-.control-button:hover {
-    background-color: #e5e7eb;
-}
-
-.control-button.close:hover {
-    background-color: #ef4444;
-    color: white;
-}
-
-.control-button.minimize:hover,
-.control-button.maximize:hover {
-    background-color: #e5e7eb;
-    color: #374151;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 6px;
+    
+    &:hover {
+        background: var(--hover-bg);
+        color: var(--text-primary);
+    }
+    
+    &.close:hover {
+        background: #e74c3c;
+        color: white;
+    }
+    
+    &:active {
+        transform: scale(0.95);
+    }
 }
 
 /* Responsive adjustments */
