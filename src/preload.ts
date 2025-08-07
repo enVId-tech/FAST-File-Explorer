@@ -22,18 +22,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
         goBack: (tabId: string) => ipcRenderer.invoke('tab-go-back', tabId),
         goForward: (tabId: string) => ipcRenderer.invoke('tab-go-forward', tabId),
     },
-    folders: {
-        create: (name: string) => ipcRenderer.invoke('folder-create', name),
-        delete: (id: string) => ipcRenderer.invoke('folder-delete', id),
-        rename: (id: string, newName: string) => ipcRenderer.invoke('folder-rename', id, newName),
-        getAll: (folderPath: string) => ipcRenderer.invoke('folder-get-all', folderPath),
-        get: (folderPath: string) => ipcRenderer.invoke('folder-get', folderPath),
-    },
-    files: {
-        create: (name: string) => ipcRenderer.invoke('file-create', name),
-        delete: (id: string) => ipcRenderer.invoke('file-delete', id),
-        rename: (id: string, newName: string) => ipcRenderer.invoke('file-rename', id, newName),
-        getAll: (filePath: string) => ipcRenderer.invoke('file-get-all', filePath),
-        get: (filePath: string) => ipcRenderer.invoke('file-get', filePath),
+    data: {
+        create: (name: string) => ipcRenderer.invoke('data-create', name),
+        delete: (id: string) => ipcRenderer.invoke('data-delete', id),
+        rename: (id: string, newName: string) => ipcRenderer.invoke('data-rename', id, newName),
+        getDirectory: (folderPath: string) => ipcRenderer.invoke('data-get-directory', folderPath),
+        getMetadata: (dataPath: string) => ipcRenderer.invoke('data-get-metadata', dataPath),
+        getDrives: () => ipcRenderer.invoke('data-get-drives'),
     }
 });

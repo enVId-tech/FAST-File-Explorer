@@ -21,19 +21,13 @@ declare global {
         goBack: (tabId: string) => Promise<boolean>;
         goForward: (tabId: string) => Promise<boolean>;
       },
-      folders: {
+      data: {
         create: (name: string) => Promise<string | null>;
         delete: (id: string) => Promise<boolean>;
         rename: (id: string, newName: string) => Promise<boolean>;
-        getAll: (folderPath: string) => Promise<{folderName: string, name: string}[]>;
-        get: (folderName: string) => Promise<{folderName: string, name: string} | null>;
-      }
-      files: {
-        create: (name: string, content: string) => Promise<string | null>;
-        delete: (id: string) => Promise<boolean>;
-        rename: (id: string, newName: string) => Promise<boolean>;
-        getAll: () => Promise<{id: string, name: string}[]>;
-        get: (id: string) => Promise<{id: string, name: string} | null>;
+        getDirectory: (folderPath: string) => Promise<{folderName: string, name: string}[]>;
+        getMetadata: (dataPath: string) => Promise<{folderName: string, name: string} | null>;
+        getDrives: () => Promise<{name: string, path: string}[]>;
       }
     };
   }

@@ -132,7 +132,7 @@ export default function Main(): React.JSX.Element {
 
     const getFolderMetadata = async (folderPath: string) => {
         try {
-            const metadata = await window.electronAPI?.folders.get(folderPath);
+            const metadata = await window.electronAPI?.data.getMetadata(folderPath);
             return metadata;
         } catch (error) {
             console.error('Failed to get folder metadata:', error);
@@ -142,13 +142,23 @@ export default function Main(): React.JSX.Element {
 
     const getChildrenFolders = async (folderPath: string) => {
         try {
-            const folders = await window.electronAPI?.folders.getAll(folderPath);
+            const folders = await window.electronAPI?.data.getDirectory(folderPath);
             return folders;
         } catch (error) {
             console.error('Failed to get child folders:', error);
             return [];
         }
     };
+
+    const getDrives = async () => {
+        try {
+            const drives = await window.electronAPI?.data.getDrives();
+            return drives;
+        } catch (error) {
+            console.error("Failed to get drive assignments:", error)
+            return [];
+        }
+    }
 
     useEffect(() => {
         const handleKeydown = (event: KeyboardEvent) => {
@@ -180,6 +190,10 @@ export default function Main(): React.JSX.Element {
         getChildrenFolders('C:\\Users\\theli\\Documents').then(folders => {
             console.log('Child folders:', folders);
         });
+
+        getDrives().then(drives => {
+            console.log('Drive data:', drives);
+        })
     }, []);
 
     return (
