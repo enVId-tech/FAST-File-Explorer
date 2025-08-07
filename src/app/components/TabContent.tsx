@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FaFolder, FaFileExcel, FaFilePowerpoint, FaFileWord, FaFileImage, FaFileCode, FaFile, FaCopy, FaCut, FaPaste, FaTrash, FaEdit, FaFolderPlus, FaCog, FaArrowLeft, FaArrowRight, FaArrowUp, FaSearch, FaThLarge, FaBars, FaHdd, FaDesktop, FaDownload, FaMusic, FaVideo, FaFilePdf, FaSortAlphaDown, FaSortAlphaUp, FaSortNumericDown, FaSortNumericUp, FaChevronDown, FaPalette, FaSun, FaMoon, FaWindows, FaClock } from 'react-icons/fa';
+import { FaFolder, FaFileExcel, FaFilePowerpoint, FaFileWord, FaFileImage, FaFileCode, FaFile, FaCopy, FaCut, FaPaste, FaTrash, FaEdit, FaFolderPlus, FaCog, FaArrowLeft, FaArrowRight, FaArrowUp, FaSearch, FaThLarge, FaBars, FaHdd, FaDesktop, FaDownload, FaMusic, FaVideo, FaFilePdf, FaSortAlphaDown, FaSortAlphaUp, FaSortNumericDown, FaSortNumericUp, FaChevronDown, FaPalette, FaSun, FaMoon, FaWindows, FaClock, FaShare, FaEnvelope, FaPrint, FaFax, FaUsers, FaInfoCircle, FaEye } from 'react-icons/fa';
 import { DetailsPanel } from './DetailsPanel';
 import { RecentsView } from './RecentsView';
 import { ThisPCView } from './ThisPCView';
@@ -34,6 +34,7 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
     const [showSettingsMenu, setShowSettingsMenu] = useState(false);
     const [currentView, setCurrentView] = useState<'thispc' | 'recents' | 'folder'>('thispc');
+    const [activeRibbonTab, setActiveRibbonTab] = useState<'home' | 'share' | 'view'>('home');
     const settingsRef = useRef<HTMLDivElement>(null);
 
     // Close settings menu when clicking outside
@@ -374,66 +375,143 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
                 {/* Modern Ribbon - Show different content based on theme */}
                 <div className="ribbon">
                     <div className="ribbon-tabs">
-                        <span className="ribbon-tab active">Home</span>
-                        <span className="ribbon-tab">Share</span>
-                        <span className="ribbon-tab">View</span>
+                        <span 
+                            className={`ribbon-tab ${activeRibbonTab === 'home' ? 'active' : ''}`}
+                            onClick={() => setActiveRibbonTab('home')}
+                        >
+                            Home
+                        </span>
+                        <span 
+                            className={`ribbon-tab ${activeRibbonTab === 'share' ? 'active' : ''}`}
+                            onClick={() => setActiveRibbonTab('share')}
+                        >
+                            Share
+                        </span>
+                        <span 
+                            className={`ribbon-tab ${activeRibbonTab === 'view' ? 'active' : ''}`}
+                            onClick={() => setActiveRibbonTab('view')}
+                        >
+                            View
+                        </span>
                         {(theme === 'win10-light' || theme === 'win10-dark') && (
                             <span className="ribbon-tab">Manage</span>
                         )}
                     </div>
                     <div className="ribbon-content">
-                        <div className="ribbon-group">
-                            <button className="ribbon-button">
-                                <div className="ribbon-icon"><FaCopy /></div>
-                                <span>Copy</span>
-                            </button>
-                            <button className="ribbon-button">
-                                <div className="ribbon-icon"><FaCut /></div>
-                                <span>Cut</span>
-                            </button>
-                            <button className="ribbon-button">
-                                <div className="ribbon-icon"><FaPaste /></div>
-                                <span>Paste</span>
-                            </button>
-                        </div>
-                        <div className="ribbon-group">
-                            <button className="ribbon-button">
-                                <div className="ribbon-icon"><FaTrash /></div>
-                                <span>Delete</span>
-                            </button>
-                            <button className="ribbon-button">
-                                <div className="ribbon-icon"><FaEdit /></div>
-                                <span>Rename</span>
-                            </button>
-                        </div>
-                        <div className="ribbon-group">
-                            <button className="ribbon-button">
-                                <div className="ribbon-icon"><FaFolderPlus /></div>
-                                <span>New folder</span>
-                            </button>
-                            <button className="ribbon-button">
-                                <div className="ribbon-icon"><FaCog /></div>
-                                <span>Properties</span>
-                            </button>
-                        </div>
-                        
-                        {/* Additional Windows 10 style controls */}
-                        {(theme === 'win10-light' || theme === 'win10-dark') && (
+                        {activeRibbonTab === 'home' && (
                             <>
                                 <div className="ribbon-group">
+                                    <div className="ribbon-group-label">Clipboard</div>
                                     <button className="ribbon-button">
-                                        <div className="ribbon-icon"><FaThLarge /></div>
-                                        <span>Layout</span>
+                                        <div className="ribbon-icon"><FaCopy /></div>
+                                        <span>Copy</span>
                                     </button>
                                     <button className="ribbon-button">
+                                        <div className="ribbon-icon"><FaCut /></div>
+                                        <span>Cut</span>
+                                    </button>
+                                    <button className="ribbon-button">
+                                        <div className="ribbon-icon"><FaPaste /></div>
+                                        <span>Paste</span>
+                                    </button>
+                                </div>
+                                <div className="ribbon-group">
+                                    <div className="ribbon-group-label">Organize</div>
+                                    <button className="ribbon-button">
+                                        <div className="ribbon-icon"><FaTrash /></div>
+                                        <span>Delete</span>
+                                    </button>
+                                    <button className="ribbon-button">
+                                        <div className="ribbon-icon"><FaEdit /></div>
+                                        <span>Rename</span>
+                                    </button>
+                                </div>
+                                <div className="ribbon-group">
+                                    <div className="ribbon-group-label">New</div>
+                                    <button className="ribbon-button">
+                                        <div className="ribbon-icon"><FaFolderPlus /></div>
+                                        <span>New folder</span>
+                                    </button>
+                                    <button className="ribbon-button">
+                                        <div className="ribbon-icon"><FaCog /></div>
+                                        <span>Properties</span>
+                                    </button>
+                                </div>
+                            </>
+                        )}
+
+                        {activeRibbonTab === 'share' && (
+                            <>
+                                <div className="ribbon-group">
+                                    <div className="ribbon-group-label">Send</div>
+                                    <button className="ribbon-button">
+                                        <div className="ribbon-icon"><FaShare /></div>
+                                        <span>Share</span>
+                                    </button>
+                                    <button className="ribbon-button">
+                                        <div className="ribbon-icon"><FaEnvelope /></div>
+                                        <span>Email</span>
+                                    </button>
+                                </div>
+                                <div className="ribbon-group">
+                                    <div className="ribbon-group-label">Print</div>
+                                    <button className="ribbon-button">
+                                        <div className="ribbon-icon"><FaPrint /></div>
+                                        <span>Print</span>
+                                    </button>
+                                    <button className="ribbon-button">
+                                        <div className="ribbon-icon"><FaFax /></div>
+                                        <span>Fax</span>
+                                    </button>
+                                </div>
+                                <div className="ribbon-group">
+                                    <div className="ribbon-group-label">Advanced sharing</div>
+                                    <button className="ribbon-button">
+                                        <div className="ribbon-icon"><FaUsers /></div>
+                                        <span>Share with people</span>
+                                    </button>
+                                </div>
+                            </>
+                        )}
+
+                        {activeRibbonTab === 'view' && (
+                            <>
+                                <div className="ribbon-group">
+                                    <div className="ribbon-group-label">Layout</div>
+                                    <button 
+                                        className={`ribbon-button ${viewMode === 'grid' ? 'active' : ''}`}
+                                        onClick={() => setViewMode('grid')}
+                                    >
+                                        <div className="ribbon-icon"><FaThLarge /></div>
+                                        <span>Large icons</span>
+                                    </button>
+                                    <button 
+                                        className={`ribbon-button ${viewMode === 'list' ? 'active' : ''}`}
+                                        onClick={() => setViewMode('list')}
+                                    >
                                         <div className="ribbon-icon"><FaBars /></div>
                                         <span>Details</span>
                                     </button>
                                 </div>
                                 <div className="ribbon-group">
+                                    <div className="ribbon-group-label">Panes</div>
+                                    <button 
+                                        className={`ribbon-button ${showDetailsPanel ? 'active' : ''}`}
+                                        onClick={() => setShowDetailsPanel(!showDetailsPanel)}
+                                    >
+                                        <div className="ribbon-icon"><FaInfoCircle /></div>
+                                        <span>Details pane</span>
+                                    </button>
+                                </div>
+                                <div className="ribbon-group">
+                                    <div className="ribbon-group-label">Show/hide</div>
                                     <button className="ribbon-button">
-                                        <div className="ribbon-icon"><FaSearch /></div>
-                                        <span>Search</span>
+                                        <div className="ribbon-icon"><FaEye /></div>
+                                        <span>Hidden items</span>
+                                    </button>
+                                    <button className="ribbon-button">
+                                        <div className="ribbon-icon"><FaFile /></div>
+                                        <span>File extensions</span>
                                     </button>
                                 </div>
                             </>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaHdd, FaDesktop, FaFolder, FaDownload, FaMusic, FaVideo, FaFileImage, FaSdCard, FaUsb, FaServer, FaCloud, FaNetworkWired, FaCog, FaBars, FaThLarge, FaExternalLinkAlt, FaGamepad, FaDatabase } from 'react-icons/fa';
+import { FaHdd, FaDesktop, FaFolder, FaDownload, FaMusic, FaVideo, FaFileImage, FaSdCard, FaUsb, FaServer, FaCloud, FaNetworkWired, FaCog, FaBars, FaThLarge, FaExternalLinkAlt, FaGamepad, FaDatabase, FaTimes, FaChartBar, FaChartPie, FaArchive, FaHardHat } from 'react-icons/fa';
 
 interface DriveInfo {
     name: string;
@@ -121,6 +121,59 @@ export const ThisPCView: React.FC<ThisPCViewProps> = ({ viewMode }) => {
 
     const [visualizationMode, setVisualizationMode] = useState<'bar' | 'pie'>('bar');
     const [selectedDrive, setSelectedDrive] = useState<DriveInfo | null>(null);
+    const [driveViewMode, setDriveViewMode] = useState<'large' | 'medium' | 'small'>('large');
+    const [showIconPicker, setShowIconPicker] = useState<{ driveIndex: number; show: boolean }>({ driveIndex: -1, show: false });
+
+    // Icon selection options
+    const iconOptions = [
+        { Icon: FaHdd, name: 'HDD', color: '#0078D4' },
+        { Icon: FaHardHat, name: 'SSD', color: '#FF8C00' },
+        { Icon: FaDatabase, name: 'Database', color: '#107C10' },
+        { Icon: FaUsb, name: 'USB', color: '#8B4513' },
+        { Icon: FaSdCard, name: 'SD Card', color: '#FF6B6B' },
+        { Icon: FaNetworkWired, name: 'Network', color: '#6B46C1' },
+        { Icon: FaServer, name: 'Server', color: '#4A5568' },
+        { Icon: FaCloud, name: 'Cloud', color: '#00D4FF' },
+        { Icon: FaFolder, name: 'Folder', color: '#F59E0B' },
+        { Icon: FaArchive, name: 'Archive', color: '#8B5CF6' }
+    ];
+
+    const updateDriveIcon = (driveIndex: number, iconIndex: number) => {
+        const newDrives = [...drives];
+        const selectedIcon = iconOptions[iconIndex];
+        newDrives[driveIndex].customIcon = <selectedIcon.Icon style={{ color: selectedIcon.color }} />;
+        newDrives[driveIndex].color = selectedIcon.color;
+        setDrives(newDrives);
+        setShowIconPicker({ driveIndex: -1, show: false });
+    };
+
+    const IconPicker: React.FC<{ driveIndex: number; onClose: () => void }> = ({ driveIndex, onClose }) => {
+        return (
+            <div className="icon-picker-overlay" onClick={onClose}>
+                <div className="icon-picker-modal" onClick={(e) => e.stopPropagation()}>
+                    <div className="icon-picker-header">
+                        <h3>Choose Drive Icon</h3>
+                        <button onClick={onClose} className="close-button">
+                            <FaTimes />
+                        </button>
+                    </div>
+                    <div className="icon-picker-grid">
+                        {iconOptions.map((option, index) => (
+                            <button
+                                key={index}
+                                className="icon-picker-option"
+                                onClick={() => updateDriveIcon(driveIndex, index)}
+                                title={option.name}
+                            >
+                                <option.Icon style={{ color: option.color }} />
+                                <span>{option.name}</span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
+    };
 
     const [quickAccessItems] = useState<QuickAccessItem[]>([
         {
@@ -187,8 +240,8 @@ export const ThisPCView: React.FC<ThisPCViewProps> = ({ viewMode }) => {
     ];
 
     const PieChart: React.FC<{ drive: DriveInfo }> = ({ drive }) => {
-        const radius = 45;
-        const strokeWidth = 12;
+        const radius = 60;
+        const strokeWidth = 16;
         const normalizedRadius = radius - strokeWidth * 2;
         const circumference = normalizedRadius * 2 * Math.PI;
         const strokeDasharray = `${drive.usagePercentage / 100 * circumference} ${circumference}`;
@@ -201,6 +254,7 @@ export const ThisPCView: React.FC<ThisPCViewProps> = ({ viewMode }) => {
                     className="pie-chart"
                     onMouseEnter={() => setSelectedDrive(drive)}
                     onMouseLeave={() => setSelectedDrive(null)}
+                    viewBox={`0 0 ${radius * 2} ${radius * 2}`}
                 >
                     <circle
                         stroke="var(--border-primary)"
@@ -252,6 +306,13 @@ export const ThisPCView: React.FC<ThisPCViewProps> = ({ viewMode }) => {
 
     return (
         <div className="thispc-view">
+            {showIconPicker.show && (
+                <IconPicker 
+                    driveIndex={showIconPicker.driveIndex} 
+                    onClose={() => setShowIconPicker({ driveIndex: -1, show: false })} 
+                />
+            )}
+            
             <div className="thispc-header">
                 <div className="header-content">
                     <FaDesktop className="header-icon" />
@@ -260,23 +321,52 @@ export const ThisPCView: React.FC<ThisPCViewProps> = ({ viewMode }) => {
                         <p>Access your drives, folders, and devices</p>
                     </div>
                 </div>
-                <div className="header-controls">
-                    <button 
-                        className={`view-toggle-btn ${visualizationMode === 'bar' ? 'active' : ''}`}
-                        onClick={() => setVisualizationMode('bar')}
-                        title="Bar visualization"
-                    >
-                        <FaBars />
-                    </button>
-                    <button 
-                        className={`view-toggle-btn ${visualizationMode === 'pie' ? 'active' : ''}`}
-                        onClick={() => setVisualizationMode('pie')}
-                        title="Pie chart visualization"
-                    >
-                        <FaThLarge />
-                    </button>
+                
+                <div className="thispc-controls">
+                    <div className="view-size-controls">
+                        <button
+                            className={`size-btn ${driveViewMode === 'large' ? 'active' : ''}`}
+                            onClick={() => setDriveViewMode('large')}
+                            title="Large icons"
+                        >
+                            <FaThLarge />
+                        </button>
+                        <button
+                            className={`size-btn ${driveViewMode === 'medium' ? 'active' : ''}`}
+                            onClick={() => setDriveViewMode('medium')}
+                            title="Medium icons"
+                        >
+                            <FaBars />
+                        </button>
+                        <button
+                            className={`size-btn ${driveViewMode === 'small' ? 'active' : ''}`}
+                            onClick={() => setDriveViewMode('small')}
+                            title="Small icons"
+                        >
+                            <FaCog />
+                        </button>
+                    </div>
+                    
+                    <div className="header-controls">
+                        <button 
+                            className={`view-toggle-btn ${visualizationMode === 'bar' ? 'active' : ''}`}
+                            onClick={() => setVisualizationMode('bar')}
+                            title="Bar visualization"
+                        >
+                            <FaBars />
+                        </button>
+                        <button 
+                            className={`view-toggle-btn ${visualizationMode === 'pie' ? 'active' : ''}`}
+                            onClick={() => setVisualizationMode('pie')}
+                            title="Pie chart visualization"
+                        >
+                            <FaChartPie />
+                        </button>
+                    </div>
                 </div>
             </div>
+
+            <div className="thispc-content">
 
             {/* Quick Access Section */}
             <div className="quick-access-section">
@@ -308,13 +398,23 @@ export const ThisPCView: React.FC<ThisPCViewProps> = ({ viewMode }) => {
                     <FaHdd className="section-icon" />
                     Devices and drives ({drives.length})
                 </h3>
-                <div className={`drives-container drives-${viewMode}`}>
+                <div className={`drives-container drives-${driveViewMode} drives-scrollable`}>
                     {drives.map((drive, index) => (
                         <div key={index} className={`drive-card ${drive.type} ${drive.status}`}>
                             <div className="drive-header">
                                 <div className="drive-icon-large">
                                     {drive.customIcon || drive.icon}
                                     <div className={`status-dot ${drive.status}`}></div>
+                                    <button 
+                                        className="icon-edit-btn"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setShowIconPicker({ driveIndex: index, show: true });
+                                        }}
+                                        title="Change drive icon"
+                                    >
+                                        <FaCog />
+                                    </button>
                                 </div>
                                 
                                 <div className="drive-info">
@@ -401,6 +501,7 @@ export const ThisPCView: React.FC<ThisPCViewProps> = ({ viewMode }) => {
                         </div>
                     ))}
                 </div>
+            </div>
             </div>
         </div>
     );

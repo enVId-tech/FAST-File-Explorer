@@ -120,6 +120,8 @@ export const RecentsView: React.FC<RecentsViewProps> = ({ viewMode }) => {
                     </div>
                 </div>
                 
+                <div className="recents-content">
+                
                 <div className="recents-grid">
                     {recentFiles.map((file, index) => (
                         <div key={index} className="recent-item-card">
@@ -157,6 +159,7 @@ export const RecentsView: React.FC<RecentsViewProps> = ({ viewMode }) => {
                         </div>
                     ))}
                 </div>
+                </div>
             </div>
         );
     }
@@ -174,10 +177,11 @@ export const RecentsView: React.FC<RecentsViewProps> = ({ viewMode }) => {
                 </div>
             </div>
 
-            <div className="recents-list">
-                <div className="list-header">
-                    <div className="column-header name">Name</div>
-                    <div className="column-header last-opened">Last Opened</div>
+            <div className="recents-content">
+                <div className="recents-list">
+                    <div className="list-header">
+                        <div className="column-header name">Name</div>
+                        <div className="column-header last-opened">Last Opened</div>
                     <div className="column-header size">Size</div>
                     <div className="column-header modified">Date Modified</div>
                     <div className="column-header path">Location</div>
@@ -206,6 +210,7 @@ export const RecentsView: React.FC<RecentsViewProps> = ({ viewMode }) => {
                         <div className="item-path" title={file.path}>{file.path}</div>
                     </div>
                 ))}
+                </div>
             </div>
         </div>
     );
