@@ -2,10 +2,9 @@
 .tab-bar {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-end;
     background: var(--gradient-surface);
-    border-bottom: 1px solid var(--border-color);
-    height: 48px; /* Increased height for better touch targets */
+    height: 44px; /* Increased height for better touch targets */
     -webkit-app-region: drag;
     user-select: none;
     box-shadow: var(--shadow-small);
@@ -20,7 +19,8 @@
     scrollbar-width: none;
     -ms-overflow-style: none;
     min-width: 0;
-    padding: 6px 8px;
+    padding: 0 8px;
+    margin: 0;
 }
 
 .tabs-container::-webkit-scrollbar {

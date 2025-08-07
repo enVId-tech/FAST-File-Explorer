@@ -1,6 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FaFolder, FaFileExcel, FaFilePowerpoint, FaFileWord, FaFileImage, FaFileCode, FaFile, FaCopy, FaCut, FaPaste, FaTrash, FaEdit, FaFolderPlus, FaCog, FaArrowLeft, FaArrowRight, FaArrowUp, FaSearch, FaThLarge, FaBars, FaHdd, FaDesktop, FaDownload, FaMusic, FaVideo, FaFilePdf, FaSortAlphaDown, FaSortAlphaUp, FaSortNumericDown, FaSortNumericUp, FaChevronDown, FaPalette, FaSun, FaMoon, FaWindows } from 'react-icons/fa';
+import { FaFolder, FaFileExcel, FaFilePowerpoint, FaFileWord, FaFileImage, FaFileCode, FaFile, FaCopy, FaCut, FaPaste, FaTrash, FaEdit, FaFolderPlus, FaCog, FaArrowLeft, FaArrowRight, FaArrowUp, FaSearch, FaThLarge, FaBars, FaHdd, FaDesktop, FaDownload, FaMusic, FaVideo, FaFilePdf, FaSortAlphaDown, FaSortAlphaUp, FaSortNumericDown, FaSortNumericUp, FaChevronDown, FaPalette, FaSun, FaMoon, FaWindows, FaClock } from 'react-icons/fa';
 import { DetailsPanel } from './DetailsPanel';
+import { RecentsView } from './RecentsView';
+import { ThisPCView } from './ThisPCView';
+import './RecentsThisPCStyles.scss';
 
 interface FileItem {
     name: string;
@@ -30,6 +33,7 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
     const [sortBy, setSortBy] = useState<'name' | 'size' | 'date' | 'type'>('name');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
     const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+    const [currentView, setCurrentView] = useState<'thispc' | 'recents' | 'folder'>('thispc');
     const settingsRef = useRef<HTMLDivElement>(null);
 
     // Close settings menu when clicking outside
@@ -81,6 +85,16 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
 
     const getCurrentTheme = () => {
         return themes.find(t => t.id === theme) || themes[0];
+    };
+
+    const handleSidebarNavigation = (view: string, itemName: string) => {
+        if (view === 'thispc') {
+            setCurrentView('thispc');
+        } else if (view === 'recents') {
+            setCurrentView('recents');
+        } else {
+            setCurrentView('folder');
+        }
     };
     const fileItems: FileItem[] = [
         { 
@@ -216,17 +230,18 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
         {
             title: 'Quick Access',
             items: [
-                { name: 'Desktop', icon: <FaDesktop />, active: false },
-                { name: 'Downloads', icon: <FaDownload />, active: false },
-                { name: 'Documents', icon: <FaFolder />, active: true },
-                { name: 'Pictures', icon: <FaFileImage />, active: false },
+                { name: 'Recents', icon: <FaClock />, active: currentView === 'recents', view: 'recents' },
+                { name: 'Downloads', icon: <FaDownload />, active: false, view: 'folder' },
+                { name: 'Documents', icon: <FaFolder />, active: currentView === 'folder' && selectedItem?.name === 'Documents', view: 'folder' },
+                { name: 'Pictures', icon: <FaFileImage />, active: false, view: 'folder' },
             ]
         },
         {
             title: 'This PC',
             items: [
-                { name: 'Local Disk (C:)', icon: <FaHdd />, active: false },
-                { name: 'Local Disk (D:)', icon: <FaHdd />, active: false },
+                { name: 'This PC', icon: <FaDesktop />, active: currentView === 'thispc', view: 'thispc' },
+                { name: 'Local Disk (C:)', icon: <FaHdd />, active: false, view: 'folder' },
+                { name: 'Local Disk (D:)', icon: <FaHdd />, active: false, view: 'folder' },
             ]
         }
     ];
@@ -294,9 +309,17 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
                     </div>
                     <div className="address-bar-container">
                         <div className="address-bar">
-                            <span className="path-segment active">This PC</span>
-                            <span className="path-separator">›</span>
-                            <span className="path-segment">Documents</span>
+                            <span className="path-segment active">
+                                {currentView === 'thispc' && 'This PC'}
+                                {currentView === 'recents' && 'Recent Files'}
+                                {currentView === 'folder' && 'This PC'}
+                            </span>
+                            {currentView === 'folder' && (
+                                <>
+                                    <span className="path-separator">›</span>
+                                    <span className="path-segment">Documents</span>
+                                </>
+                            )}
                         </div>
                     </div>
                     <div className="toolbar-section">
@@ -429,6 +452,7 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
                                     <div 
                                         key={itemIndex} 
                                         className={`sidebar-item ${item.active ? 'active' : ''}`}
+                                        onClick={() => handleSidebarNavigation(item.view, item.name)}
                                     >
                                         <span className="sidebar-icon">{item.icon}</span>
                                         {item.name}
@@ -440,54 +464,64 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
 
                     {/* File Area */}
                     <div className="file-area">
-                        <div className="file-list-container">
-                            {viewMode === 'list' ? (
-                                <div className="file-list">
-                                    <div className="file-list-header">
-                                        <div className="header-cell" onClick={() => handleSort('name')}>
-                                            Name {getSortIcon('name')}
+                        {currentView === 'thispc' && (
+                            <ThisPCView viewMode={viewMode} />
+                        )}
+                        
+                        {currentView === 'recents' && (
+                            <RecentsView viewMode={viewMode} />
+                        )}
+                        
+                        {currentView === 'folder' && (
+                            <div className="file-list-container">
+                                {viewMode === 'list' ? (
+                                    <div className="file-list">
+                                        <div className="file-list-header">
+                                            <div className="header-cell" onClick={() => handleSort('name')}>
+                                                Name {getSortIcon('name')}
+                                            </div>
+                                            <div className="header-cell" onClick={() => handleSort('size')}>
+                                                Size {getSortIcon('size')}
+                                            </div>
+                                            <div className="header-cell" onClick={() => handleSort('date')}>
+                                                Date Modified {getSortIcon('date')}
+                                            </div>
+                                            <div className="header-cell" onClick={() => handleSort('type')}>
+                                                Type {getSortIcon('type')}
+                                            </div>
                                         </div>
-                                        <div className="header-cell" onClick={() => handleSort('size')}>
-                                            Size {getSortIcon('size')}
-                                        </div>
-                                        <div className="header-cell" onClick={() => handleSort('date')}>
-                                            Date Modified {getSortIcon('date')}
-                                        </div>
-                                        <div className="header-cell" onClick={() => handleSort('type')}>
-                                            Type {getSortIcon('type')}
-                                        </div>
+                                        {sortedFiles.map((file, index) => (
+                                            <div 
+                                                key={index} 
+                                                className={`file-item ${selectedItem?.name === file.name ? 'selected' : ''}`}
+                                                onClick={() => handleItemClick(file)}
+                                            >
+                                                <div className="file-info">
+                                                    <span className="file-icon">{file.icon}</span>
+                                                    <span className="file-name">{file.name}</span>
+                                                </div>
+                                                <div className="file-size">{file.size || ''}</div>
+                                                <div className="file-date">{file.dateModified}</div>
+                                                <div className="file-type">{file.type === 'folder' ? 'File folder' : 'File'}</div>
+                                            </div>
+                                        ))}
                                     </div>
-                                    {sortedFiles.map((file, index) => (
-                                        <div 
-                                            key={index} 
-                                            className={`file-item ${selectedItem?.name === file.name ? 'selected' : ''}`}
-                                            onClick={() => handleItemClick(file)}
-                                        >
-                                            <div className="file-info">
+                                ) : (
+                                    <div className="file-grid">
+                                        {sortedFiles.map((file, index) => (
+                                            <div 
+                                                key={index} 
+                                                className={`file-item ${selectedItem?.name === file.name ? 'selected' : ''}`}
+                                                onClick={() => handleItemClick(file)}
+                                            >
                                                 <span className="file-icon">{file.icon}</span>
                                                 <span className="file-name">{file.name}</span>
                                             </div>
-                                            <div className="file-size">{file.size || ''}</div>
-                                            <div className="file-date">{file.dateModified}</div>
-                                            <div className="file-type">{file.type === 'folder' ? 'File folder' : 'File'}</div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="file-grid">
-                                    {sortedFiles.map((file, index) => (
-                                        <div 
-                                            key={index} 
-                                            className={`file-item ${selectedItem?.name === file.name ? 'selected' : ''}`}
-                                            onClick={() => handleItemClick(file)}
-                                        >
-                                            <span className="file-icon">{file.icon}</span>
-                                            <span className="file-name">{file.name}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     {/* Details Panel */}

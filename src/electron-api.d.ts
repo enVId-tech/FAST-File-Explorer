@@ -28,6 +28,7 @@ declare global {
         getDirectory: (folderPath: string) => Promise<{folderName: string, name: string}[]>;
         getMetadata: (dataPath: string) => Promise<{folderName: string, name: string} | null>;
         getDrives: () => Promise<{name: string, path: string}[]>;
+        getRecentFiles: () => Promise<{name: string, path: string, lastOpened: string, size?: string}[]>;
       }
     };
   }
