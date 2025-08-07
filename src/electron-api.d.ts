@@ -10,15 +10,31 @@ declare global {
         close: () => Promise<void>;
       };
       // Tab management
-      tabAdd: (url: string) => Promise<{id: string, title: string, url: string} | null>;
-      tabSwitch: (tabId: string) => Promise<{id: string, title: string, url: string} | null>;
-      tabClose: (tabId: string) => Promise<{id: string, title: string, url: string}[]>;
-      tabGetActive: () => Promise<{id: string, title: string, url: string} | null>;
-      tabGetAll: () => Promise<{id: string, title: string, url: string}[]>;
-      tabNavigate: (tabId: string, url: string) => Promise<boolean>;
-      tabReload: (tabId: string) => Promise<boolean>;
-      tabGoBack: (tabId: string) => Promise<boolean>;
-      tabGoForward: (tabId: string) => Promise<boolean>;
+      tab: {
+        add: (url: string) => Promise<{id: string, title: string, url: string} | null>;
+        switch: (tabId: string) => Promise<{id: string, title: string, url: string} | null>;
+        close: (tabId: string) => Promise<{id: string, title: string, url: string}[]>;
+        getActive: () => Promise<{id: string, title: string, url: string} | null>;
+        getAll: () => Promise<{id: string, title: string, url: string}[]>;
+        navigate: (tabId: string, url: string) => Promise<boolean>;
+        reload: (tabId: string) => Promise<boolean>;
+        goBack: (tabId: string) => Promise<boolean>;
+        goForward: (tabId: string) => Promise<boolean>;
+      },
+      folders: {
+        create: (name: string) => Promise<string | null>;
+        delete: (id: string) => Promise<boolean>;
+        rename: (id: string, newName: string) => Promise<boolean>;
+        getAll: (folderPath: string) => Promise<{folderName: string, name: string}[]>;
+        get: (folderName: string) => Promise<{folderName: string, name: string} | null>;
+      }
+      files: {
+        create: (name: string, content: string) => Promise<string | null>;
+        delete: (id: string) => Promise<boolean>;
+        rename: (id: string, newName: string) => Promise<boolean>;
+        getAll: () => Promise<{id: string, name: string}[]>;
+        get: (id: string) => Promise<{id: string, name: string} | null>;
+      }
     };
   }
 }

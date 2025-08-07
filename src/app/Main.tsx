@@ -130,6 +130,26 @@ export default function Main(): React.JSX.Element {
         // }
     };
 
+    const getFolderMetadata = async (folderPath: string) => {
+        try {
+            const metadata = await window.electronAPI?.folders.get(folderPath);
+            return metadata;
+        } catch (error) {
+            console.error('Failed to get folder metadata:', error);
+            return null;
+        }
+    };
+
+    const getChildrenFolders = async (folderPath: string) => {
+        try {
+            const folders = await window.electronAPI?.folders.getAll(folderPath);
+            return folders;
+        } catch (error) {
+            console.error('Failed to get child folders:', error);
+            return [];
+        }
+    };
+
     useEffect(() => {
         const handleKeydown = (event: KeyboardEvent) => {
             if (event.key === 't' && (event.ctrlKey || event.metaKey)) {
@@ -150,6 +170,17 @@ export default function Main(): React.JSX.Element {
             window.removeEventListener('keydown', handleKeydown);
         };
     }, [activeTabId, tabs.length]); // Include dependencies to ensure current state is used
+
+    useEffect(() => {
+        // Use the documents folder as a placeholder path to test functionality
+        getFolderMetadata('C:\\Users\\theli\\Documents').then(metadata => {
+            console.log('Folder metadata:', metadata);
+        });
+
+        getChildrenFolders('C:\\Users\\theli\\Documents').then(folders => {
+            console.log('Child folders:', folders);
+        });
+    }, []);
 
     return (
         <div className="file-explorer">
