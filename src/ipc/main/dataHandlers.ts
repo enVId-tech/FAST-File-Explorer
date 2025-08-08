@@ -3,6 +3,30 @@ import path from 'path';
 import drivelist from 'drivelist';
 import fs from 'fs';
 import os from 'os';
+import nodeDiskInfo from 'node-disk-info';
+
+type DriveDetails = {
+    driveName: string;
+    drivePath: string;
+    available: number;
+    used: number;
+    total: number;
+    percentageUsed: string;
+    busType?: string;
+    description?: string;
+    isSystem?: boolean;
+    flags?: {
+        isCard: boolean;
+        isReadOnly: boolean;
+        isRemovable: boolean;
+        isSCSI: boolean;
+        isSystem: boolean;
+        isUSB: boolean;
+        isVirtual: boolean;
+    };
+    partitionType?: "mbr" | "gpt" | null | undefined;
+    logicalBlockSize?: number;
+};
 
 async function getDataPath(dataName: string): Promise<string> {
     return path.join(os.homedir(), dataName);
@@ -96,11 +120,54 @@ export default function initializeDataHandlers() {
         return getMetadata(folderPath);
     });
 
+    // Get drive information
     ipcMain.handle('data-get-drives', async () => {
         console.log('Fetching available drives...');
         const drives = await drivelist.list();
-        console.log('Available drives:', drives);
-        return drives;
+        const diskInfo = await nodeDiskInfo.getDiskInfo();
+        // console.log('Available drives:', drives);
+
+        const driveDetails: DriveDetails[] = [];
+
+        // Iterate through each drive and find its disk information
+        // Check for matching drive and disk information, and then get data from matched index
+        Object.values(diskInfo).forEach((disk) => {
+            let details: DriveDetails = {
+                driveName: disk.filesystem,
+                drivePath: disk.mounted,
+                available: disk.available,
+                used: disk.used,
+                total: disk.blocks,
+                percentageUsed: disk.capacity,
+            }
+
+            // Match drive information with disk information
+            // Push matched details to driveDetails array
+            drives.forEach((drive) => {
+                if (drive.mountpoints[0]?.path.includes(disk.mounted)) {
+                    details = {
+                        ...details,
+                        busType: drive.busType === "INVALID" ? "NVMe" : drive.busType,
+                        description: drive.description,
+                        isSystem: drive.isSystem,
+                        flags: {
+                            isCard: drive.isCard ?? false,
+                            isReadOnly: drive.isReadOnly ?? false,
+                            isRemovable: drive.isRemovable ?? false,
+                            isSCSI: drive.isSCSI ?? false,
+                            isSystem: drive.isSystem ?? false,
+                            isUSB: drive.isUSB ?? false,
+                            isVirtual: drive.isVirtual ?? false
+                        },
+                        partitionType: drive.partitionTableType,
+                        logicalBlockSize: drive.logicalBlockSize
+                    };
+                }
+            });
+
+            driveDetails.push(details);
+        });
+        return { driveDetails };
     });
 
     console.log('Folder handlers registered successfully');
