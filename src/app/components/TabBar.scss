@@ -1,4 +1,6 @@
 /* Modern Tab Bar Styles with Theme Support */
+@import './TabBar.themes.scss';
+
 .tab-bar {
     display: flex;
     justify-content: space-between;
@@ -9,6 +11,7 @@
     user-select: none;
     box-shadow: var(--shadow-small);
     backdrop-filter: blur(10px);
+    position: relative;
 }
 
 .tabs-container {
@@ -21,6 +24,8 @@
     min-width: 0;
     padding: 0 8px;
     margin: 0;
+    overscroll-behavior-x: contain;
+    scroll-behavior: smooth;
 }
 
 .tabs-container::-webkit-scrollbar {
@@ -182,9 +187,33 @@
 /* Override for tabs container when overflowing */
 .tabs-container.overflowing {
     overflow-x: auto;
+    scroll-behavior: smooth;
     
     .tab.overflow {
         flex-shrink: 0;
+    }
+
+    /* subtle gradient fades at edges for better UX */
+    mask-image: linear-gradient(to right, transparent 0, black 20px, black calc(100% - 20px), transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0, black 20px, black calc(100% - 20px), transparent 100%);
+    padding-left: 32px;  /* room for left scroll button */
+    padding-right: 32px; /* room for right scroll button */
+    
+    /* Hide scrollbar but keep scrolling functionality */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    
+    &::-webkit-scrollbar {
+        display: none;
+    }
+    
+    /* Smooth scrolling on all platforms */
+    scroll-behavior: smooth;
+    
+    /* Ensure tabs don't shrink when overflowing */
+    .tab {
+        flex-shrink: 0;
+        min-width: 56px; /* Ensure minimum clickable area */
     }
 }
 
@@ -195,7 +224,7 @@
     width: 20px;
     height: 20px;
     border: none;
-    background: var(--hover-bg);
+    background: transparent; /* quieter by default */
     border-radius: 50%;
     cursor: pointer;
     color: var(--text-secondary);
@@ -204,11 +233,19 @@
     opacity: 1;
     flex-shrink: 0;
     
+    svg {
+        color: var(--text-secondary); /* Ensure SVG inherits proper color */
+    }
+    
     &:hover {
         background: #ef4444;
-        color: white;
+        color: var(--text-primary); /* light gray, not pure white */
         transform: scale(1.1);
         box-shadow: var(--shadow-small);
+        
+        svg {
+            color: #ffffff; /* Only white on hover for close button */
+        }
     }
     
     &:active {
@@ -218,7 +255,7 @@
 
 .tab:hover .tab-close-button {
     opacity: 1;
-    background: var(--secondary-bg);
+    background: var(--hover-bg);
 }
 
 .tab-icon {
@@ -250,11 +287,19 @@
     -webkit-app-region: no-drag;
     box-shadow: var(--shadow-small);
     
+    svg { 
+        color: var(--text-secondary); /* Ensure SVG inherits proper color */
+    }
+    
     &:hover {
         background: var(--hover-bg);
-        color: var(--accent-color);
+        color: var(--accent-color); /* accent, not white */
         transform: translateY(-1px);
         box-shadow: var(--shadow-medium);
+        
+        svg {
+            color: var(--accent-color); /* accent color on hover */
+        }
     }
     
     &:active {
@@ -284,18 +329,127 @@
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     border-radius: 6px;
     
+    svg {
+        color: var(--text-secondary); /* Ensure SVG inherits proper color */
+    }
+    
     &:hover {
         background: var(--hover-bg);
-        color: var(--text-primary);
+        color: var(--accent-color); /* accent not white */
+        
+        svg {
+            color: var(--accent-color); /* accent color on hover */
+        }
     }
     
     &.close:hover {
         background: #e74c3c;
-        color: white;
+        color: var(--text-primary); /* light gray, not pure white */
+        
+        svg {
+            color: #ffffff; /* Only white on close button hover */
+        }
     }
     
     &:active {
         transform: scale(0.95);
+    }
+}
+
+/* Tabs scroll buttons - Enhanced for better usability */
+.tabs-scroll-button {
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    width: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-color);
+    background: var(--secondary-bg);
+    color: var(--text-secondary);
+    border-radius: 6px;
+    -webkit-app-region: no-drag;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 10;
+    font-size: 14px;
+    font-weight: bold;
+    box-shadow: var(--shadow-small);
+
+    svg {
+        color: var(--text-secondary);
+    }
+
+    &:hover {
+        background: var(--hover-bg);
+        color: var(--accent-color);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-medium);
+        border-color: var(--accent-color);
+        
+        svg {
+            color: var(--accent-color);
+        }
+    }
+
+    &:active {
+        transform: translateY(0);
+        box-shadow: var(--shadow-small);
+    }
+
+    &.left { 
+        left: 2px; 
+    }
+    
+    &.right { 
+        right: 2px; 
+    }
+    
+    /* Ensure scroll buttons are always visible and accessible */
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Ensure icons in dark modes never appear pure white unless intended */
+[data-theme="win11-dark"], [data-theme="win10-dark"] {
+    .tab-close-button,
+    .new-tab-button,
+    .control-button {
+        svg {
+            color: var(--text-secondary);
+            filter: none;
+        }
+        
+        &:hover svg {
+            color: var(--accent-color);
+        }
+    }
+    
+    /* Exception: Close buttons should be white when hovered */
+    .tab-close-button:hover svg,
+    .control-button.close:hover svg {
+        color: #ffffff !important;
+    }
+    
+    /* Scroll buttons follow same pattern */
+    .tabs-scroll-button {
+        svg {
+            color: var(--text-secondary);
+        }
+        
+        &:hover svg {
+            color: var(--accent-color);
+        }
+    }
+    
+    /* Tab icons should also follow the theme */
+    .tab-icon {
+        color: var(--text-secondary);
+    }
+    
+    .tab.active .tab-icon {
+        color: var(--accent-color);
     }
 }
 

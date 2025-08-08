@@ -3,6 +3,7 @@ import { FaFolder, FaFileExcel, FaFilePowerpoint, FaFileWord, FaFileImage, FaFil
 import { DetailsPanel } from './DetailsPanel';
 import { RecentsView } from './RecentsView';
 import { ThisPCView } from './ThisPCView';
+import { Theme } from './ThemeSelector';
 import './RecentsThisPCStyles.scss';
 
 interface FileItem {
@@ -23,8 +24,8 @@ interface TabContentProps {
     isActive: boolean;
     viewMode: string;
     setViewMode: (mode: string) => void;
-    theme: 'default' | 'win11-dark' | 'win10-light' | 'win10-dark';
-    setTheme: (theme: 'default' | 'win11-dark' | 'win10-light' | 'win10-dark') => void;
+    theme: Theme;
+    setTheme: (theme: Theme) => void;
 }
 
 export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMode, setViewMode, theme, setTheme }) => {
@@ -34,7 +35,7 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
     const [showSettingsMenu, setShowSettingsMenu] = useState(false);
     const [currentView, setCurrentView] = useState<'thispc' | 'recents' | 'folder'>('thispc');
-    const [activeRibbonTab, setActiveRibbonTab] = useState<'home' | 'share' | 'view'>('home');
+    const [activeRibbonTab, setActiveRibbonTab] = useState<'home' | 'share' | 'view' | 'manage' | 'organize' | 'tools' | 'help'>('home');
     const settingsRef = useRef<HTMLDivElement>(null);
 
     // Close settings menu when clicking outside
@@ -54,7 +55,7 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
     // Theme configuration
     const themes = [
         {
-            id: 'default' as const,
+            id: 'win11-light' as const,
             name: 'Windows 11 Light',
             description: 'Modern Windows 11 design',
             icon: <FaWindows />
@@ -76,10 +77,34 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
             name: 'Windows 10 Dark',
             description: 'Windows 10 with dark theme',
             icon: <FaMoon />
+        },
+        {
+            id: 'cyberpunk' as const,
+            name: 'Cyberpunk',
+            description: 'Neon-lit futuristic dark theme',
+            icon: <FaPalette />
+        },
+        {
+            id: 'retro' as const,
+            name: 'Retro',
+            description: '80s/90s nostalgic computing',
+            icon: <FaClock />
+        },
+        {
+            id: 'futuristic' as const,
+            name: 'Futuristic',
+            description: 'Clean sci-fi aesthetic',
+            icon: <FaDesktop />
+        },
+        {
+            id: 'nature' as const,
+            name: 'Nature',
+            description: 'Organic, earthy tones',
+            icon: <FaSun />
         }
     ];
 
-    const handleThemeChange = (newTheme: typeof theme) => {
+    const handleThemeChange = (newTheme: Theme) => {
         setTheme(newTheme);
         setShowSettingsMenu(false);
     };
@@ -393,9 +418,30 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
                         >
                             View
                         </span>
-                        {(theme === 'win10-light' || theme === 'win10-dark') && (
-                            <span className="ribbon-tab">Manage</span>
-                        )}
+                        <span 
+                            className={`ribbon-tab ${activeRibbonTab === 'manage' ? 'active' : ''}`}
+                            onClick={() => setActiveRibbonTab('manage')}
+                        >
+                            Manage
+                        </span>
+                        <span 
+                            className={`ribbon-tab ${activeRibbonTab === 'organize' ? 'active' : ''}`}
+                            onClick={() => setActiveRibbonTab('organize')}
+                        >
+                            Organize
+                        </span>
+                        <span 
+                            className={`ribbon-tab ${activeRibbonTab === 'tools' ? 'active' : ''}`}
+                            onClick={() => setActiveRibbonTab('tools')}
+                        >
+                            Tools
+                        </span>
+                        <span 
+                            className={`ribbon-tab ${activeRibbonTab === 'help' ? 'active' : ''}`}
+                            onClick={() => setActiveRibbonTab('help')}
+                        >
+                            Help
+                        </span>
                     </div>
                     <div className="ribbon-content">
                         {activeRibbonTab === 'home' && (
@@ -512,6 +558,106 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
                                     <button className="ribbon-button">
                                         <div className="ribbon-icon"><FaFile /></div>
                                         <span>File extensions</span>
+                                    </button>
+                                </div>
+                            </>
+                        )}
+
+                        {activeRibbonTab === 'manage' && (
+                            <>
+                                <div className="ribbon-group">
+                                    <div className="ribbon-group-label">Devices</div>
+                                    <button className="ribbon-button">
+                                        <div className="ribbon-icon"><FaHdd /></div>
+                                        <span>Disk Manager</span>
+                                    </button>
+                                    <button className="ribbon-button">
+                                        <div className="ribbon-icon"><FaDesktop /></div>
+                                        <span>Open This PC</span>
+                                    </button>
+                                </div>
+                                <div className="ribbon-group">
+                                    <div className="ribbon-group-label">Maintenance</div>
+                                    <button className="ribbon-button">
+                                        <div className="ribbon-icon"><FaCog /></div>
+                                        <span>Optimize</span>
+                                    </button>
+                                    <button className="ribbon-button">
+                                        <div className="ribbon-icon"><FaCog /></div>
+                                        <span>Cleanup</span>
+                                    </button>
+                                </div>
+                            </>
+                        )}
+
+                        {activeRibbonTab === 'organize' && (
+                            <>
+                                <div className="ribbon-group">
+                                    <div className="ribbon-group-label">Sort</div>
+                                    <button className="ribbon-button" onClick={() => setSortBy('name')}>
+                                        <div className="ribbon-icon"><FaSortAlphaDown /></div>
+                                        <span>By name</span>
+                                    </button>
+                                    <button className="ribbon-button" onClick={() => setSortBy('date')}>
+                                        <div className="ribbon-icon"><FaSortNumericDown /></div>
+                                        <span>By date</span>
+                                    </button>
+                                </div>
+                                <div className="ribbon-group">
+                                    <div className="ribbon-group-label">Layout</div>
+                                    <button className="ribbon-button" onClick={() => setViewMode('grid')}>
+                                        <div className="ribbon-icon"><FaThLarge /></div>
+                                        <span>Icons</span>
+                                    </button>
+                                    <button className="ribbon-button" onClick={() => setViewMode('list')}>
+                                        <div className="ribbon-icon"><FaBars /></div>
+                                        <span>Details</span>
+                                    </button>
+                                </div>
+                            </>
+                        )}
+
+                        {activeRibbonTab === 'tools' && (
+                            <>
+                                <div className="ribbon-group">
+                                    <div className="ribbon-group-label">Utilities</div>
+                                    <button className="ribbon-button">
+                                        <div className="ribbon-icon"><FaCog /></div>
+                                        <span>Options</span>
+                                    </button>
+                                    <button className="ribbon-button">
+                                        <div className="ribbon-icon"><FaCog /></div>
+                                        <span>Batch Ops</span>
+                                    </button>
+                                </div>
+                                <div className="ribbon-group">
+                                    <div className="ribbon-group-label">Advanced</div>
+                                    <button className="ribbon-button">
+                                        <div className="ribbon-icon"><FaInfoCircle /></div>
+                                        <span>Logs</span>
+                                    </button>
+                                </div>
+                            </>
+                        )}
+
+                        {activeRibbonTab === 'help' && (
+                            <>
+                                <div className="ribbon-group">
+                                    <div className="ribbon-group-label">Support</div>
+                                    <button className="ribbon-button">
+                                        <div className="ribbon-icon"><FaInfoCircle /></div>
+                                        <span>About</span>
+                                    </button>
+                                    <button className="ribbon-button">
+                                        <div className="ribbon-icon"><FaInfoCircle /></div>
+                                        <span>Shortcuts</span>
+                                    </button>
+                                </div>
+                                <div className="ribbon-group">
+                                    <div className="ribbon-group-label">Updates</div>
+                                    <button className="ribbon-button">
+                                        <div className="ribbon-icon"><FaInfoCircle /></div>
+                                        <span>Check updates</span>
                                     </button>
                                 </div>
                             </>

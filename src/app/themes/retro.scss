@@ -1,0 +1,130 @@
+// Retro Theme - 80s/90s nostalgic computing aesthetic
+[data-theme="retro"] {
+  // Base surfaces (warm beiges and browns)
+  --primary-bg: #f4f1e8;     // cream/beige background
+  --secondary-bg: #ebe6d3;   // slightly darker cream
+  --surface-bg: #e0d9c7;     // warm elevated surfaces
+
+  // Semantic aliases
+  --bg-primary: var(--primary-bg);
+  --bg-secondary: var(--secondary-bg);
+  --bg-tertiary: var(--surface-bg);
+  --bg-hover: #d6ccb8;       // darker on hover
+
+  // Accent (retro orange/amber)
+  --accent-color: #ff6b35;    // retro orange
+  --accent-primary: #ff6b35;
+  --accent-hover: #ff8555;    // lighter orange
+  --accent-active: #e55a2b;   // darker orange
+  --accent-secondary: #ffb627; // amber yellow
+
+  // Text (dark browns for readability)
+  --text-primary: #2d1810;    // dark brown
+  --text-secondary: #4a3426;  // medium brown
+  --text-tertiary: #6b4d3a;   // light brown
+
+  // Borders (subtle browns)
+  --border-color: #c4b5a0;    // light brown
+  --border-primary: #c4b5a0;
+  --border-secondary: #b8a588;
+  --border-hover: #a6966d;    // darker on hover
+
+  // Selection & shadows (warm tones)
+  --selection-bg: rgba(255, 107, 53, 0.2);
+  --selection-border: #ff6b35;
+  --shadow-small: 0 2px 4px rgba(45, 24, 16, 0.1);
+  --shadow-medium: 0 4px 12px rgba(45, 24, 16, 0.08);
+  --shadow-large: 0 8px 24px rgba(45, 24, 16, 0.12);
+
+  // Gradients (retro style)
+  --gradient-primary: linear-gradient(135deg, #f4f1e8 0%, #ebe6d3 100%);
+  --gradient-accent: linear-gradient(135deg, #ff6b35 0%, #ffb627 100%);
+  --gradient-surface: linear-gradient(180deg, #e0d9c7 0%, #ebe6d3 100%);
+  --gradient-retro: linear-gradient(45deg, #ff6b35, #ffb627, #ff6b35);
+
+  // Status bar (retro style)
+  --status-bg: rgba(235, 230, 211, 0.95);
+  --status-border: rgba(196, 181, 160, 0.8);
+  --status-text: #2d1810;
+  .status-bar {
+    display: flex;
+    background: var(--status-bg);
+    border-top: 1px solid var(--status-border);
+    color: var(--status-text);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    font-family: 'Courier New', monospace; // Retro monospace font
+
+    .status-item { 
+      color: var(--status-text);
+      font-weight: 500;
+    }
+  }
+
+  // Retro styling overrides
+  .file-explorer {
+    font-family: 'Segoe UI', 'Arial', sans-serif;
+  }
+
+  .tab-bar {
+    background: var(--gradient-surface);
+    border-bottom: 2px solid var(--accent-color);
+  }
+
+  .tab {
+    border-radius: 0; // Sharp corners for retro look
+    border: 1px solid var(--border-color);
+    
+    &.active {
+      border-color: var(--accent-color);
+      background: var(--accent-color);
+      color: white;
+      
+      .tab-title {
+        color: white;
+        font-weight: bold;
+      }
+      
+      .tab-icon {
+        color: white;
+      }
+    }
+  }
+
+  // Retro button styling
+  .new-tab-button,
+  .control-button {
+    border-radius: 0; // Sharp corners
+    border: 1px solid var(--border-color);
+    
+    &:hover {
+      background: var(--accent-color);
+      color: white;
+      border-color: var(--accent-color);
+    }
+  }
+
+  // Retro scrollbars
+  ::-webkit-scrollbar {
+    width: 16px;
+    height: 16px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--border-color);
+    border: 1px inset var(--bg-secondary);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--accent-color);
+    border: 1px outset var(--accent-color);
+    
+    &:hover {
+      background: var(--accent-hover);
+    }
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: var(--border-color);
+  }
+}

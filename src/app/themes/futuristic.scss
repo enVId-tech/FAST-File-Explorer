@@ -1,0 +1,183 @@
+// Futuristic Theme - Clean, minimal sci-fi aesthetic
+[data-theme="futuristic"] {
+  // Base surfaces (cool blues and whites)
+  --primary-bg: #0d1117;     // deep space dark
+  --secondary-bg: #161b22;   // darker panels
+  --surface-bg: #21262d;     // elevated surfaces
+
+  // Semantic aliases
+  --bg-primary: var(--primary-bg);
+  --bg-secondary: var(--secondary-bg);
+  --bg-tertiary: var(--surface-bg);
+  --bg-hover: #30363d;       // lighter hover
+
+  // Accent (electric blue/teal)
+  --accent-color: #58a6ff;    // bright blue
+  --accent-primary: #58a6ff;
+  --accent-hover: #79c0ff;    // lighter blue
+  --accent-active: #388bfd;   // darker blue
+  --accent-secondary: #7c3aed; // purple accent
+
+  // Text (clean whites and blues)
+  --text-primary: #f0f6fc;    // near white
+  --text-secondary: #8b949e;  // muted gray
+  --text-tertiary: #6e7681;   // darker gray
+
+  // Borders (subtle with glow)
+  --border-color: #30363d;    // dark border
+  --border-primary: #30363d;
+  --border-secondary: #21262d;
+  --border-hover: #58a6ff;    // glowing border on hover
+  --border-accent: #58a6ff;
+
+  // Selection & shadows (futuristic glow)
+  --selection-bg: rgba(88, 166, 255, 0.15);
+  --selection-border: #58a6ff;
+  --shadow-small: 0 1px 8px rgba(88, 166, 255, 0.1);
+  --shadow-medium: 0 4px 16px rgba(88, 166, 255, 0.08);
+  --shadow-large: 0 8px 32px rgba(88, 166, 255, 0.12);
+  --shadow-glow: 0 0 16px rgba(88, 166, 255, 0.3);
+
+  // Gradients (futuristic style)
+  --gradient-primary: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #21262d 100%);
+  --gradient-accent: linear-gradient(135deg, #58a6ff 0%, #7c3aed 100%);
+  --gradient-surface: linear-gradient(180deg, #21262d 0%, #161b22 100%);
+  --gradient-hologram: linear-gradient(45deg, #58a6ff, #7c3aed, #58a6ff);
+
+  // Status bar (futuristic glass effect)
+  --status-bg: rgba(13, 17, 23, 0.85);
+  --status-border: rgba(88, 166, 255, 0.2);
+  --status-text: #8b949e;
+  .status-bar {
+    display: flex;
+    background: var(--status-bg);
+    border-top: 1px solid var(--status-border);
+    color: var(--status-text);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    position: relative;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--gradient-accent);
+      opacity: 0.6;
+    }
+
+    .status-item { 
+      color: var(--status-text);
+      font-weight: 300;
+      letter-spacing: 0.5px;
+    }
+  }
+
+  // Futuristic effects
+  .tab-bar {
+    background: var(--gradient-surface);
+    position: relative;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--gradient-accent);
+      opacity: 0.3;
+    }
+  }
+
+  .tab {
+    border: 1px solid transparent;
+    border-radius: 12px 12px 0 0;
+    position: relative;
+    overflow: hidden;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 100%;
+      background: var(--gradient-accent);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: -1;
+    }
+    
+    &:hover::before {
+      opacity: 0.1;
+    }
+    
+    &.active {
+      border-color: var(--accent-color);
+      box-shadow: var(--shadow-glow);
+      
+      &::before {
+        opacity: 0.15;
+      }
+      
+      .tab-title {
+        color: var(--accent-color);
+        text-shadow: 0 0 8px rgba(88, 166, 255, 0.3);
+      }
+    }
+  }
+
+  // Futuristic buttons
+  .new-tab-button,
+  .control-button {
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    
+    &:hover {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 12px rgba(88, 166, 255, 0.2);
+      transform: translateY(-1px);
+    }
+  }
+
+  // Holographic scrollbars
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--gradient-accent);
+    border-radius: 3px;
+    box-shadow: 0 0 6px rgba(88, 166, 255, 0.3);
+    
+    &:hover {
+      box-shadow: 0 0 12px rgba(88, 166, 255, 0.5);
+    }
+  }
+
+  // Typography enhancements
+  .file-explorer {
+    font-weight: 300;
+    letter-spacing: 0.3px;
+  }
+
+  // Glow animations
+  @keyframes futuristic-pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+  }
+
+  .accent-element {
+    animation: futuristic-pulse 2s ease-in-out infinite;
+  }
+}

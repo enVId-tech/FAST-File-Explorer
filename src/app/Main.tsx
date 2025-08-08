@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import './main.scss';
 import './components/TabBar.scss';
+import './components/ThemeSelector.scss';
 import { handleMinimize, handleMaximize, handleClose } from './components/window_handlers/handlers';
 import { TabBar } from './components/TabBar';
 import { TabContent } from './components/TabContent';
+import { ThemeSelector, Theme } from './components/ThemeSelector';
 
 interface Tab {
     id: string;
@@ -16,7 +18,8 @@ export default function Main(): React.JSX.Element {
     const [currentPath, setCurrentPath] = useState('This PC > Documents');
     const [viewMode, setViewMode] = useState('list');
     const [isMaximized, setIsMaximized] = useState(false);
-    const [theme, setTheme] = useState<'default' | 'win11-dark' | 'win10-light' | 'win10-dark'>('default');
+    const [theme, setTheme] = useState<Theme>('win11-light'); // Updated to use new Theme type
+    const [isThemeSelectorOpen, setIsThemeSelectorOpen] = useState(false);
     const [tabs, setTabs] = useState<Tab[]>([
         { id: 'tab-1', title: 'This PC', url: 'home', isActive: true },
     ]);
@@ -27,13 +30,29 @@ export default function Main(): React.JSX.Element {
         document.documentElement.setAttribute('data-theme', theme);
     }, [theme]);
 
+    // Close theme selector when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (isThemeSelectorOpen && !(event.target as Element)?.closest('.theme-selector')) {
+                setIsThemeSelectorOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isThemeSelectorOpen]);
+
     const getThemeDisplayName = () => {
         switch (theme) {
-            case 'default': return 'Windows 11 Light';
+            case 'win11-light': return 'Windows 11 Light';
             case 'win11-dark': return 'Windows 11 Dark';
             case 'win10-light': return 'Windows 10 Light';
             case 'win10-dark': return 'Windows 10 Dark';
-            default: return 'Default';
+            case 'cyberpunk': return 'Cyberpunk';
+            case 'retro': return 'Retro';
+            case 'futuristic': return 'Futuristic';
+            case 'nature': return 'Nature';
+            default: return 'Windows 11 Light';
         }
     };
 
@@ -203,12 +222,14 @@ export default function Main(): React.JSX.Element {
                 tabs={tabs}
                 activeTabId={activeTabId}
                 isMaximized={isMaximized}
+                currentTheme={theme}
                 onTabSelect={handleTabSelect}
                 onTabClose={handleTabClose}
                 onNewTab={handleNewTab}
                 onMinimize={minimize}
                 onMaximize={maximize}
                 onClose={close}
+                onThemeChange={setTheme}
             />
 
             {/* Render content for each tab */}

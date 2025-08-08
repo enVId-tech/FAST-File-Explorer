@@ -1,0 +1,84 @@
+// Cyberpunk Theme - Neon-inspired futuristic dark theme
+[data-theme="cyberpunk"] {
+  // Base surfaces (dark with neon accents)
+  --primary-bg: #0a0a0f;     // deep dark background
+  --secondary-bg: #121218;   // panels with slight purple tint
+  --surface-bg: #1a1a28;     // elevated surfaces
+
+  // Semantic aliases
+  --bg-primary: var(--primary-bg);
+  --bg-secondary: var(--secondary-bg);
+  --bg-tertiary: var(--surface-bg);
+  --bg-hover: #262640;       // purple-tinted hover
+
+  // Accent (neon cyan/purple)
+  --accent-color: #00ffff;    // bright cyan
+  --accent-primary: #00ffff;
+  --accent-hover: #66ffff;    // lighter cyan
+  --accent-active: #00cccc;   // darker cyan
+  --accent-secondary: #ff00ff; // neon magenta for variety
+
+  // Text (bright, high contrast)
+  --text-primary: #ffffff;    // pure white
+  --text-secondary: #ccccff;  // light purple tint
+  --text-tertiary: #9999cc;   // muted purple
+
+  // Borders (neon glow effect)
+  --border-color: #333366;    // dark purple
+  --border-primary: #333366;
+  --border-secondary: #444488;
+  --border-hover: #5555aa;    // brighter on hover
+  --border-accent: #00ffff;   // cyan for active elements
+
+  // Selection & shadows (glowing effects)
+  --selection-bg: rgba(0, 255, 255, 0.2);
+  --selection-border: #00ffff;
+  --shadow-small: 0 0 5px rgba(0, 255, 255, 0.3);
+  --shadow-medium: 0 0 15px rgba(0, 255, 255, 0.2);
+  --shadow-large: 0 0 30px rgba(0, 255, 255, 0.1);
+  --shadow-glow: 0 0 20px rgba(0, 255, 255, 0.4);
+
+  // Gradients (cyberpunk style)
+  --gradient-primary: linear-gradient(135deg, #0a0a0f 0%, #121218 50%, #1a1a28 100%);
+  --gradient-accent: linear-gradient(135deg, #00ffff 0%, #ff00ff 100%);
+  --gradient-surface: linear-gradient(180deg, #1a1a28 0%, #121218 100%);
+  --gradient-neon: linear-gradient(45deg, #00ffff, #ff00ff, #00ffff);
+
+  // Status bar (glowing translucent)
+  --status-bg: rgba(10, 10, 15, 0.9);
+  --status-border: rgba(0, 255, 255, 0.3);
+  --status-text: #ccccff;
+  .status-bar {
+    display: flex;
+    background: var(--status-bg);
+    border-top: 1px solid var(--status-border);
+    color: var(--status-text);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+
+    .status-item { 
+      color: var(--status-text);
+      text-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
+    }
+  }
+
+  // Special cyberpunk effects
+  .tab-bar {
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.1);
+  }
+
+  .tab.active::before {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .accent-glow {
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+  }
+
+  // Scrollbars
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(45deg, #00ffff, #ff00ff);
+    box-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
+  }
+}

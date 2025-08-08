@@ -1,0 +1,270 @@
+/* Theme Selector Styles */
+.theme-selector {
+  position: relative;
+  display: inline-block;
+  z-index: 1000;
+}
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: var(--secondary-bg);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  -webkit-app-region: no-drag;
+  box-shadow: var(--shadow-small);
+  
+  &:hover {
+    background: var(--hover-bg);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-medium);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.theme-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: var(--secondary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: var(--shadow-large);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  min-width: 300px;
+  max-height: 400px;
+  overflow: hidden;
+  animation: theme-dropdown-enter 0.2s ease-out;
+  -webkit-app-region: no-drag;
+}
+
+.theme-dropdown-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--gradient-surface);
+  
+  h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+}
+
+.theme-options {
+  padding: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+  
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+    
+    &:hover {
+      background: var(--border-hover);
+    }
+  }
+}
+
+.theme-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  
+  &:hover {
+    background: var(--hover-bg);
+    transform: translateX(4px);
+  }
+  
+  &.active {
+    background: var(--selection-bg);
+    border: 1px solid var(--selection-border);
+    
+    .theme-info {
+      .theme-label {
+        color: var(--accent-color);
+        font-weight: 600;
+      }
+    }
+  }
+}
+
+.theme-preview {
+  width: 40px;
+  height: 24px;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.preview-bg {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+}
+
+.preview-accent {
+  width: 100%;
+  height: 3px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+/* Theme Preview Colors */
+.theme-preview[data-theme="win11-light"] {
+  .preview-bg { background: #f6f7fb; }
+  .preview-accent { background: #2563eb; }
+}
+
+.theme-preview[data-theme="win11-dark"] {
+  .preview-bg { background: #202020; }
+  .preview-accent { background: #0078d4; }
+}
+
+.theme-preview[data-theme="win10-light"] {
+  .preview-bg { background: #e1e1e1; }
+  .preview-accent { background: #0078d4; }
+}
+
+.theme-preview[data-theme="win10-dark"] {
+  .preview-bg { background: #1f1f23; }
+  .preview-accent { background: #0078d4; }
+}
+
+.theme-preview[data-theme="cyberpunk"] {
+  .preview-bg { background: #0a0a0f; }
+  .preview-accent { background: linear-gradient(90deg, #00ffff, #ff00ff); }
+}
+
+.theme-preview[data-theme="retro"] {
+  .preview-bg { background: #f4f1e8; }
+  .preview-accent { background: #ff6b35; }
+}
+
+.theme-preview[data-theme="futuristic"] {
+  .preview-bg { background: #0d1117; }
+  .preview-accent { background: #58a6ff; }
+}
+
+.theme-preview[data-theme="nature"] {
+  .preview-bg { background: #f5f7f0; }
+  .preview-accent { background: #2d5016; }
+}
+
+.theme-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.theme-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.theme-description {
+  display: block;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  line-height: 1.3;
+}
+
+.theme-active {
+  color: var(--accent-color);
+  font-size: 16px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+@keyframes theme-dropdown-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Theme-specific styling for the selector */
+[data-theme="cyberpunk"] .theme-selector {
+  .theme-toggle:hover {
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+    color: #00ffff;
+  }
+  
+  .theme-dropdown {
+    border-color: #333366;
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.1);
+  }
+}
+
+[data-theme="retro"] .theme-selector {
+  .theme-toggle,
+  .theme-dropdown {
+    border-radius: 0;
+  }
+  
+  .theme-option {
+    border-radius: 0;
+  }
+}
+
+[data-theme="futuristic"] .theme-selector {
+  .theme-dropdown {
+    border-color: rgba(88, 166, 255, 0.3);
+    box-shadow: 0 0 40px rgba(88, 166, 255, 0.1);
+  }
+  
+  .theme-toggle:hover {
+    box-shadow: 0 0 12px rgba(88, 166, 255, 0.3);
+  }
+}
+
+[data-theme="nature"] .theme-selector {
+  .theme-toggle {
+    border-radius: 12px;
+  }
+  
+  .theme-dropdown {
+    border-radius: 16px;
+  }
+  
+  .theme-option {
+    border-radius: 12px;
+  }
+}
