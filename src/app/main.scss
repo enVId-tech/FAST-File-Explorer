@@ -1,28 +1,37 @@
 // Modern File Explorer Styles with Enhanced Theme Support
 :root {
-  // Windows 11 Light Theme (Default)
-  --primary-bg: #f3f3f3;
-  --secondary-bg: #ffffff;
-  --surface-bg: #fafafa;
-  --accent-color: #0078d4;
-  --accent-hover: #106ebe;
-  --accent-active: #005a9e;
-  --text-primary: #323130;
-  --text-secondary: #605e5c;
-  --text-tertiary: #8a8886;
-  --border-color: #e1dfdd;
-  --border-hover: #c7c7c7;
-  --hover-bg: #f3f2f1;
-  --selection-bg: rgba(0, 120, 212, 0.1);
-  --selection-border: rgba(0, 120, 212, 0.3);
-  --shadow-small: 0 1px 3px rgba(0, 0, 0, 0.1);
-  --shadow-medium: 0 2px 8px rgba(0, 0, 0, 0.15);
-  --shadow-large: 0 4px 16px rgba(0, 0, 0, 0.2);
+  // Windows 11 Light Theme (Default, refined)
+  --primary-bg: #f5f6f8;    // app background
+  --secondary-bg: #ffffff;  // panels, cards
+  --surface-bg: #fbfbfc;    // elevated surfaces
+  --accent-color: #0a84ff;  // slightly brighter accent
+  --accent-hover: #0b72e6;
+  --accent-active: #095ec2;
+  --text-primary: #1f1f1f;
+  --text-secondary: #4b5056;
+  --text-tertiary: #7a7f85;
+  --border-color: #e6e8eb;
+  --border-hover: #d2d7dd;
+  --hover-bg: #f2f5f8;
+  --selection-bg: rgba(10, 132, 255, 0.12);
+  --selection-border: rgba(10, 132, 255, 0.34);
+  --shadow-small: 0 1px 3px rgba(20, 28, 38, 0.08);
+  --shadow-medium: 0 4px 12px rgba(20, 28, 38, 0.12);
+  --shadow-large: 0 8px 24px rgba(20, 28, 38, 0.16);
   
   // Gradients
-  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --gradient-accent: linear-gradient(135deg, #0078d4 0%, #106ebe 100%);
-  --gradient-surface: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+  --gradient-primary: linear-gradient(135deg, #66a6ff 0%, #89f7fe 100%);
+  --gradient-accent: linear-gradient(135deg, #0a84ff 0%, #3aa0ff 100%);
+  --gradient-surface: linear-gradient(180deg, #ffffff 0%, #f6f7f9 100%);
+  
+  // Semantic aliases (keeps layout intact; improves theme consistency)
+  --bg-primary: var(--primary-bg);
+  --bg-secondary: var(--secondary-bg);
+  --bg-tertiary: var(--surface-bg);
+  --accent-primary: var(--accent-color);
+  --accent-secondary: var(--accent-hover);
+  --border-primary: var(--border-color);
+  --border-secondary: #eef0f3;
   
   // UI Properties
   --border-radius: 8px;
@@ -34,40 +43,49 @@
 
 // Windows 11 Dark Theme - Enhanced with better contrast
 [data-theme="win11-dark"] {
-  --primary-bg: #1e1e1e;
-  --secondary-bg: #252526;
-  --surface-bg: #2d2d30;
-  --bg-primary: #1e1e1e;
-  --bg-secondary: #252526;
-  --bg-tertiary: #2d2d30;
+  // Base surfaces
+  --primary-bg: #1e1e1e;   // window background
+  --secondary-bg: #252526; // panels, cards
+  --surface-bg: #2d2d30;   // elevated surfaces
+
+  // Semantic aliases
+  --bg-primary: var(--primary-bg);
+  --bg-secondary: var(--secondary-bg);
+  --bg-tertiary: var(--surface-bg);
   --bg-hover: #2a2d2e;
-  --accent-color: #0078d4;
-  --accent-primary: #0078d4;
-  --accent-hover: #106ebe;
-  --accent-active: #005a9e;
-  --text-primary: #cccccc;
-  --text-secondary: #9cdcfe;
-  --text-tertiary: #6a9955;
+
+  // Accent
+  --accent-color: #007acc;
+  --accent-primary: #007acc;
+  --accent-hover: #1f88e0;
+  --accent-active: #005ea6;
+
+  // Text
+  --text-primary: #e5e5e5;
+  --text-secondary: #b3b3b3;
+  --text-tertiary: #8a8a8a;
+
+  // Borders
   --border-color: #3e3e42;
   --border-primary: #3e3e42;
-  --border-secondary: #464647;
-  --border-hover: #007acc;
-  --hover-bg: #2a2d2e;
-  --selection-bg: rgba(0, 122, 204, 0.15);
-  --selection-border: #007acc;
-  --shadow-small: 0 2px 8px rgba(0, 0, 0, 0.32);
-  --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.48);
-  --shadow-large: 0 8px 32px rgba(0, 0, 0, 0.64);
-  
-  --gradient-primary: linear-gradient(135deg, #007acc 0%, #005a9e 100%);
-  --gradient-accent: linear-gradient(135deg, #0078d4 0%, #106ebe 100%);
-  --gradient-surface: linear-gradient(180deg, #252526 0%, #1e1e1e 100%);
-  
+  --border-secondary: #4a4a4f;
+  --border-hover: #4f4f55;
+
+  // Selection & shadows
+  --selection-bg: rgba(0, 122, 204, 0.18);
+  --selection-border: #2b88d8;
+  --shadow-small: 0 2px 8px rgba(0, 0, 0, 0.36);
+  --shadow-medium: 0 6px 18px rgba(0, 0, 0, 0.5);
+  --shadow-large: 0 10px 34px rgba(0, 0, 0, 0.6);
+
+  // Gradients
+  --gradient-primary: linear-gradient(135deg, #0e87ff 0%, #0a5ec9 100%);
+  --gradient-accent: linear-gradient(135deg, #0e87ff 0%, #1f88e0 100%);
+  --gradient-surface: linear-gradient(180deg, #262729 0%, #1f2022 100%);
+
+  // UI feel
   --border-radius: 4px;
   --border-radius-small: 2px;
-  --spacing-small: 8px;
-  --spacing-medium: 16px;
-  --spacing-large: 24px;
 }
 
 // Windows 10 Light Theme
@@ -101,35 +119,51 @@
   --spacing-large: 18px;
 }
 
-// Windows 10 Dark Theme - Exact Windows 10 File Explorer Colors
+// Windows 10 Dark Theme - Enhanced for clarity and contrast
 [data-theme="win10-dark"] {
-  --primary-bg: #1f1f1f;
-  --secondary-bg: #2b2b2b;
-  --surface-bg: #2f2f2f;
+  // Base surfaces
+  --primary-bg: #202124;
+  --secondary-bg: #2a2b2e;
+  --surface-bg: #303134;
+
+  // Semantic aliases
+  --bg-primary: var(--primary-bg);
+  --bg-secondary: var(--secondary-bg);
+  --bg-tertiary: var(--surface-bg);
+  --bg-hover: #2f3134;
+
+  // Accent (Win10 vibe)
   --accent-color: #0078d4;
-  --accent-hover: #106ebe;
-  --accent-active: #005a9e;
-  --text-primary: #ffffff;
-  --text-secondary: #c8c8c8;
-  --text-tertiary: #8a8a8a;
-  --border-color: #3f3f3f;
-  --border-hover: #484848;
-  --hover-bg: #333333;
-  --selection-bg: rgba(0, 120, 212, 0.06);
-  --selection-border: rgba(0, 120, 212, 0.2);
-  --shadow-small: 0 1px 3px rgba(0, 0, 0, 0.5);
-  --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.6);
-  --shadow-large: 0 8px 25px rgba(0, 0, 0, 0.7);
-  
-  --gradient-primary: linear-gradient(135deg, #0078d4 0%, #005a9e 100%);
-  --gradient-accent: linear-gradient(135deg, #0078d4 0%, #106ebe 100%);
-  --gradient-surface: linear-gradient(180deg, #2b2b2b 0%, #1f1f1f 100%);
-  
-  --border-radius: 2px;
-  --border-radius-small: 1px;
-  --spacing-small: 6px;
-  --spacing-medium: 12px;
-  --spacing-large: 18px;
+  --accent-primary: #0078d4;
+  --accent-hover: #1a86e5;
+  --accent-active: #0b62ad;
+
+  // Text
+  --text-primary: #e8eaed;
+  --text-secondary: #bdc1c6;
+  --text-tertiary: #9aa0a6;
+
+  // Borders
+  --border-color: #3a3b3e;
+  --border-primary: #3a3b3e;
+  --border-secondary: #47484b;
+  --border-hover: #535559;
+
+  // Selection & shadows
+  --selection-bg: rgba(0, 120, 212, 0.18);
+  --selection-border: #2b88d8;
+  --shadow-small: 0 2px 8px rgba(0, 0, 0, 0.36);
+  --shadow-medium: 0 6px 18px rgba(0, 0, 0, 0.5);
+  --shadow-large: 0 10px 34px rgba(0, 0, 0, 0.6);
+
+  // Gradients
+  --gradient-primary: linear-gradient(135deg, #1188ff 0%, #0b62ad 100%);
+  --gradient-accent: linear-gradient(135deg, #0e87ff 0%, #1a86e5 100%);
+  --gradient-surface: linear-gradient(180deg, #2a2b2e 0%, #202124 100%);
+
+  // UI feel
+  --border-radius: 3px;
+  --border-radius-small: 2px;
 }
 
 * {
@@ -589,6 +623,7 @@ body {
   flex: 1;
   display: flex;
   background: var(--secondary-bg);
+  min-height: 0; // allow inner panes to shrink and delegate scroll
 }
 
 // Sidebar
@@ -654,6 +689,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-height: 0; // prevent footer overlap and allow internal scrollers
 }
 
 .file-list-container {
@@ -925,19 +961,27 @@ body {
   background: var(--primary-bg);
   border-top: 1px solid var(--border-color);
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 0 16px;
+  padding: 0 12px;
+  gap: 12px;
   font-size: 12px;
   color: var(--text-secondary);
+  flex-shrink: 0; // never shrink below its height
+  min-height: 32px;
+  overflow: hidden;
   
   .status-item {
     display: flex;
     align-items: center;
     gap: 8px;
-    
+    min-width: 0; // allow children to shrink
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
     &.right {
       margin-left: auto;
+      flex: 0 0 auto;
     }
   }
 }

@@ -240,8 +240,8 @@ export const ThisPCView: React.FC<ThisPCViewProps> = ({ viewMode }) => {
     ];
 
     const PieChart: React.FC<{ drive: DriveInfo }> = ({ drive }) => {
-        const radius = 60;
-        const strokeWidth = 16;
+        const radius = 66;
+        const strokeWidth = 18;
         const normalizedRadius = radius - strokeWidth * 2;
         const circumference = normalizedRadius * 2 * Math.PI;
         const strokeDasharray = `${drive.usagePercentage / 100 * circumference} ${circumference}`;
