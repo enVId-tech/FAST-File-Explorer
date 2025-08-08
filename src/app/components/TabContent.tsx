@@ -629,6 +629,11 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
                                             >
                                                 <span className="file-icon">{file.icon}</span>
                                                 <span className="file-name">{file.name}</span>
+                                                <div className="file-meta">
+                                                    <div className="file-size">{file.size || ''}</div>
+                                                    <div className="file-date">{file.dateModified}</div>
+                                                    <div className="file-type">{file.type === 'folder' ? 'File folder' : 'File'}</div>
+                                                </div>
                                             </div>
                                         ))}
                                     </div>

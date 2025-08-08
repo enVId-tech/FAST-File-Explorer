@@ -34,8 +34,8 @@ export default function Main(): React.JSX.Element {
     // Initialize theme from localStorage or default to win11-light
     const [theme, setTheme] = useState<Theme>(() => {
         try {
-            const savedTheme = localStorage.getItem('fast-file-explorer-theme');
-            return (savedTheme as Theme) || 'win11-light';
+            const saved = localStorage.getItem('fast-file-explorer-theme');
+            return (saved as Theme) || 'win11-light';
         } catch (error) {
             console.warn('Failed to load theme from localStorage:', error);
             return 'win11-light';
@@ -50,21 +50,29 @@ export default function Main(): React.JSX.Element {
 
     // Apply theme to document element and save to localStorage
     useEffect(() => {
-        console.log('Applying theme:', theme);
-        
-        // Apply theme to both html and body elements to ensure CSS variables cascade
-        document.documentElement.setAttribute('data-theme', theme);
-        document.body.setAttribute('data-theme', theme);
-        
-        // Also ensure the root element has the theme
-        const rootElement = document.getElementById('root');
-        if (rootElement) {
-            rootElement.setAttribute('data-theme', theme);
+        const root = document.documentElement;
+        const body = document.body;
+
+        // Clear any custom styles first
+        CustomStyleManager.clearDocumentStyles();
+        root.removeAttribute('data-custom-theme');
+
+        // If theme id corresponds to a saved custom style, apply variables
+        const possibleCustom = CustomStyleManager.getStyle(theme);
+        if (possibleCustom) {
+            CustomStyleManager.applyStyleToDocument(possibleCustom);
+            root.setAttribute('data-theme', 'custom');
+            root.setAttribute('data-custom-theme', possibleCustom.id);
+            body.setAttribute('data-theme', 'custom');
+        } else {
+            // Built-in theme: set data-theme to the id
+            root.setAttribute('data-theme', theme);
+            body.setAttribute('data-theme', theme);
         }
-        
-        console.log('Document element data-theme:', document.documentElement.getAttribute('data-theme'));
-        console.log('Body data-theme:', document.body.getAttribute('data-theme'));
-        
+
+        const rootElement = document.getElementById('root');
+        if (rootElement) rootElement.setAttribute('data-theme', root.getAttribute('data-theme') || theme);
+
         try {
             localStorage.setItem('fast-file-explorer-theme', theme);
         } catch (error) {
@@ -72,22 +80,7 @@ export default function Main(): React.JSX.Element {
         }
     }, [theme]);
 
-    // Add keyboard shortcut for testing themes
-    useEffect(() => {
-        const handleKeyPress = (e: KeyboardEvent) => {
-            if (e.ctrlKey && e.key === 't') {
-                e.preventDefault(); // Prevent default browser behavior
-                const themes: Theme[] = ['win11-light', 'win11-dark', 'win10-light', 'win10-dark', 'cyberpunk', 'retro', 'futuristic', 'nature'];
-                const currentIndex = themes.indexOf(theme);
-                const nextTheme = themes[(currentIndex + 1) % themes.length];
-                console.log('Keyboard shortcut pressed: switching from', theme, 'to', nextTheme);
-                setTheme(nextTheme);
-            }
-        };
-        
-        window.addEventListener('keydown', handleKeyPress);
-        return () => window.removeEventListener('keydown', handleKeyPress);
-    }, [theme]);
+    // Removed: keyboard shortcut that cycled themes on Ctrl+T (themes must be changed manually)
 
     // Save view mode to localStorage when it changes
     useEffect(() => {

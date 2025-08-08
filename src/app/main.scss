@@ -611,14 +611,52 @@ body {
 .file-list {
   display: flex;
   flex-direction: column;
+  background: var(--secondary-bg);
+
+  /* Header row for list view */
+  .file-list-header {
+    display: grid;
+    grid-template-columns: minmax(260px, 1fr) 110px 160px 140px;
+    gap: 12px;
+    padding: 10px 16px;
+    background: var(--surface-bg);
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 2;
+
+    .header-cell {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      user-select: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Right-align numeric/date columns */
+    .header-cell:nth-child(2),
+    .header-cell:nth-child(3),
+    .header-cell:nth-child(4) {
+      justify-content: flex-end;
+      text-align: right;
+    }
+  }
   
   .file-item {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(260px, 1fr) 110px 160px 140px;
+    gap: 12px;
     align-items: center;
-    padding: 8px 16px;
+    padding: 10px 16px;
     border-bottom: 1px solid var(--border-color);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease;
     
     &:hover {
       background: var(--hover-bg);
@@ -629,33 +667,46 @@ body {
       border-color: var(--selection-border);
     }
     
-    .file-icon {
-      font-size: 16px;
-      width: 20px;
-      text-align: center;
-      margin-right: 12px;
-      color: var(--accent-color);
-    }
-    
-    .file-name {
-      flex: 1;
-      font-size: 14px;
-      color: var(--text-primary);
+    /* Left info (icon + name) */
+    .file-info {
+      display: flex;
+      align-items: center;
+      min-width: 0;
+
+      .file-icon {
+        font-size: 16px;
+        width: 20px;
+        text-align: center;
+        margin-right: 12px;
+        color: var(--accent-color);
+        flex-shrink: 0;
+      }
+
+      .file-name {
+        font-size: 14px;
+        color: var(--text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
     }
     
     .file-size {
-      width: 80px;
-      text-align: right;
       font-size: 12px;
       color: var(--text-secondary);
-      margin-right: 16px;
+      text-align: right;
     }
     
     .file-date {
-      width: 120px;
-      text-align: right;
       font-size: 12px;
       color: var(--text-secondary);
+      text-align: right;
+    }
+
+    .file-type {
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-align: right;
     }
   }
 }
@@ -672,39 +723,6 @@ body {
   background: var(--primary-bg);
   overflow-y: auto;
   padding: var(--spacing-medium);
-}
-
-// File/Folder Items
-.file-item, .folder-item {
-  display: flex;
-  align-items: center;
-  padding: 8px 12px;
-  border-radius: var(--border-radius);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  user-select: none;
-}
-
-.file-item:hover, .folder-item:hover {
-  background: var(--hover-bg);
-}
-
-.file-item.selected, .folder-item.selected {
-  background: var(--selection-bg);
-  border: 1px solid var(--selection-border);
-}
-
-.item-icon {
-  width: 16px;
-  height: 16px;
-  margin-right: 8px;
-  color: var(--text-secondary);
-}
-
-.item-name {
-  flex: 1;
-  font-size: 13px;
-  color: var(--text-primary);
 }
 
 .item-size, .item-date {

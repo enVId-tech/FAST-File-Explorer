@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import ReactDOM from 'react-dom';
 import { FaSave, FaUndo, FaTrash, FaPlus, FaCopy, FaPalette, FaEye } from 'react-icons/fa';
 import { ColorPicker } from './ColorPicker';
 import { IconSelector } from './IconSelector';
@@ -109,6 +110,8 @@ export const CustomStyleEditor: React.FC<CustomStyleEditorProps> = ({
   const [activeTab, setActiveTab] = useState<'colors' | 'icons' | 'preview'>('colors');
   const [previewMode, setPreviewMode] = useState(true);
   const [originalTheme, setOriginalTheme] = useState<string>('');
+  const [detached, setDetached] = useState(false); // Pop-out mode
+  const [expanded, setExpanded] = useState(false); // Wider editor
 
   useEffect(() => {
     if (isOpen) {
@@ -271,12 +274,26 @@ export const CustomStyleEditor: React.FC<CustomStyleEditorProps> = ({
 
   if (!isOpen || !editingStyle) return null;
 
-  return (
-    <div className="custom-style-editor-overlay">
-      <div className="custom-style-editor">
+  const ui = (
+    <div className={`custom-style-editor-overlay ${detached ? 'detached' : 'modal'}`}>
+      <div className={`custom-style-editor ${expanded ? 'expanded' : 'compact'} ${detached ? 'floating' : ''}`}>
         <div className="editor-header">
           <h2>Custom Theme Editor</h2>
           <div className="header-actions">
+            <button
+              className={`preview-btn ${detached ? 'active' : ''}`}
+              onClick={() => setDetached(!detached)}
+              title={detached ? 'Dock editor' : 'Pop out editor'}
+            >
+              {detached ? 'Dock' : 'Pop out'}
+            </button>
+            <button
+              className={`preview-btn ${expanded ? 'active' : ''}`}
+              onClick={() => setExpanded(!expanded)}
+              title={expanded ? 'Use compact size' : 'Expand width'}
+            >
+              {expanded ? 'Compact' : 'Expand'}
+            </button>
             <button 
               className={`preview-btn ${previewMode ? 'active' : ''}`}
               onClick={togglePreviewMode}
@@ -452,4 +469,6 @@ export const CustomStyleEditor: React.FC<CustomStyleEditorProps> = ({
       </div>
     </div>
   );
+
+  return ReactDOM.createPortal(ui, document.body);
 };
