@@ -10,6 +10,7 @@
   --bg-secondary: var(--secondary-bg);
   --bg-tertiary: var(--surface-bg);
   --bg-hover: #30363d;       // lighter hover
+  --hover-bg: var(--bg-hover); // Alias for consistency
 
   // Accent (electric blue/teal)
   --accent-color: #58a6ff;    // bright blue

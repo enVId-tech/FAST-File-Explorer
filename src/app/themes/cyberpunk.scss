@@ -10,6 +10,7 @@
   --bg-secondary: var(--secondary-bg);
   --bg-tertiary: var(--surface-bg);
   --bg-hover: #262640;       // purple-tinted hover
+  --hover-bg: var(--bg-hover); // Alias for consistency
 
   // Accent (neon cyan/purple)
   --accent-color: #00ffff;    // bright cyan

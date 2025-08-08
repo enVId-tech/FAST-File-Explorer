@@ -10,6 +10,7 @@
   --bg-secondary: var(--secondary-bg);
   --bg-tertiary: var(--surface-bg);
   --bg-hover: #d6ccb8;       // darker on hover
+  --hover-bg: var(--bg-hover); // Alias for consistency
 
   // Accent (retro orange/amber)
   --accent-color: #ff6b35;    // retro orange

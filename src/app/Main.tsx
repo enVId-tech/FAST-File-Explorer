@@ -16,19 +16,86 @@ interface Tab {
 
 export default function Main(): React.JSX.Element {
     const [currentPath, setCurrentPath] = useState('This PC > Documents');
-    const [viewMode, setViewMode] = useState('list');
+    
+    // Initialize view mode from localStorage or default to list
+    const [viewMode, setViewMode] = useState(() => {
+        try {
+            const savedViewMode = localStorage.getItem('fast-file-explorer-view-mode');
+            return savedViewMode || 'list';
+        } catch (error) {
+            console.warn('Failed to load view mode from localStorage:', error);
+            return 'list';
+        }
+    });
+    
     const [isMaximized, setIsMaximized] = useState(false);
-    const [theme, setTheme] = useState<Theme>('win11-light'); // Updated to use new Theme type
+    
+    // Initialize theme from localStorage or default to win11-light
+    const [theme, setTheme] = useState<Theme>(() => {
+        try {
+            const savedTheme = localStorage.getItem('fast-file-explorer-theme');
+            return (savedTheme as Theme) || 'win11-light';
+        } catch (error) {
+            console.warn('Failed to load theme from localStorage:', error);
+            return 'win11-light';
+        }
+    });
+    
     const [isThemeSelectorOpen, setIsThemeSelectorOpen] = useState(false);
     const [tabs, setTabs] = useState<Tab[]>([
         { id: 'tab-1', title: 'This PC', url: 'home', isActive: true },
     ]);
     const [activeTabId, setActiveTabId] = useState('tab-1');
 
-    // Apply theme to document element
+    // Apply theme to document element and save to localStorage
     useEffect(() => {
+        console.log('Applying theme:', theme);
+        
+        // Apply theme to both html and body elements to ensure CSS variables cascade
         document.documentElement.setAttribute('data-theme', theme);
+        document.body.setAttribute('data-theme', theme);
+        
+        // Also ensure the root element has the theme
+        const rootElement = document.getElementById('root');
+        if (rootElement) {
+            rootElement.setAttribute('data-theme', theme);
+        }
+        
+        console.log('Document element data-theme:', document.documentElement.getAttribute('data-theme'));
+        console.log('Body data-theme:', document.body.getAttribute('data-theme'));
+        
+        try {
+            localStorage.setItem('fast-file-explorer-theme', theme);
+        } catch (error) {
+            console.warn('Failed to save theme to localStorage:', error);
+        }
     }, [theme]);
+
+    // Add keyboard shortcut for testing themes
+    useEffect(() => {
+        const handleKeyPress = (e: KeyboardEvent) => {
+            if (e.ctrlKey && e.key === 't') {
+                e.preventDefault(); // Prevent default browser behavior
+                const themes: Theme[] = ['win11-light', 'win11-dark', 'win10-light', 'win10-dark', 'cyberpunk', 'retro', 'futuristic', 'nature'];
+                const currentIndex = themes.indexOf(theme);
+                const nextTheme = themes[(currentIndex + 1) % themes.length];
+                console.log('Keyboard shortcut pressed: switching from', theme, 'to', nextTheme);
+                setTheme(nextTheme);
+            }
+        };
+        
+        window.addEventListener('keydown', handleKeyPress);
+        return () => window.removeEventListener('keydown', handleKeyPress);
+    }, [theme]);
+
+    // Save view mode to localStorage when it changes
+    useEffect(() => {
+        try {
+            localStorage.setItem('fast-file-explorer-view-mode', viewMode);
+        } catch (error) {
+            console.warn('Failed to save view mode to localStorage:', error);
+        }
+    }, [viewMode]);
 
     // Close theme selector when clicking outside
     useEffect(() => {
@@ -60,6 +127,14 @@ export default function Main(): React.JSX.Element {
     const minimize = () => handleMinimize();
     const maximize = () => handleMaximize(isMaximized, setIsMaximized);
     const close = () => handleClose();
+
+    // Theme change handler with debugging
+    const handleThemeChange = (newTheme: Theme) => {
+        console.log('Theme change requested from:', theme, 'to:', newTheme);
+        console.log('ThemeSelector clicked, calling setTheme with:', newTheme);
+        setTheme(newTheme);
+        console.log('setTheme called successfully');
+    };
 
     // Tab management handlers
     const handleTabSelect = async (tabId: string) => {
@@ -229,7 +304,7 @@ export default function Main(): React.JSX.Element {
                 onMinimize={minimize}
                 onMaximize={maximize}
                 onClose={close}
-                onThemeChange={setTheme}
+                onThemeChange={handleThemeChange}
             />
 
             {/* Render content for each tab */}
@@ -240,8 +315,6 @@ export default function Main(): React.JSX.Element {
                     isActive={tab.id === activeTabId}
                     viewMode={viewMode}
                     setViewMode={setViewMode}
-                    theme={theme}
-                    setTheme={setTheme}
                 />
             ))}
         </div>

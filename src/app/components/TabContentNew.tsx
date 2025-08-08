@@ -386,19 +386,6 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
                         isVisible={showDetailsPanel} 
                     />
                 </div>
-
-                {/* Status Bar */}
-                <div className="status-bar">
-                    <div className="status-item">
-                        {sortedFiles.length} items
-                    </div>
-                    <div className="status-item">
-                        {selectedItem ? `Selected: ${selectedItem.name}` : 'Ready'}
-                    </div>
-                    <div className="status-item right">
-                        View: {viewMode}
-                    </div>
-                </div>
             </div>
         </div>
     );

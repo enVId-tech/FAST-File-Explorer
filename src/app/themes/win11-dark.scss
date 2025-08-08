@@ -1,0 +1,79 @@
+// Windows 11 Dark Theme - Modern dark theme with Fluent Design principles
+[data-theme="win11-dark"] {
+  // Base surfaces (modern dark theme)
+  --primary-bg: #202020;   // main window background
+  --secondary-bg: #2d2d30; // panels, cards
+  --surface-bg: #3c3c3c;   // elevated surfaces
+
+  // Semantic aliases
+  --bg-primary: var(--primary-bg);
+  --bg-secondary: var(--secondary-bg);
+  --bg-tertiary: var(--surface-bg);
+  --bg-hover: #484848;     // hover state
+  --hover-bg: var(--bg-hover);
+
+  // Accent (Windows 11 blue)
+  --accent-color: #0078d4;
+  --accent-primary: #0078d4;
+  --accent-hover: #1490df;
+  --accent-active: #106ebe;
+  --accent-secondary: var(--accent-hover);
+
+  // Text (high contrast)
+  --text-primary: #ffffff;   // pure white for main text
+  --text-secondary: #cccccc; // bright secondary text
+  --text-tertiary: #999999;  // tertiary text
+
+  // Borders
+  --border-color: #484848;
+  --border-primary: #484848;
+  --border-secondary: #565656;
+  --border-hover: #6d6d6d;
+
+  // Selection & shadows
+  --selection-bg: rgba(0, 120, 212, 0.3);
+  --selection-border: #0078d4;
+  --shadow-small: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-medium: 0 2px 8px rgba(0, 0, 0, 0.25);
+  --shadow-large: 0 4px 16px rgba(0, 0, 0, 0.4);
+
+  // Gradients
+  --gradient-primary: linear-gradient(135deg, #2d2d30 0%, #3c3c3c 100%);
+  --gradient-accent: linear-gradient(135deg, #0078d4 0%, #1490df 100%);
+  --gradient-surface: linear-gradient(180deg, #3c3c3c 0%, #2d2d30 100%);
+
+  // UI Properties
+  --border-radius: 8px;
+  --border-radius-small: 4px;
+  --spacing-small: 8px;
+  --spacing-medium: 16px;
+  --spacing-large: 24px;
+
+  // Status bar
+  --status-bg: rgba(45, 45, 48, 0.95);
+  --status-border: rgba(72, 72, 72, 0.8);
+
+  // Scrollbar styling
+  --scrollbar-thumb: #484848;
+  --scrollbar-track: #2d2d30;
+  --scrollbar-hover: #6d6d6d;
+
+  // Input/form elements
+  --input-bg: #2d2d30;
+  --input-border: #484848;
+  --input-focus: #0078d4;
+  --input-text: #ffffff;
+  --input-placeholder: #999999;
+
+  // Context menu and dropdown
+  --context-bg: #2d2d30;
+  --context-border: #484848;
+  --context-hover: #484848;
+  --context-text: #ffffff;
+  --context-separator: #484848;
+
+  // Tooltip
+  --tooltip-bg: #484848;
+  --tooltip-text: #ffffff;
+  --tooltip-border: #6d6d6d;
+}

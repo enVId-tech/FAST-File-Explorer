@@ -3,7 +3,6 @@ import { FaFolder, FaFileExcel, FaFilePowerpoint, FaFileWord, FaFileImage, FaFil
 import { DetailsPanel } from './DetailsPanel';
 import { RecentsView } from './RecentsView';
 import { ThisPCView } from './ThisPCView';
-import { Theme } from './ThemeSelector';
 import './RecentsThisPCStyles.scss';
 
 interface FileItem {
@@ -24,94 +23,15 @@ interface TabContentProps {
     isActive: boolean;
     viewMode: string;
     setViewMode: (mode: string) => void;
-    theme: Theme;
-    setTheme: (theme: Theme) => void;
 }
 
-export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMode, setViewMode, theme, setTheme }) => {
+export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMode, setViewMode }) => {
     const [selectedItem, setSelectedItem] = useState<FileItem | null>(null);
     const [showDetailsPanel, setShowDetailsPanel] = useState(true);
     const [sortBy, setSortBy] = useState<'name' | 'size' | 'date' | 'type'>('name');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-    const [showSettingsMenu, setShowSettingsMenu] = useState(false);
     const [currentView, setCurrentView] = useState<'thispc' | 'recents' | 'folder'>('thispc');
     const [activeRibbonTab, setActiveRibbonTab] = useState<'home' | 'share' | 'view' | 'manage' | 'organize' | 'tools' | 'help'>('home');
-    const settingsRef = useRef<HTMLDivElement>(null);
-
-    // Close settings menu when clicking outside
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
-                setShowSettingsMenu(false);
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, []);
-
-    // Theme configuration
-    const themes = [
-        {
-            id: 'win11-light' as const,
-            name: 'Windows 11 Light',
-            description: 'Modern Windows 11 design',
-            icon: <FaWindows />
-        },
-        {
-            id: 'win11-dark' as const,
-            name: 'Windows 11 Dark',
-            description: 'Dark mode with modern styling',
-            icon: <FaMoon />
-        },
-        {
-            id: 'win10-light' as const,
-            name: 'Windows 10 Light',
-            description: 'Classic Windows 10 interface',
-            icon: <FaSun />
-        },
-        {
-            id: 'win10-dark' as const,
-            name: 'Windows 10 Dark',
-            description: 'Windows 10 with dark theme',
-            icon: <FaMoon />
-        },
-        {
-            id: 'cyberpunk' as const,
-            name: 'Cyberpunk',
-            description: 'Neon-lit futuristic dark theme',
-            icon: <FaPalette />
-        },
-        {
-            id: 'retro' as const,
-            name: 'Retro',
-            description: '80s/90s nostalgic computing',
-            icon: <FaClock />
-        },
-        {
-            id: 'futuristic' as const,
-            name: 'Futuristic',
-            description: 'Clean sci-fi aesthetic',
-            icon: <FaDesktop />
-        },
-        {
-            id: 'nature' as const,
-            name: 'Nature',
-            description: 'Organic, earthy tones',
-            icon: <FaSun />
-        }
-    ];
-
-    const handleThemeChange = (newTheme: Theme) => {
-        setTheme(newTheme);
-        setShowSettingsMenu(false);
-    };
-
-    const getCurrentTheme = () => {
-        return themes.find(t => t.id === theme) || themes[0];
-    };
 
     const handleSidebarNavigation = (view: string, itemName: string) => {
         if (view === 'thispc') {
@@ -350,37 +270,6 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
                     </div>
                     <div className="toolbar-section">
                         <button className="toolbar-button"><FaSearch /></button>
-                        
-                        {/* Settings Dropdown */}
-                        <div className="settings-dropdown" ref={settingsRef}>
-                            <button 
-                                className={`settings-button ${showSettingsMenu ? 'open' : ''}`}
-                                onClick={() => setShowSettingsMenu(!showSettingsMenu)}
-                            >
-                                <FaPalette />
-                                <span>{getCurrentTheme().name}</span>
-                                <FaChevronDown className="dropdown-arrow" />
-                            </button>
-                            
-                            <div className={`settings-menu ${showSettingsMenu ? 'open' : ''}`}>
-                                <div className="menu-section">
-                                    <div className="menu-title">Interface Themes</div>
-                                    {themes.map((themeOption) => (
-                                        <div
-                                            key={themeOption.id}
-                                            className={`menu-item ${theme === themeOption.id ? 'active' : ''}`}
-                                            onClick={() => handleThemeChange(themeOption.id)}
-                                        >
-                                            <div className="menu-icon">{themeOption.icon}</div>
-                                            <div className="menu-text">
-                                                <div>{themeOption.name}</div>
-                                                <div className="menu-description">{themeOption.description}</div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
                         
                         <button 
                             className="toolbar-button" 
@@ -753,19 +642,6 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
                         selectedItem={selectedItem} 
                         isVisible={showDetailsPanel} 
                     />
-                </div>
-
-                {/* Status Bar */}
-                <div className="status-bar">
-                    <div className="status-item">
-                        {sortedFiles.length} items
-                    </div>
-                    <div className="status-item">
-                        {selectedItem ? `Selected: ${selectedItem.name}` : 'Ready'}
-                    </div>
-                    <div className="status-item right">
-                        View: {viewMode}
-                    </div>
                 </div>
             </div>
         </div>

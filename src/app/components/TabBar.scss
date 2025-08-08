@@ -12,6 +12,8 @@
     box-shadow: var(--shadow-small);
     backdrop-filter: blur(10px);
     position: relative;
+    z-index: 100; /* Ensure tab bar has proper stacking */
+    overflow: visible; /* Allow dropdowns to be visible */
 }
 
 .tabs-container {
@@ -313,6 +315,8 @@
     -webkit-app-region: no-drag;
     gap: 2px;
     padding-right: 8px;
+    position: relative; /* Ensure theme dropdown positions relative to this */
+    z-index: 1000; /* Ensure window controls are above other content */
 }
 
 .control-button {

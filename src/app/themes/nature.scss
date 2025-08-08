@@ -10,6 +10,7 @@
   --bg-secondary: var(--secondary-bg);
   --bg-tertiary: var(--surface-bg);
   --bg-hover: #c9d4be;       // deeper sage on hover
+  --hover-bg: var(--bg-hover); // Alias for consistency
 
   // Accent (forest greens)
   --accent-color: #2d5016;    // deep forest green

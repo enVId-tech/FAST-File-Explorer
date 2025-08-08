@@ -37,7 +37,10 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
 }) => {
   return (
     <div className="theme-selector">
-      <button className="theme-toggle" onClick={onToggle} title="Change Theme">
+      <button className="theme-toggle" onClick={() => {
+        console.log('Theme toggle clicked, isOpen:', isOpen);
+        onToggle();
+      }} title="Change Theme">
         🎨
       </button>
       
@@ -52,6 +55,7 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
                 key={theme.value}
                 className={`theme-option ${currentTheme === theme.value ? 'active' : ''}`}
                 onClick={() => {
+                  console.log('Theme option clicked:', theme.value);
                   onThemeChange(theme.value);
                   onToggle();
                 }}
