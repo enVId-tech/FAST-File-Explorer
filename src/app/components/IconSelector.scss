@@ -1,0 +1,153 @@
+/* Icon Selector Styles */
+.icon-selector {
+  position: relative;
+  width: 100%;
+}
+
+.icon-selector-button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  width: 100%;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--surface-bg);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    border-color: var(--border-hover);
+    background: var(--hover-bg);
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+  
+  svg {
+    width: 20px;
+    height: 20px;
+    color: var(--accent-color);
+  }
+  
+  span {
+    flex: 1;
+    text-align: left;
+    font-weight: 500;
+  }
+}
+
+.icon-selector-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: var(--secondary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: var(--shadow-large);
+  z-index: 1000;
+  max-height: 400px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.icon-search {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color);
+  
+  .icon-search-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--surface-bg);
+    color: var(--text-primary);
+    
+    &:focus {
+      outline: none;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    
+    &::placeholder {
+      color: var(--text-tertiary);
+    }
+  }
+}
+
+.icon-grid {
+  padding: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+  
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+    
+    &:hover {
+      background: var(--border-hover);
+    }
+  }
+}
+
+.icon-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 8px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-primary);
+  
+  &:hover {
+    background: var(--hover-bg);
+    border-color: var(--border-color);
+  }
+  
+  &.selected {
+    background: var(--selection-bg);
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+  }
+  
+  svg {
+    width: 24px;
+    height: 24px;
+    margin-bottom: 6px;
+    color: inherit;
+  }
+  
+  .icon-name {
+    font-size: 10px;
+    font-weight: 500;
+    text-align: center;
+    line-height: 1.2;
+    color: var(--text-tertiary);
+    max-width: 100%;
+    word-break: break-word;
+    
+    .selected & {
+      color: var(--accent-color);
+    }
+  }
+}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { FaFolder, FaFileExcel, FaFilePowerpoint, FaFileWord, FaFileImage, FaFileCode, FaFile, FaMusic, FaVideo, FaFilePdf, FaClock, FaHdd, FaUser, FaTags } from 'react-icons/fa';
+import './DetailsPanel.scss';
 
 interface FileItem {
     name: string;

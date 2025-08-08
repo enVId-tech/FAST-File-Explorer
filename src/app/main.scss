@@ -1,6 +1,23 @@
 // Modern File Explorer Styles with Enhanced Theme Support
+
+// Global theme transition support
+:root {
+  --theme-transition: none; /* Will be set dynamically for smooth theme changes */
+}
+
+// Apply smooth transitions to theme-related properties only when theme is changing
+body.theme-transitioning *,
+body.theme-transitioning *::before,
+body.theme-transitioning *::after {
+  transition: background-color 0.3s cubic-bezier(0.4, 0.0, 0.2, 1),
+              color 0.3s cubic-bezier(0.4, 0.0, 0.2, 1),
+              border-color 0.3s cubic-bezier(0.4, 0.0, 0.2, 1),
+              box-shadow 0.3s cubic-bezier(0.4, 0.0, 0.2, 1) !important;
+}
+
 @import './themes/win10-light.scss';
 @import './themes/win10-dark.scss';
+@import './themes/win11-light.scss';
 @import './themes/win11-dark.scss';
 @import './themes/cyberpunk.scss';
 @import './themes/retro.scss';
@@ -10,6 +27,10 @@
 // Component Styles
 @import './components/ThemeSelector.scss';
 @import './components/TabBar.scss';
+@import './components/CustomStyleEditor.scss';
+@import './components/IconSelector.scss';
+@import './components/ColorPicker.scss';
+@import './components/DetailsPanel.scss';
 
 // Windows 11 Light Theme (Default)
 :root, [data-theme="win11-light"] {
