@@ -4,29 +4,7 @@ import drivelist from 'drivelist';
 import fs from 'fs';
 import os from 'os';
 import nodeDiskInfo from 'node-disk-info';
-
-type DriveDetails = {
-    driveName: string;
-    drivePath: string;
-    available: number;
-    used: number;
-    total: number;
-    percentageUsed: string;
-    busType?: string;
-    description?: string;
-    isSystem?: boolean;
-    flags?: {
-        isCard: boolean;
-        isReadOnly: boolean;
-        isRemovable: boolean;
-        isSCSI: boolean;
-        isSystem: boolean;
-        isUSB: boolean;
-        isVirtual: boolean;
-    };
-    partitionType?: "mbr" | "gpt" | null | undefined;
-    logicalBlockSize?: number;
-};
+import { Drive } from 'shared/file-data';
 
 async function getDataPath(dataName: string): Promise<string> {
     return path.join(os.homedir(), dataName);
@@ -127,12 +105,12 @@ export default function initializeDataHandlers() {
         const diskInfo = await nodeDiskInfo.getDiskInfo();
         // console.log('Available drives:', drives);
 
-        const driveDetails: DriveDetails[] = [];
+        const driveDetails: Drive[] = [];
 
         // Iterate through each drive and find its disk information
         // Check for matching drive and disk information, and then get data from matched index
         Object.values(diskInfo).forEach((disk) => {
-            let details: DriveDetails = {
+            let details: Drive = {
                 driveName: disk.filesystem,
                 drivePath: disk.mounted,
                 available: disk.available,
@@ -149,7 +127,6 @@ export default function initializeDataHandlers() {
                         ...details,
                         busType: drive.busType === "INVALID" ? "NVMe" : drive.busType,
                         description: drive.description,
-                        isSystem: drive.isSystem,
                         flags: {
                             isCard: drive.isCard ?? false,
                             isReadOnly: drive.isReadOnly ?? false,

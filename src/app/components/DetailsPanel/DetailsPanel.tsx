@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaFolder, FaFileExcel, FaFilePowerpoint, FaFileWord, FaFileImage, FaFileCode, FaFile, FaMusic, FaVideo, FaFilePdf, FaClock, FaHdd, FaUser, FaTags } from 'react-icons/fa';
+import { FaFolder, FaFileExcel, FaFilePowerpoint, FaFileWord, FaFileImage, FaFileCode, FaFile, FaMusic, FaVideo, FaFilePdf, FaClock, FaHdd, FaUser, FaTags, FaMemory, FaDatabase, FaLock } from 'react-icons/fa';
 import './DetailsPanel.scss';
 
 interface FileItem {
@@ -13,6 +13,11 @@ interface FileItem {
     description?: string;
     tags?: string[];
     icon: React.ReactNode;
+    driveData?: {
+        available: string;
+        used: string;
+        usagePercentage: string;
+    };
 }
 
 interface DetailsPanelProps {
@@ -25,6 +30,9 @@ export const DetailsPanel: React.FC<DetailsPanelProps> = ({ selectedItem, isVisi
         return null;
     }
 
+    // Check if this is a drive based on the name format
+    const isDrive = selectedItem.name.includes('(') && selectedItem.name.includes(')') && selectedItem.name.includes(':');
+    
     const getFileTypeInfo = (name: string, type: string) => {
         if (type === 'folder') {
             return { typeName: 'Folder', category: 'File Folder' };
@@ -123,6 +131,36 @@ export const DetailsPanel: React.FC<DetailsPanelProps> = ({ selectedItem, isVisi
                     )}
                 </div>
 
+                {/* Drive-specific Storage Information */}
+                {isDrive && (
+                    <div className="details-section">
+                        <div className="section-title">
+                            <FaDatabase />
+                            Storage
+                        </div>
+                        <div className="details-item">
+                            <span className="detail-label">Total Capacity:</span>
+                            <span className="detail-value">{selectedItem.size}</span>
+                        </div>
+                        {selectedItem.driveData && (
+                            <>
+                                <div className="details-item">
+                                    <span className="detail-label">Free Space:</span>
+                                    <span className="detail-value">{selectedItem.driveData.available}</span>
+                                </div>
+                                <div className="details-item">
+                                    <span className="detail-label">Used Space:</span>
+                                    <span className="detail-value">{selectedItem.driveData.used} ({selectedItem.driveData.usagePercentage}%)</span>
+                                </div>
+                            </>
+                        )}
+                        <div className="details-item">
+                            <span className="detail-label">File System:</span>
+                            <span className="detail-value">NTFS</span>
+                        </div>
+                    </div>
+                )}
+
                 {/* Dates & Times */}
                 <div className="details-section">
                     <div className="section-title">
@@ -142,17 +180,43 @@ export const DetailsPanel: React.FC<DetailsPanelProps> = ({ selectedItem, isVisi
                 {/* Security */}
                 <div className="details-section">
                     <div className="section-title">
-                        <FaUser />
-                        Security
+                        {isDrive ? <FaLock /> : <FaUser />}
+                        {isDrive ? 'Access' : 'Security'}
                     </div>
-                    <div className="details-item">
-                        <span className="detail-label">Owner:</span>
-                        <span className="detail-value">{placeholderData.owner}</span>
-                    </div>
-                    <div className="details-item">
-                        <span className="detail-label">Permissions:</span>
-                        <span className="detail-value">{placeholderData.permissions}</span>
-                    </div>
+                    {isDrive ? (
+                        <>
+                            <div className="details-item">
+                                <span className="detail-label">Access:</span>
+                                <span className="detail-value">{selectedItem.permissions}</span>
+                            </div>
+                            <div className="details-item">
+                                <span className="detail-label">Drive Type:</span>
+                                <span className="detail-value">
+                                    {selectedItem.tags?.includes('System') ? 'System Drive' :
+                                     selectedItem.tags?.includes('USB') ? 'USB Drive' :
+                                     selectedItem.tags?.includes('Removable') ? 'Removable Drive' :
+                                     'Local Disk'}
+                                </span>
+                            </div>
+                            {selectedItem.tags?.includes('SCSI') && (
+                                <div className="details-item">
+                                    <span className="detail-label">Interface:</span>
+                                    <span className="detail-value">SCSI</span>
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        <>
+                            <div className="details-item">
+                                <span className="detail-label">Owner:</span>
+                                <span className="detail-value">{placeholderData.owner}</span>
+                            </div>
+                            <div className="details-item">
+                                <span className="detail-label">Permissions:</span>
+                                <span className="detail-value">{placeholderData.permissions}</span>
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 {/* Description */}

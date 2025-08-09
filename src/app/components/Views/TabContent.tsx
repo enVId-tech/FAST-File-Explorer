@@ -4,36 +4,130 @@ import { DetailsPanel } from '../DetailsPanel';
 import { RecentsView } from './RecentsView';
 import { ThisPCView } from './ThisPCView';
 import { SettingsMenu } from '../SettingsMenu';
+import { Drive, FileItem } from 'shared/file-data';
 import './RecentsThisPCStyles.scss';
 
-interface FileItem {
-    name: string;
-    type: 'file' | 'folder';
-    size?: string;
-    dateModified: string;
-    dateCreated?: string;
-    owner?: string;
-    permissions?: string;
-    description?: string;
-    tags?: string[];
-    icon: React.ReactNode;
+// Drive Item Component with usage bar
+interface DriveItemProps {
+    drive: Drive;
+    active: boolean;
+    onClick: () => void;
+    onHover: (drive: Drive) => void;
 }
+
+const DriveItem: React.FC<DriveItemProps> = ({ drive, active, onClick, onHover }) => {
+    const formatBytes = (bytes: number): string => {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    };
+
+    const usagePercentage = drive.total > 0 ? (drive.used / drive.total) * 100 : 0;
+    const getUsageColor = (percentage: number): string => {
+        if (percentage < 70) return 'var(--accent-color)';
+        if (percentage < 85) return '#f59e0b';
+        return '#ef4444';
+    };
+
+    return (
+        <div 
+            className={`sidebar-item drive-item ${active ? 'active' : ''}`}
+            onClick={onClick}
+            onMouseEnter={() => onHover(drive)}
+        >
+            <div className="drive-main">
+                <span className="sidebar-icon"><FaHdd /></span>
+                <div className="drive-info">
+                    <div className="drive-name">{drive.driveName} ({drive.drivePath})</div>
+                    <div className="drive-usage">
+                        <div className="usage-bar">
+                            <div 
+                                className="usage-fill" 
+                                style={{ 
+                                    width: `${usagePercentage}%`,
+                                    backgroundColor: getUsageColor(usagePercentage)
+                                }}
+                            ></div>
+                        </div>
+                        <div className="usage-text">
+                            {formatBytes(drive.available)} free of {formatBytes(drive.total)}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 interface TabContentProps {
     tabId: string;
     isActive: boolean;
     viewMode: string;
     setViewMode: (mode: string) => void;
+    drives: Drive[];
 }
 
-export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMode, setViewMode }) => {
+export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMode, setViewMode, drives }) => {
     const [selectedItem, setSelectedItem] = useState<FileItem | null>(null);
+    const [hoveredDrive, setHoveredDrive] = useState<Drive | null>(null);
     const [showDetailsPanel, setShowDetailsPanel] = useState(true);
     const [sortBy, setSortBy] = useState<'name' | 'size' | 'date' | 'type'>('name');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
     const [currentView, setCurrentView] = useState<'thispc' | 'recents' | 'folder'>('thispc');
     const [activeRibbonTab, setActiveRibbonTab] = useState<'home' | 'share' | 'view' | 'manage' | 'organize' | 'tools' | 'help'>('home');
     const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+
+    // Convert drive to FileItem for details panel
+    const driveToFileItem = (drive: Drive): FileItem => {
+        const formatBytes = (bytes: number): string => {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        };
+
+        const driveType = drive.flags?.isRemovable 
+            ? (drive.flags?.isUSB ? 'USB Drive' : 'Removable Drive')
+            : drive.flags?.isSystem 
+            ? 'System Drive' 
+            : 'Local Disk';
+
+        const usagePercentage = drive.total > 0 ? ((drive.used / drive.total) * 100).toFixed(1) : '0';
+        const description = `${driveType} with ${formatBytes(drive.total)} total capacity. ${formatBytes(drive.available)} available space (${usagePercentage}% used).`;
+        
+        const tags = [];
+        if (drive.flags?.isSystem) tags.push('System');
+        if (drive.flags?.isRemovable) tags.push('Removable');
+        if (drive.flags?.isUSB) tags.push('USB');
+        if (drive.flags?.isReadOnly) tags.push('Read-Only');
+        if (drive.flags?.isSCSI) tags.push('SCSI');
+        
+        return {
+            name: `${drive.driveName} (${drive.drivePath})`,
+            type: 'folder' as const,
+            size: formatBytes(drive.total),
+            dateModified: new Date().toLocaleString(),
+            dateCreated: 'System Drive',
+            owner: 'System',
+            permissions: drive.flags?.isReadOnly ? 'Read Only' : 'Full Control',
+            description,
+            tags: tags.length > 0 ? tags : ['Drive'],
+            icon: <FaHdd />,
+            // Add drive-specific data for details panel
+            driveData: {
+                available: formatBytes(drive.available),
+                used: formatBytes(drive.used),
+                usagePercentage
+            }
+        };
+    };
+
+    const handleDriveHover = (drive: Drive) => {
+        setHoveredDrive(drive);
+    };
 
     const handleSidebarNavigation = (view: string, itemName: string) => {
         if (view === 'thispc') {
@@ -188,9 +282,8 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
             title: 'This PC',
             items: [
                 { name: 'This PC', icon: <FaDesktop />, active: currentView === 'thispc', view: 'thispc' },
-                { name: 'Local Disk (C:)', icon: <FaHdd />, active: false, view: 'folder' },
-                { name: 'Local Disk (D:)', icon: <FaHdd />, active: false, view: 'folder' },
-            ]
+            ],
+            drives: drives // Add drives separately
         }
     ];
 
@@ -574,6 +667,16 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
                                             {item.name}
                                         </div>
                                     ))}
+                                    {/* Render drives for This PC section */}
+                                    {section.drives && section.drives.map((drive, driveIndex) => (
+                                        <DriveItem
+                                            key={`drive-${driveIndex}`}
+                                            drive={drive}
+                                            active={currentView === 'folder' && selectedItem?.name === drive.driveName}
+                                            onClick={() => handleSidebarNavigation('folder', drive.driveName)}
+                                            onHover={handleDriveHover}
+                                        />
+                                    ))}
                                 </div>
                             ))}
                         </div>
@@ -660,7 +763,7 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
 
                     {/* Details Panel */}
                     <DetailsPanel 
-                        selectedItem={selectedItem} 
+                        selectedItem={hoveredDrive ? driveToFileItem(hoveredDrive) : selectedItem} 
                         isVisible={showDetailsPanel} 
                     />
                 </div>

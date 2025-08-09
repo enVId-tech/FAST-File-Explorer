@@ -7,6 +7,7 @@ import { TabBar } from './components/TabBar';
 import { TabContent } from './components/Views';
 import { Theme } from './components/ThemeSelector/ThemeSelector';
 import { CustomStyleManager } from './components/CustomStyleManager';
+import { Drive } from 'shared/file-data';
 
 interface Tab {
     id: string;
@@ -47,6 +48,9 @@ export default function Main(): React.JSX.Element {
         { id: 'tab-1', title: 'This PC', url: 'home', isActive: true },
     ]);
     const [activeTabId, setActiveTabId] = useState('tab-1');
+
+    // Drive data
+    const [drives, setDrives] = useState<Drive[]>([]);
 
     // Apply theme to document element and save to localStorage
     useEffect(() => {
@@ -279,9 +283,10 @@ export default function Main(): React.JSX.Element {
             console.log('Child folders:', folders);
         });
 
-        getDrives().then(drives => {
+        getDrives().then((drives: any) => {
             console.log('Drive data:', drives);
-        })
+            setDrives(drives.driveDetails);
+        });
     }, []);
 
     return (
@@ -309,6 +314,7 @@ export default function Main(): React.JSX.Element {
                     isActive={tab.id === activeTabId}
                     viewMode={viewMode}
                     setViewMode={setViewMode}
+                    drives={drives}
                 />
             ))}
         </div>
