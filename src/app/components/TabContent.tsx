@@ -3,6 +3,7 @@ import { FaFolder, FaFileExcel, FaFilePowerpoint, FaFileWord, FaFileImage, FaFil
 import { DetailsPanel } from './DetailsPanel';
 import { RecentsView } from './RecentsView';
 import { ThisPCView } from './ThisPCView';
+import { SettingsMenu } from './SettingsMenu';
 import './RecentsThisPCStyles.scss';
 
 interface FileItem {
@@ -32,6 +33,7 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
     const [currentView, setCurrentView] = useState<'thispc' | 'recents' | 'folder'>('thispc');
     const [activeRibbonTab, setActiveRibbonTab] = useState<'home' | 'share' | 'view' | 'manage' | 'organize' | 'tools' | 'help'>('home');
+    const [showSettingsMenu, setShowSettingsMenu] = useState(false);
 
     const handleSidebarNavigation = (view: string, itemName: string) => {
         if (view === 'thispc') {
@@ -558,21 +560,35 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
                 <div className="file-explorer-content">
                     {/* Modern Sidebar */}
                     <div className="sidebar">
-                        {sidebarSections.map((section, index) => (
-                            <div key={index} className="sidebar-section">
-                                <div className="sidebar-header">{section.title}</div>
-                                {section.items.map((item, itemIndex) => (
-                                    <div 
-                                        key={itemIndex} 
-                                        className={`sidebar-item ${item.active ? 'active' : ''}`}
-                                        onClick={() => handleSidebarNavigation(item.view, item.name)}
-                                    >
-                                        <span className="sidebar-icon">{item.icon}</span>
-                                        {item.name}
-                                    </div>
-                                ))}
+                        <div className="sidebar-main">
+                            {sidebarSections.map((section, index) => (
+                                <div key={index} className="sidebar-section">
+                                    <div className="sidebar-header">{section.title}</div>
+                                    {section.items.map((item, itemIndex) => (
+                                        <div 
+                                            key={itemIndex} 
+                                            className={`sidebar-item ${item.active ? 'active' : ''}`}
+                                            onClick={() => handleSidebarNavigation(item.view, item.name)}
+                                        >
+                                            <span className="sidebar-icon">{item.icon}</span>
+                                            {item.name}
+                                        </div>
+                                    ))}
+                                </div>
+                            ))}
+                        </div>
+                        
+                        {/* Settings Button */}
+                        <div className="sidebar-footer">
+                            <div 
+                                className="sidebar-item settings-button"
+                                onClick={() => setShowSettingsMenu(true)}
+                                title="Settings"
+                            >
+                                <span className="sidebar-icon"><FaCog /></span>
+                                Settings
                             </div>
-                        ))}
+                        </div>
                     </div>
 
                     {/* File Area */}
@@ -649,6 +665,12 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
                     />
                 </div>
             </div>
+            
+            {/* Settings Menu */}
+            <SettingsMenu 
+                isOpen={showSettingsMenu}
+                onClose={() => setShowSettingsMenu(false)}
+            />
         </div>
     );
 };

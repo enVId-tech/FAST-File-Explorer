@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { FaTimes, FaPlus, FaWindowMinimize, FaWindowMaximize, FaRegFile, FaFolder } from 'react-icons/fa';
-import { ThemeSelector, Theme } from './ThemeSelector';
+import { ThemeSelector, Theme } from './ThemeSelector/ThemeSelector';
 
 interface Tab {
     id: string;

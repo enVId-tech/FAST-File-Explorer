@@ -1,4 +1,19 @@
-// Modern File Explorer Styles with Enhanced Theme Support
+@import './themes/win10-light.scss';
+@import './themes/win10-dark.scss';
+@import './themes/win11-light.scss';
+@import './themes/win11-dark.scss';
+@import './themes/cyberpunk.scss';
+@import './themes/retro.scss';
+@import './themes/futuristic.scss';
+@import './themes/nature.scss';
+
+// Component Styles
+@import './components/ThemeSelector/ThemeSelector.scss';
+@import './components/TabBar.scss';
+@import './components/CustomStyleEditor.scss';
+@import './components/IconSelector/IconSelector.scss';
+@import './components/ColorPicker/ColorPicker.scss';
+@import './components/DetailsPanel.scss';
 
 // Global theme transition support
 :root {
@@ -14,23 +29,6 @@ body.theme-transitioning *::after {
               border-color 0.3s cubic-bezier(0.4, 0.0, 0.2, 1),
               box-shadow 0.3s cubic-bezier(0.4, 0.0, 0.2, 1) !important;
 }
-
-@import './themes/win10-light.scss';
-@import './themes/win10-dark.scss';
-@import './themes/win11-light.scss';
-@import './themes/win11-dark.scss';
-@import './themes/cyberpunk.scss';
-@import './themes/retro.scss';
-@import './themes/futuristic.scss';
-@import './themes/nature.scss';
-
-// Component Styles
-@import './components/ThemeSelector.scss';
-@import './components/TabBar.scss';
-@import './components/CustomStyleEditor.scss';
-@import './components/IconSelector.scss';
-@import './components/ColorPicker.scss';
-@import './components/DetailsPanel.scss';
 
 // Windows 11 Light Theme (Default)
 :root, [data-theme="win11-light"] {
@@ -495,9 +493,39 @@ body {
   background: var(--primary-bg);
   border-right: 1px solid var(--border-color);
   overflow-y: auto;
-  padding: 16px 0;
   margin: 0;
   box-shadow: var(--shadow-small);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  .sidebar-main {
+    flex: 1;
+    padding: 16px 0;
+    overflow-y: auto;
+  }
+
+  .sidebar-footer {
+    padding: 12px 0;
+    border-top: 1px solid var(--border-color);
+    background: var(--primary-bg);
+    margin-top: auto;
+    
+    .settings-button {
+      margin-right: 0 !important;
+      border-radius: 0 !important;
+      border-left: none !important;
+      
+      &:hover {
+        background: var(--hover-bg);
+        transform: none;
+      }
+      
+      &:active {
+        background: var(--selection-bg);
+      }
+    }
+  }
 
   .sidebar-section {
     margin-bottom: 24px;

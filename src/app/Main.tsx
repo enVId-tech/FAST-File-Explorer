@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import './main.scss';
 import './components/TabBar.scss';
-import './components/ThemeSelector.scss';
+import './components/ThemeSelector/ThemeSelector.scss';
 import { handleMinimize, handleMaximize, handleClose } from './components/window_handlers/handlers';
 import { TabBar } from './components/TabBar';
 import { TabContent } from './components/TabContent';
-import { Theme } from './components/ThemeSelector';
+import { Theme } from './components/ThemeSelector/ThemeSelector';
 import { CustomStyleManager } from './components/CustomStyleManager';
 
 interface Tab {
