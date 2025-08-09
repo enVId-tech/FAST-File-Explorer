@@ -697,7 +697,7 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
                     {/* File Area */}
                     <div className="file-area">
                         {currentView === 'thispc' && (
-                            <ThisPCView viewMode={viewMode} />
+                            <ThisPCView viewMode={viewMode} onDriveHover={handleDriveHover} />
                         )}
                         
                         {currentView === 'recents' && (

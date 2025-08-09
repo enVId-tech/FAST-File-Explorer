@@ -28,9 +28,10 @@ interface QuickAccessItem {
 
 interface ThisPCViewProps {
     viewMode: string;
+    onDriveHover?: (drive: any) => void;
 }
 
-export const ThisPCView: React.FC<ThisPCViewProps> = ({ viewMode }) => {
+export const ThisPCView: React.FC<ThisPCViewProps> = ({ viewMode, onDriveHover }) => {
     const [drives, setDrives] = useState<DriveInfo[]>([
         {
             name: 'Local Disk',
@@ -123,6 +124,34 @@ export const ThisPCView: React.FC<ThisPCViewProps> = ({ viewMode }) => {
     const [selectedDrive, setSelectedDrive] = useState<DriveInfo | null>(null);
     const [driveViewMode, setDriveViewMode] = useState<'large' | 'medium' | 'small'>('large');
     const [showIconPicker, setShowIconPicker] = useState<{ driveIndex: number; show: boolean }>({ driveIndex: -1, show: false });
+
+    // Convert DriveInfo to Drive format for details panel
+    const convertDriveInfo = (driveInfo: DriveInfo) => {
+        return {
+            driveName: driveInfo.name,
+            drivePath: driveInfo.letter,
+            total: driveInfo.totalBytes,
+            used: driveInfo.usedBytes,
+            available: driveInfo.freeBytes,
+            description: driveInfo.description,
+            flags: {
+                isCard: false,
+                isReadOnly: false,
+                isRemovable: driveInfo.type === 'removable',
+                isSCSI: false,
+                isSystem: driveInfo.letter === 'C:',
+                isUSB: driveInfo.type === 'removable',
+                isVirtual: driveInfo.type === 'network'
+            }
+        };
+    };
+
+    const handleDriveHover = (driveInfo: DriveInfo) => {
+        if (onDriveHover) {
+            const convertedDrive = convertDriveInfo(driveInfo);
+            onDriveHover(convertedDrive);
+        }
+    };
 
     // Icon selection options
     const iconOptions = [
@@ -401,7 +430,11 @@ export const ThisPCView: React.FC<ThisPCViewProps> = ({ viewMode }) => {
                 </h3>
                 <div className={`drives-container drives-${driveViewMode} drives-scrollable`}>
                     {drives.map((drive, index) => (
-                        <div key={index} className={`drive-card ${drive.type} ${drive.status}`}>
+                        <div 
+                            key={index} 
+                            className={`drive-card ${drive.type} ${drive.status}`}
+                            onMouseEnter={() => handleDriveHover(drive)}
+                        >
                             <div className="drive-header">
                                 <div className="drive-icon-large">
                                     {drive.customIcon || drive.icon}

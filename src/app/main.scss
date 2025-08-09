@@ -261,7 +261,7 @@ body {
   background: var(--scrollbar-thumb);
   border-radius: 4px;
   opacity: 0.6;
-  transition: all 0.3s ease;
+  transition: opacity 0.15s ease-out;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -269,12 +269,20 @@ body {
   opacity: 1;
 }
 
+::-webkit-scrollbar-thumb:active {
+  background: var(--scrollbar-hover);
+  opacity: 1;
+  transition: none; /* Disable transition during dragging */
+}
+
 ::-webkit-scrollbar-corner {
   background: transparent;
 }
 
-// Sidebar specific scrollbar (even cleaner)
+// Sidebar specific scrollbar (optimized for performance)
 .sidebar {
+  scroll-behavior: auto; /* Disable smooth scrolling for better performance */
+  
   &::-webkit-scrollbar {
     width: 6px;
   }
@@ -286,19 +294,30 @@ body {
   &::-webkit-scrollbar-thumb {
     background: rgba(107, 114, 128, 0.3);
     border-radius: 3px;
-    transition: all 0.3s ease;
+    transition: opacity 0.15s ease-out;
   }
   
   &::-webkit-scrollbar-thumb:hover {
     background: rgba(107, 114, 128, 0.6);
   }
   
-  // Only show scrollbar on hover
+  &::-webkit-scrollbar-thumb:active {
+    background: rgba(107, 114, 128, 0.8);
+    transition: none; /* Disable transition during dragging */
+  }
+  
+  // Only show scrollbar on hover (with faster transitions)
   &:not(:hover)::-webkit-scrollbar-thumb {
     opacity: 0;
   }
   
   &:hover::-webkit-scrollbar-thumb {
+    opacity: 1;
+  }
+  
+  // Ensure scrollbar is always visible when actively scrolling
+  &:active::-webkit-scrollbar-thumb,
+  &:focus-within::-webkit-scrollbar-thumb {
     opacity: 1;
   }
 }
@@ -948,6 +967,34 @@ body {
   background: var(--primary-bg);
   overflow-y: auto;
   padding: var(--spacing-medium);
+  scroll-behavior: auto; /* Disable smooth scrolling for better performance */
+  
+  // Optimized scrollbar for main content
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 4px;
+    opacity: 0.6;
+    transition: opacity 0.1s ease-out;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-hover);
+    opacity: 1;
+  }
+  
+  &::-webkit-scrollbar-thumb:active {
+    background: var(--scrollbar-hover);
+    opacity: 1;
+    transition: none; /* Remove transition during active dragging */
+  }
 }
 
 .item-size, .item-date {
