@@ -1,5 +1,5 @@
 /* Modern Tab Bar Styles with Theme Support */
-@import './TabBar.themes.scss';
+@use './TabBar.themes.scss';
 
 .tab-bar {
     display: flex;

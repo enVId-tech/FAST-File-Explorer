@@ -1,20 +1,20 @@
-@import './themes/win10-light.scss';
-@import './themes/win10-dark.scss';
-@import './themes/win11-light.scss';
-@import './themes/win11-dark.scss';
-@import './themes/cyberpunk.scss';
-@import './themes/retro.scss';
-@import './themes/futuristic.scss';
-@import './themes/nature.scss';
+@use './themes/win10-light.scss';
+@use './themes/win10-dark.scss';
+@use './themes/win11-light.scss';
+@use './themes/win11-dark.scss';
+@use './themes/cyberpunk.scss';
+@use './themes/retro.scss';
+@use './themes/futuristic.scss';
+@use './themes/nature.scss';
 
 // Component Styles
-@import './components/ThemeSelector/ThemeSelector.scss';
-@import './components/TabBar/TabBar.scss';
-@import './components/CustomStyleEditor/CustomStyleEditor.scss';
-@import './components/IconSelector/IconSelector.scss';
-@import './components/ColorPicker/ColorPicker.scss';
-@import './components/DetailsPanel/DetailsPanel.scss';
-@import './components/SettingsMenu/SettingsMenu.scss';
+@use './components/ThemeSelector/ThemeSelector.scss';
+@use './components/TabBar/TabBar.scss';
+@use './components/CustomStyleEditor/CustomStyleEditor.scss';
+@use './components/IconSelector/IconSelector.scss';
+@use './components/ColorPicker/ColorPicker.scss';
+@use './components/DetailsPanel/DetailsPanel.scss';
+@use './components/SettingsMenu/SettingsMenu.scss';
 
 // Global theme transition support
 :root {
