@@ -55,9 +55,9 @@
   --status-text: var(--text-secondary);
 
   // Scrollbar styling (Windows 11 style)
-  --scrollbar-thumb: #d1d5db;
+  --scrollbar-thumb: rgba(209, 213, 219, 0.8);
   --scrollbar-track: transparent;
-  --scrollbar-hover: #9ca3af;
+  --scrollbar-hover: rgba(156, 163, 175, 0.9);
 
   // Input/form elements
   --input-bg: #ffffff;

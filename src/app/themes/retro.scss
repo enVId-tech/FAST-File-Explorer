@@ -107,25 +107,28 @@
 
   // Retro scrollbars
   ::-webkit-scrollbar {
-    width: 16px;
-    height: 16px;
+    width: 12px;
+    height: 12px;
   }
 
   ::-webkit-scrollbar-track {
-    background: var(--border-color);
-    border: 1px inset var(--bg-secondary);
+    background: transparent;
   }
 
   ::-webkit-scrollbar-thumb {
     background: var(--accent-color);
+    border-radius: 2px;
     border: 1px outset var(--accent-color);
+    opacity: 0.8;
+    transition: all 0.3s ease;
     
     &:hover {
       background: var(--accent-hover);
+      opacity: 1;
     }
   }
 
   ::-webkit-scrollbar-corner {
-    background: var(--border-color);
+    background: transparent;
   }
 }

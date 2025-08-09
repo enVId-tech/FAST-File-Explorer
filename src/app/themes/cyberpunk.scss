@@ -78,8 +78,28 @@
   }
 
   // Scrollbars
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
   ::-webkit-scrollbar-thumb {
-    background: linear-gradient(45deg, #00ffff, #ff00ff);
+    background: linear-gradient(45deg, rgba(0, 255, 255, 0.6), rgba(255, 0, 255, 0.6));
+    border-radius: 4px;
     box-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
+    transition: all 0.3s ease;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(45deg, #00ffff, #ff00ff);
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+  }
+  
+  ::-webkit-scrollbar-corner {
+    background: transparent;
   }
 }
