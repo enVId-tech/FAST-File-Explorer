@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './ThemeSelector.scss';
 import { CustomStyleManager } from '../CustomStyleManager';
-import { CustomStyleEditor, CustomStyle } from '../CustomStyleEditor';
+import { CustomStyleEditor, CustomStyle } from '../CustomStyleEditor/CustomStyleEditor';
 
 // Public Theme type used by parent components (allows custom ids)
 export type Theme =

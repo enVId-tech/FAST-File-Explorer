@@ -9,11 +9,12 @@
 
 // Component Styles
 @import './components/ThemeSelector/ThemeSelector.scss';
-@import './components/TabBar.scss';
-@import './components/CustomStyleEditor.scss';
+@import './components/TabBar/TabBar.scss';
+@import './components/CustomStyleEditor/CustomStyleEditor.scss';
 @import './components/IconSelector/IconSelector.scss';
 @import './components/ColorPicker/ColorPicker.scss';
-@import './components/DetailsPanel.scss';
+@import './components/DetailsPanel/DetailsPanel.scss';
+@import './components/SettingsMenu/SettingsMenu.scss';
 
 // Global theme transition support
 :root {
@@ -506,23 +507,93 @@ body {
   }
 
   .sidebar-footer {
-    padding: 12px 0;
+    padding: 16px 12px;
     border-top: 1px solid var(--border-color);
-    background: var(--primary-bg);
+    background: var(--surface-bg);
     margin-top: auto;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
+    position: relative;
+    
+    // Add a subtle decorative line above
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 40px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+    }
     
     .settings-button {
-      margin-right: 0 !important;
-      border-radius: 0 !important;
+      width: 100%;
+      margin: 0 !important;
+      border-radius: 12px !important;
       border-left: none !important;
+      background: var(--primary-bg);
+      border: 1px solid var(--border-color);
+      position: relative;
+      font-weight: 500;
+      transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+      overflow: hidden;
       
       &:hover {
-        background: var(--hover-bg);
-        transform: none;
+        background: var(--accent-color);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
+        border-color: var(--accent-color);
+        
+        .sidebar-icon {
+          color: white;
+          transform: rotate(180deg) scale(1.1);
+        }
       }
       
       &:active {
-        background: var(--selection-bg);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+      }
+      
+      .sidebar-icon {
+        transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+      }
+      
+      // Add a subtle gradient effect
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.6s ease;
+      }
+      
+      &:hover::before {
+        left: 100%;
+      }
+      
+      // Add a subtle inner shadow
+      &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, transparent 50%, rgba(37, 99, 235, 0.1) 100%);
+        border-radius: 12px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+      }
+      
+      &:hover::after {
+        opacity: 1;
       }
     }
   }
