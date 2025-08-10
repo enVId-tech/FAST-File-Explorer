@@ -108,61 +108,74 @@ const Main = React.memo(function Main(): React.JSX.Element {
         }
     }, [viewMode]);
 
-    // Save zoom level to localStorage and apply to document with better scaling
+    // Save zoom level to localStorage and apply to document - INSTANT with window resizing
     useEffect(() => {
         try {
             localStorage.setItem('fast-file-explorer-zoom-level', zoomLevel.toString());
             
-            // Use CSS transform instead of zoom for better control - INSTANT APPLICATION
-            const zoomFactor = zoomLevel / 100;
+            // Use the native CSS zoom property for instant, no-animation scaling
             const rootElement = document.documentElement;
-            const bodyElement = document.body;
             
-            // Apply transform-based scaling immediately
-            bodyElement.style.transform = `scale(${zoomFactor})`;
-            bodyElement.style.transformOrigin = 'top left';
+            // Apply zoom immediately - this is instant with no animations
+            rootElement.style.zoom = `${zoomLevel}%`;
             
-            // Adjust the container dimensions to prevent scrollbars/gaps - INSTANT
-            if (zoomFactor !== 1) {
-                bodyElement.style.width = `${100 / zoomFactor}%`;
-                bodyElement.style.height = `${100 / zoomFactor}%`;
-                rootElement.style.overflow = 'hidden';
-            } else {
-                bodyElement.style.width = '';
-                bodyElement.style.height = '';
-                rootElement.style.overflow = '';
-            }
+            // Force immediate layout recalculation to prevent gaps
+            rootElement.style.minHeight = '100vh';
+            rootElement.style.height = 'auto';
             
-            // Optional: Still adjust window size for very dramatic zoom changes
-            // BUT with no delay for immediate response
-            const adjustWindowSize = async () => {
-                if (window.electronAPI?.window && (zoomLevel <= 70 || zoomLevel >= 130)) {
+            // Force the body to fill the available space
+            document.body.style.minHeight = '100vh';
+            document.body.style.height = 'auto';
+            
+            // INSTANT window resizing based on zoom level
+            const adjustWindowSizeInstantly = async () => {
+                if (window.electronAPI?.window) {
                     try {
                         const bounds = await window.electronAPI.window.getBounds();
                         
-                        // Only adjust for significant zoom changes
-                        let newWidth = bounds.width;
-                        let newHeight = bounds.height;
+                        // Calculate zoom factor
+                        const zoomFactor = zoomLevel / 100;
                         
-                        if (zoomLevel <= 70) {
-                            // When zoomed out significantly, increase window size
-                            const sizeFactor = 1 + (70 - zoomLevel) / 100;
-                            newWidth = Math.min(Math.round(bounds.width * sizeFactor), 1600);
-                            newHeight = Math.min(Math.round(bounds.height * sizeFactor), 1200);
-                        } else if (zoomLevel >= 130) {
-                            // When zoomed in significantly, potentially decrease window size
-                            const sizeFactor = 1 - (zoomLevel - 130) / 400;
-                            newWidth = Math.max(Math.round(bounds.width * sizeFactor), 800);
-                            newHeight = Math.max(Math.round(bounds.height * sizeFactor), 600);
+                        // Define base comfortable dimensions at 100% zoom
+                        const baseWidth = 1200;
+                        const baseHeight = 800;
+                        
+                        // Calculate new window size more intelligently
+                        // The goal: maintain comfortable usable area regardless of zoom
+                        let newWidth, newHeight;
+                        
+                        if (zoomLevel < 100) {
+                            // Zoomed out: increase window size moderately to maintain usability
+                            const expansionFactor = 1 + (100 - zoomLevel) / 300; // More conservative expansion
+                            newWidth = Math.min(Math.round(bounds.width * expansionFactor), 1400);
+                            newHeight = Math.min(Math.round(bounds.height * expansionFactor), 1000);
+                        } else if (zoomLevel > 100) {
+                            // Zoomed in: only resize for significant zoom levels
+                            if (zoomLevel >= 150) {
+                                const contractionFactor = 1 - (zoomLevel - 100) / 600; // Very conservative contraction
+                                newWidth = Math.max(Math.round(bounds.width * contractionFactor), 900);
+                                newHeight = Math.max(Math.round(bounds.height * contractionFactor), 700);
+                            } else {
+                                // For moderate zoom (100-150%), don't resize much
+                                newWidth = bounds.width;
+                                newHeight = bounds.height;
+                            }
+                        } else {
+                            // 100% zoom: keep current size
+                            newWidth = bounds.width;
+                            newHeight = bounds.height;
                         }
                         
+                        // Only resize if there's a meaningful difference (avoid micro-adjustments)
                         const widthDiff = Math.abs(bounds.width - newWidth);
                         const heightDiff = Math.abs(bounds.height - newHeight);
                         
-                        if (widthDiff > 50 || heightDiff > 50) {
+                        if (widthDiff > 30 || heightDiff > 30) {
+                            // Center the window while resizing
                             const newX = bounds.x + Math.round((bounds.width - newWidth) / 2);
                             const newY = bounds.y + Math.round((bounds.height - newHeight) / 2);
                             
+                            // Apply resize INSTANTLY - no animation
                             await window.electronAPI.window.setBounds({
                                 x: newX,
                                 y: newY,
@@ -176,8 +189,8 @@ const Main = React.memo(function Main(): React.JSX.Element {
                 }
             };
             
-            // Apply window resize immediately, no debouncing for instant response
-            adjustWindowSize();
+            // Execute window resize immediately - no setTimeout, no delays
+            adjustWindowSizeInstantly();
             
         } catch (error) {
             console.warn('Failed to save or apply zoom level:', error);
@@ -257,13 +270,15 @@ const Main = React.memo(function Main(): React.JSX.Element {
     // Cleanup zoom styles on unmount
     useEffect(() => {
         return () => {
-            const bodyElement = document.body;
             const rootElement = document.documentElement;
-            bodyElement.style.transform = '';
-            bodyElement.style.transformOrigin = '';
-            bodyElement.style.width = '';
+            const bodyElement = document.body;
+            // Reset zoom
+            rootElement.style.zoom = '';
+            // Reset layout styles
+            rootElement.style.minHeight = '';
+            rootElement.style.height = '';
+            bodyElement.style.minHeight = '';
             bodyElement.style.height = '';
-            rootElement.style.overflow = '';
         };
     }, []);
 

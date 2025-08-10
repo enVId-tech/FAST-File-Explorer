@@ -40,6 +40,16 @@ ipcMain.handle('window-get-bounds', () => {
 ipcMain.handle('window-set-bounds', (event, bounds: {x?: number, y?: number, width?: number, height?: number}) => {
     const focusedWindow = BrowserWindow.getFocusedWindow();
     if (focusedWindow) {
-        focusedWindow.setBounds(bounds);
+        // Set bounds immediately without animation
+        focusedWindow.setBounds(bounds, false); // Second parameter disables animation on some platforms
+        
+        // Force immediate layout update
+        focusedWindow.setSize(bounds.width || focusedWindow.getBounds().width, 
+                             bounds.height || focusedWindow.getBounds().height, 
+                             false); // false = no animation
+        
+        if (bounds.x !== undefined && bounds.y !== undefined) {
+            focusedWindow.setPosition(bounds.x, bounds.y, false); // false = no animation
+        }
     }
 });

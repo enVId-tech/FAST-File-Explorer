@@ -19,14 +19,16 @@ const createWindow = () => {
     minHeight: 600,
     frame: false,
     titleBarStyle: 'hidden',
-    icon: path.join(__dirname, '..', 'assets', 'icon.png'),
+    icon: path.join(app.getAppPath(), 'assets', 'icon.png'),
+    // Disable window animations for instant resizing
+    thickFrame: false, // Disable thick frame on Windows for faster resizing
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
       webSecurity: true,
       allowRunningInsecureContent: false,
       experimentalFeatures: false,
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, 'preload.js'), // IMPORTANT: Do not change from .js to .ts, breaks preloader
       // Performance optimizations
       backgroundThrottling: false, // Keep renderer active in background
       offscreen: false, // Disable offscreen rendering for better performance
