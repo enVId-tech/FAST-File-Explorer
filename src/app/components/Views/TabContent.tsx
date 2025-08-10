@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { FaFolder, FaFileExcel, FaFilePowerpoint, FaFileWord, FaFileImage, FaFileCode, FaFile, FaCopy, FaCut, FaPaste, FaTrash, FaEdit, FaFolderPlus, FaCog, FaArrowLeft, FaArrowRight, FaArrowUp, FaSearch, FaThLarge, FaBars, FaHdd, FaDesktop, FaDownload, FaMusic, FaVideo, FaFilePdf, FaSortAlphaDown, FaSortAlphaUp, FaSortNumericDown, FaSortNumericUp, FaChevronDown, FaPalette, FaSun, FaMoon, FaWindows, FaClock, FaShare, FaEnvelope, FaPrint, FaFax, FaUsers, FaInfoCircle, FaEye } from 'react-icons/fa';
 import { DetailsPanel } from '../DetailsPanel';
 import { RecentsView } from './RecentsView';
@@ -17,27 +17,37 @@ interface DriveItemProps {
     onHover: (drive: Drive) => void;
 }
 
-const DriveItem: React.FC<DriveItemProps> = ({ drive, active, onClick, onHover }) => {
-    const formatBytes = (bytes: number): string => {
+const DriveItem: React.FC<DriveItemProps> = React.memo(({ drive, active, onClick, onHover }) => {
+    const formatBytes = useCallback((bytes: number): string => {
         if (bytes === 0) return '0 B';
         const k = 1024;
         const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
         return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-    };
+    }, []);
 
-    const usagePercentage = drive.total > 0 ? (drive.used / drive.total) * 100 : 0;
-    const getUsageColor = (percentage: number): string => {
-        if (percentage < 70) return 'var(--accent-color)';
-        if (percentage < 85) return '#f59e0b';
-        return '#ef4444';
-    };
+    const { usagePercentage, usageColor } = useMemo(() => {
+        const percentage = drive.total > 0 ? (drive.used / drive.total) * 100 : 0;
+        const getUsageColor = (percentage: number): string => {
+            if (percentage < 70) return 'var(--accent-color)';
+            if (percentage < 85) return '#f59e0b';
+            return '#ef4444';
+        };
+        return {
+            usagePercentage: percentage,
+            usageColor: getUsageColor(percentage)
+        };
+    }, [drive.total, drive.used]);
+
+    const handleMouseEnter = useCallback(() => {
+        onHover(drive);
+    }, [drive, onHover]);
 
     return (
         <div 
             className={`sidebar-item drive-item ${active ? 'active' : ''}`}
             onClick={onClick}
-            onMouseEnter={() => onHover(drive)}
+            onMouseEnter={handleMouseEnter}
         >
             <div className="drive-main">
                 <span className="sidebar-icon"><FaHdd /></span>
@@ -49,7 +59,7 @@ const DriveItem: React.FC<DriveItemProps> = ({ drive, active, onClick, onHover }
                                 className="usage-fill" 
                                 style={{ 
                                     width: `${usagePercentage}%`,
-                                    backgroundColor: getUsageColor(usagePercentage)
+                                    backgroundColor: usageColor
                                 }}
                             ></div>
                         </div>
@@ -61,7 +71,7 @@ const DriveItem: React.FC<DriveItemProps> = ({ drive, active, onClick, onHover }
             </div>
         </div>
     );
-};
+});
 
 interface TabContentProps {
     tabId: string;
@@ -71,7 +81,7 @@ interface TabContentProps {
     drives: Drive[];
 }
 
-export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMode, setViewMode, drives }) => {
+export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActive, viewMode, setViewMode, drives }) => {
     const [selectedItem, setSelectedItem] = useState<FileItem | null>(null);
     const [hoveredDrive, setHoveredDrive] = useState<Drive | null>(null);
     const [showDetailsPanel, setShowDetailsPanel] = useState(true);
@@ -1010,4 +1020,4 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
             />
         </div>
     );
-};
+});

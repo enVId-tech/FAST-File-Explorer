@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
     FaFolder, 
     FaFile, 
@@ -25,7 +25,68 @@ interface FileListProps {
     selectedFile?: FileSystemItem | null;
 }
 
-export const FileList: React.FC<FileListProps> = ({
+// Memoized FileItem component for better performance
+const FileItem = React.memo<{
+    item: FileSystemItem;
+    isSelected: boolean;
+    onClick: (item: FileSystemItem) => void;
+    onDoubleClick: (item: FileSystemItem) => void;
+    viewMode: 'list' | 'grid';
+    getFileIcon: (item: FileSystemItem) => React.ReactElement;
+    formatFileSize: (size: number) => string;
+    formatDate: (date: Date) => string;
+}>(({ item, isSelected, onClick, onDoubleClick, viewMode, getFileIcon, formatFileSize, formatDate }) => {
+    if (viewMode === 'list') {
+        return (
+            <div
+                className={`file-list-item ${isSelected ? 'selected' : ''}`}
+                onClick={() => onClick(item)}
+                onDoubleClick={() => onDoubleClick(item)}
+            >
+                <div className="file-list-column name-column">
+                    <div className="file-name-container">
+                        {getFileIcon(item)}
+                        <span className="file-name">{item.name}</span>
+                    </div>
+                </div>
+                <div className="file-list-column date-column">
+                    {formatDate(item.modified)}
+                </div>
+                <div className="file-list-column type-column">
+                    {item.type === 'directory' ? 'File folder' : item.extension || 'File'}
+                </div>
+                <div className="file-list-column size-column">
+                    {item.type === 'directory' ? '' : formatFileSize(item.size)}
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div
+            className={`file-grid-item ${isSelected ? 'selected' : ''}`}
+            onClick={() => onClick(item)}
+            onDoubleClick={() => onDoubleClick(item)}
+        >
+            <div className="file-grid-icon">
+                {getFileIcon(item)}
+            </div>
+            <div className="file-grid-name">
+                {item.name}
+            </div>
+            <div className="file-grid-details">
+                <span className="file-grid-size">
+                    {item.type === 'directory' ? '' : formatFileSize(item.size)}
+                </span>
+                <span className="file-grid-date">
+                    {formatDate(item.modified)}
+                </span>
+            </div>
+        </div>
+    );
+});
+
+export const FileList = React.memo<FileListProps>(({
     currentPath,
     viewMode,
     onNavigate,
@@ -140,7 +201,7 @@ export const FileList: React.FC<FileListProps> = ({
         }
     }, []);
 
-    // Handle file/folder clicks
+    // Handle file/folder clicks with memoization
     const handleItemClick = useCallback((item: FileSystemItem) => {
         if (item.type === 'directory') {
             onNavigate?.(item.path);
@@ -148,6 +209,18 @@ export const FileList: React.FC<FileListProps> = ({
             onFileSelect?.(item);
         }
     }, [onNavigate, onFileSelect]);
+
+    // Handle double clicks with memoization
+    const handleItemDoubleClick = useCallback((item: FileSystemItem) => {
+        if (item.type === 'directory') {
+            onNavigate?.(item.path);
+        }
+    }, [onNavigate]);
+
+    // Memoized directory items for performance
+    const directoryItems = useMemo(() => {
+        return directoryContents?.items || [];
+    }, [directoryContents?.items]);
 
     // Load directory when path changes
     useEffect(() => {
@@ -196,29 +269,18 @@ export const FileList: React.FC<FileListProps> = ({
                     <div className="file-list-column size-column">Size</div>
                 </div>
                 <div className="file-list-content">
-                    {directoryContents.items.map((item, index) => (
-                        <div
+                    {directoryItems.map((item, index) => (
+                        <FileItem
                             key={`${item.name}-${index}`}
-                            className={`file-list-item ${selectedFile?.path === item.path ? 'selected' : ''}`}
-                            onClick={() => handleItemClick(item)}
-                            onDoubleClick={() => item.type === 'directory' && onNavigate?.(item.path)}
-                        >
-                            <div className="file-list-column name-column">
-                                <div className="file-name-container">
-                                    {getFileIcon(item)}
-                                    <span className="file-name">{item.name}</span>
-                                </div>
-                            </div>
-                            <div className="file-list-column date-column">
-                                {formatDate(item.modified)}
-                            </div>
-                            <div className="file-list-column type-column">
-                                {item.type === 'directory' ? 'File folder' : item.extension || 'File'}
-                            </div>
-                            <div className="file-list-column size-column">
-                                {item.type === 'directory' ? '' : formatFileSize(item.size)}
-                            </div>
-                        </div>
+                            item={item}
+                            isSelected={selectedFile?.path === item.path}
+                            onClick={handleItemClick}
+                            onDoubleClick={handleItemDoubleClick}
+                            viewMode={viewMode}
+                            getFileIcon={getFileIcon}
+                            formatFileSize={formatFileSize}
+                            formatDate={formatDate}
+                        />
                     ))}
                 </div>
             </div>
@@ -228,29 +290,19 @@ export const FileList: React.FC<FileListProps> = ({
     // Render file list in grid view
     return (
         <div className="file-grid-view">
-            {directoryContents.items.map((item, index) => (
-                <div
+            {directoryItems.map((item, index) => (
+                <FileItem
                     key={`${item.name}-${index}`}
-                    className={`file-grid-item ${selectedFile?.path === item.path ? 'selected' : ''}`}
-                    onClick={() => handleItemClick(item)}
-                    onDoubleClick={() => item.type === 'directory' && onNavigate?.(item.path)}
-                >
-                    <div className="file-grid-icon">
-                        {getFileIcon(item)}
-                    </div>
-                    <div className="file-grid-name">
-                        {item.name}
-                    </div>
-                    <div className="file-grid-details">
-                        <span className="file-grid-size">
-                            {item.type === 'directory' ? '' : formatFileSize(item.size)}
-                        </span>
-                        <span className="file-grid-date">
-                            {formatDate(item.modified)}
-                        </span>
-                    </div>
-                </div>
+                    item={item}
+                    isSelected={selectedFile?.path === item.path}
+                    onClick={handleItemClick}
+                    onDoubleClick={handleItemDoubleClick}
+                    viewMode={viewMode}
+                    getFileIcon={getFileIcon}
+                    formatFileSize={formatFileSize}
+                    formatDate={formatDate}
+                />
             ))}
         </div>
     );
-};
+});

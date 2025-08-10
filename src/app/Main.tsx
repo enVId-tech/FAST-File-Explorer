@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import './main.scss';
 import './components/TabBar/TabBar.scss';
 import './components/ThemeSelector/ThemeSelector.scss';
@@ -16,7 +16,8 @@ interface Tab {
     isActive: boolean;
 }
 
-export default function Main(): React.JSX.Element {
+// Memoized component for better performance
+const Main = React.memo(function Main(): React.JSX.Element {
     const [currentPath, setCurrentPath] = useState('This PC > Documents');
     
     // Initialize view mode from localStorage or default to list
@@ -107,7 +108,8 @@ export default function Main(): React.JSX.Element {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isThemeSelectorOpen]);
 
-    const getThemeDisplayName = () => {
+    // Memoized theme display name getter
+    const getThemeDisplayName = useCallback(() => {
         switch (theme) {
             case 'win11-light': return 'Windows 11 Light';
             case 'win11-dark': return 'Windows 11 Dark';
@@ -119,23 +121,23 @@ export default function Main(): React.JSX.Element {
             case 'nature': return 'Nature';
             default: return 'Windows 11 Light';
         }
-    };
+    }, [theme]);
 
-    // Window control handlers
-    const minimize = () => handleMinimize();
-    const maximize = () => handleMaximize(isMaximized, setIsMaximized);
-    const close = () => handleClose();
+    // Memoized window control handlers
+    const minimize = useCallback(() => handleMinimize(), []);
+    const maximize = useCallback(() => handleMaximize(isMaximized, setIsMaximized), [isMaximized]);
+    const close = useCallback(() => handleClose(), []);
 
-    // Theme change handler with debugging
-    const handleThemeChange = (newTheme: Theme) => {
+    // Memoized theme change handler
+    const handleThemeChange = useCallback((newTheme: Theme) => {
         console.log('Theme change requested from:', theme, 'to:', newTheme);
         console.log('ThemeSelector clicked, calling setTheme with:', newTheme);
         setTheme(newTheme);
         console.log('setTheme called successfully');
-    };
+    }, [theme]);
 
-    // Tab management handlers
-    const handleTabSelect = async (tabId: string) => {
+    // Memoized tab management handlers
+    const handleTabSelect = useCallback(async (tabId: string) => {
         setActiveTabId(tabId);
         setTabs(prev => prev.map(tab => ({ ...tab, isActive: tab.id === tabId })));
 
@@ -145,7 +147,7 @@ export default function Main(): React.JSX.Element {
         // } catch (error) {
         //     console.error('Failed to switch tab:', error);
         // }
-    };
+    }, []);
 
     const handleTabClose = async (tabId: string) => {
         if (tabs.length <= 1) {
@@ -319,4 +321,6 @@ export default function Main(): React.JSX.Element {
             ))}
         </div>
     );
-}
+});
+
+export default Main;

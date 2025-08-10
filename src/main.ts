@@ -13,11 +13,13 @@ let mainWindow: BrowserWindow;
 const createWindow = () => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1200,
+    height: 800,
+    minWidth: 800,
+    minHeight: 600,
     frame: false,
     titleBarStyle: 'hidden',
-    icon: path.join(__dirname, '..', 'public', 'icon.png'),
+    icon: path.join(__dirname, '..', 'assets', 'icon.png'),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -25,6 +27,9 @@ const createWindow = () => {
       allowRunningInsecureContent: false,
       experimentalFeatures: false,
       preload: path.join(__dirname, 'preload.js'),
+      // Performance optimizations
+      backgroundThrottling: false, // Keep renderer active in background
+      offscreen: false, // Disable offscreen rendering for better performance
     },
   });
 

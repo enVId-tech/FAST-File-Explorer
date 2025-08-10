@@ -20,6 +20,19 @@
 // Global theme transition support
 :root {
   --theme-transition: none; /* Will be set dynamically for smooth theme changes */
+  
+  /* Performance optimizations */
+  scroll-behavior: smooth;
+}
+
+/* CSS Performance Optimizations */
+* {
+  box-sizing: border-box;
+}
+
+/* Optimize rendering for interactive elements */
+button, input, select, textarea {
+  will-change: background-color;
 }
 
 // Apply smooth transitions to theme-related properties only when theme is changing

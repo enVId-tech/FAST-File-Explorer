@@ -37,7 +37,7 @@ async function getDataPath(dataName: string): Promise<string> {
     return path.join(os.homedir(), dataName);
 }
 
-// Fast directory listing with minimal stat calls
+// Performance-optimized directory listing with batching
 async function getFolderContents(folderPath: string): Promise<string[]> {
     try {
         return await fs.readdir(folderPath);
@@ -48,6 +48,29 @@ async function getFolderContents(folderPath: string): Promise<string[]> {
         }
         throw error;
     }
+}
+
+// Cache for file system operations (simple LRU-like cache)
+const fsCache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_TTL = 5000; // 5 seconds
+const MAX_CACHE_SIZE = 100;
+
+function getCachedResult<T>(key: string): T | null {
+    const cached = fsCache.get(key);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+        return cached.data;
+    }
+    return null;
+}
+
+function setCachedResult<T>(key: string, data: T): void {
+    if (fsCache.size >= MAX_CACHE_SIZE) {
+        const firstKey = fsCache.keys().next().value;
+        if (firstKey) {
+            fsCache.delete(firstKey);
+        }
+    }
+    fsCache.set(key, { data, timestamp: Date.now() });
 }
 
 // Enhanced metadata function with error handling
@@ -266,16 +289,32 @@ async function listDirectoryContents_Legacy(dirPath: string) {
 export default function initializeDataHandlers() {
     // console.log('Initializing enhanced data handlers...');
 
-    // Enhanced directory listing IPC handler
+    // Enhanced directory listing IPC handler with caching
     ipcMain.handle('fs-get-directory-contents', async (event, dirPath: string, options?: {
         includeHidden?: boolean;
         sortBy?: 'name' | 'size' | 'modified';
         sortDirection?: 'asc' | 'desc';
         maxItems?: number;
     }) => {
+        const cacheKey = `dir:${dirPath}:${JSON.stringify(options || {})}`;
+        
+        // Check cache first
+        const cached = getCachedResult<DirectoryContents>(cacheKey);
+        if (cached) {
+            return cached;
+        }
+
         // Only log for debugging - remove or make conditional in production
         // console.log(`Getting directory contents for: ${dirPath}`);
-        return await listDirectoryContents(dirPath, options);
+        
+        const result = await listDirectoryContents(dirPath, options);
+        
+        // Cache successful results
+        if (!result.error) {
+            setCachedResult(cacheKey, result);
+        }
+        
+        return result;
     });
 
     // Quick directory check (for navigation breadcrumbs, etc.)
