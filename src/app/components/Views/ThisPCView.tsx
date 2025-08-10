@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { FaHdd, FaDesktop, FaFolder, FaDownload, FaMusic, FaVideo, FaFileImage, FaSdCard, FaUsb, FaServer, FaCloud, FaNetworkWired, FaCog, FaBars, FaThLarge, FaExternalLinkAlt, FaGamepad, FaDatabase, FaTimes, FaChartBar, FaChartPie, FaArchive, FaHardHat } from 'react-icons/fa';
 
+interface Section {
+    id: string;
+    title: string;
+    icon: React.ReactNode;
+    visible: boolean;
+    items: QuickAccessItem[] | DriveInfo[] | NetworkDevice[];
+    type: 'quickaccess' | 'drives' | 'network';
+}
+
 interface DriveInfo {
     name: string;
     letter: string;
@@ -26,12 +35,153 @@ interface QuickAccessItem {
     description: string;
 }
 
+interface NetworkDevice {
+    name: string;
+    type: 'printer' | 'scanner' | 'media' | 'storage' | 'other';
+    address: string;
+    status: 'online' | 'offline' | 'unknown';
+    icon: React.ReactNode;
+    description: string;
+}
+
 interface ThisPCViewProps {
     viewMode: string;
     onDriveHover?: (drive: any) => void;
+    drives?: any[]; // Actual drives data
+    quickAccessItems?: QuickAccessItem[]; // Custom quick access items
+    networkDevices?: NetworkDevice[]; // Network devices data
 }
 
-export const ThisPCView: React.FC<ThisPCViewProps> = ({ viewMode, onDriveHover }) => {
+export const ThisPCView: React.FC<ThisPCViewProps> = ({ 
+    viewMode, 
+    onDriveHover, 
+    drives: propDrives, 
+    quickAccessItems: propQuickAccess, 
+    networkDevices: propNetworkDevices 
+}) => {
+    // Convert actual drive data to DriveInfo format
+    const convertActualDrives = (actualDrives: any[] = []): DriveInfo[] => {
+        return actualDrives.map(drive => {
+            const formatBytes = (bytes: number): string => {
+                if (bytes === 0) return '0 B';
+                const k = 1024;
+                const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+            };
+
+            const usagePercentage = drive.total > 0 ? Math.round((drive.used / drive.total) * 100) : 0;
+            const isNetworkDrive = drive.flags?.isVirtual || drive.drivePath.includes('\\\\') || drive.drivePath.startsWith('Z:');
+            
+            // Determine drive type and icon
+            let driveType: 'local' | 'removable' | 'network' | 'cd' = 'local';
+            let icon = <FaHdd style={{ color: '#0078D4' }} />;
+            let color = '#0078D4';
+
+            if (isNetworkDrive) {
+                driveType = 'network';
+                icon = <FaNetworkWired style={{ color: '#6B46C1' }} />;
+                color = '#6B46C1';
+            } else if (drive.flags?.isRemovable) {
+                driveType = 'removable';
+                if (drive.flags?.isUSB) {
+                    icon = <FaUsb style={{ color: '#8B4513' }} />;
+                    color = '#8B4513';
+                } else {
+                    icon = <FaSdCard style={{ color: '#FF6B6B' }} />;
+                    color = '#FF6B6B';
+                }
+            } else if (drive.flags?.isSystem) {
+                icon = <FaHdd style={{ color: '#0078D4' }} />;
+                color = '#0078D4';
+            }
+
+            // Determine status based on usage
+            let status: 'healthy' | 'warning' | 'critical' = 'healthy';
+            if (usagePercentage > 90) status = 'critical';
+            else if (usagePercentage > 75) status = 'warning';
+
+            return {
+                name: drive.driveName || `${driveType === 'network' ? 'Network Drive' : 'Local Disk'}`,
+                letter: drive.drivePath,
+                type: driveType,
+                totalSpace: formatBytes(drive.total),
+                totalBytes: drive.total,
+                usedSpace: formatBytes(drive.used),
+                usedBytes: drive.used,
+                freeSpace: formatBytes(drive.available),
+                freeBytes: drive.available,
+                usagePercentage,
+                icon,
+                customIcon: icon,
+                status,
+                color,
+                description: drive.description || `${driveType === 'network' ? 'Network storage' : 'Local storage'} device`
+            };
+        });
+    };
+
+    // Default network devices (placeholder data)
+    const getDefaultNetworkDevices = (): NetworkDevice[] => [
+        {
+            name: 'Network Printer',
+            type: 'printer',
+            address: '192.168.1.100',
+            status: 'online',
+            icon: <FaServer style={{ color: '#E74856' }} />,
+            description: 'HP LaserJet Pro printer on network'
+        },
+        {
+            name: 'Media Server',
+            type: 'media',
+            address: '192.168.1.50',
+            status: 'online',
+            icon: <FaVideo style={{ color: '#8B46C1' }} />,
+            description: 'Plex media server for streaming'
+        }
+    ];
+
+    // Use actual or default data
+    const actualDrives = propDrives ? convertActualDrives(propDrives) : [];
+    const networkDevices = propNetworkDevices || getDefaultNetworkDevices();
+    const dynamicQuickAccessItems = propQuickAccess || [
+        {
+            name: 'Desktop',
+            path: 'C:\\Users\\User\\Desktop',
+            icon: <FaDesktop style={{ color: '#0078D4' }} />,
+            description: 'Access your desktop files and shortcuts'
+        },
+        {
+            name: 'Documents',
+            path: 'C:\\Users\\User\\Documents',
+            icon: <FaFolder style={{ color: '#FDB900' }} />,
+            description: 'Your documents and important files'
+        },
+        {
+            name: 'Downloads',
+            path: 'C:\\Users\\User\\Downloads',
+            icon: <FaDownload style={{ color: '#107C10' }} />,
+            description: 'Files downloaded from the internet'
+        },
+        {
+            name: 'Pictures',
+            path: 'C:\\Users\\User\\Pictures',
+            icon: <FaFileImage style={{ color: '#E74856' }} />,
+            description: 'Photos and image files'
+        },
+        {
+            name: 'Music',
+            path: 'C:\\Users\\User\\Music',
+            icon: <FaMusic style={{ color: '#FF8C00' }} />,
+            description: 'Audio files and music library'
+        },
+        {
+            name: 'Videos',
+            path: 'C:\\Users\\User\\Videos',
+            icon: <FaVideo style={{ color: '#8B46C1' }} />,
+            description: 'Video files and movies'
+        }
+    ];
     const [drives, setDrives] = useState<DriveInfo[]>([
         {
             name: 'Local Disk',
@@ -153,6 +303,16 @@ export const ThisPCView: React.FC<ThisPCViewProps> = ({ viewMode, onDriveHover }
         }
     };
 
+    const handleQuickAccessClick = (item: QuickAccessItem) => {
+        console.log('Quick Access clicked:', item);
+        // TODO: Implement navigation to folder
+    };
+
+    const handleDriveClick = (drive: DriveInfo) => {
+        console.log('Drive clicked:', drive);
+        // TODO: Implement navigation to drive
+    };
+
     // Icon selection options
     const iconOptions = [
         { Icon: FaHdd, name: 'HDD', color: '#0078D4' },
@@ -204,44 +364,83 @@ export const ThisPCView: React.FC<ThisPCViewProps> = ({ viewMode, onDriveHover }
         );
     };
 
-    const [quickAccessItems] = useState<QuickAccessItem[]>([
+    // Separate local drives, network drives
+    const localDrives: DriveInfo[] = actualDrives.filter(drive => drive.type !== 'network');
+    const networkDrives: DriveInfo[] = actualDrives.filter(drive => drive.type === 'network');
+    
+    // Create dynamic sections
+    const [sections, setSections] = useState<Section[]>([
         {
-            name: 'Desktop',
-            path: 'C:\\Users\\User\\Desktop',
-            icon: <FaDesktop style={{ color: '#0078D4' }} />,
-            description: 'Access your desktop files and shortcuts'
+            id: 'quickaccess',
+            title: 'Folders',
+            icon: <FaFolder className="section-icon" />,
+            visible: dynamicQuickAccessItems.length > 0,
+            items: dynamicQuickAccessItems,
+            type: 'quickaccess'
         },
         {
-            name: 'Documents',
-            path: 'C:\\Users\\User\\Documents',
-            icon: <FaFolder style={{ color: '#FDB900' }} />,
-            description: 'Your documents and important files'
+            id: 'drives',
+            title: `Devices and drives (${localDrives.length})`,
+            icon: <FaHdd className="section-icon" />,
+            visible: localDrives.length > 0,
+            items: localDrives,
+            type: 'drives'
         },
         {
-            name: 'Downloads',
-            path: 'C:\\Users\\User\\Downloads',
-            icon: <FaDownload style={{ color: '#107C10' }} />,
-            description: 'Files downloaded from the internet'
+            id: 'network-drives',
+            title: `Network drives (${networkDrives.length})`,
+            icon: <FaNetworkWired className="section-icon" />,
+            visible: networkDrives.length > 0,
+            items: networkDrives,
+            type: 'drives'
         },
         {
-            name: 'Pictures',
-            path: 'C:\\Users\\User\\Pictures',
-            icon: <FaFileImage style={{ color: '#E74856' }} />,
-            description: 'Photos and image files'
-        },
-        {
-            name: 'Music',
-            path: 'C:\\Users\\User\\Music',
-            icon: <FaMusic style={{ color: '#FF8C00' }} />,
-            description: 'Audio files and music library'
-        },
-        {
-            name: 'Videos',
-            path: 'C:\\Users\\User\\Videos',
-            icon: <FaVideo style={{ color: '#8B4513' }} />,
-            description: 'Video files and movies'
+            id: 'network-devices',
+            title: `Network devices and drives (${networkDevices.length})`,
+            icon: <FaServer className="section-icon" />,
+            visible: networkDevices.length > 0,
+            items: networkDevices,
+            type: 'network'
         }
     ]);
+
+    // Update sections when data changes
+    useEffect(() => {
+        setSections([
+            {
+                id: 'quickaccess',
+                title: 'Folders',
+                icon: <FaFolder className="section-icon" />,
+                visible: dynamicQuickAccessItems.length > 0,
+                items: dynamicQuickAccessItems,
+                type: 'quickaccess'
+            },
+            {
+                id: 'drives',
+                title: `Devices and drives (${localDrives.length})`,
+                icon: <FaHdd className="section-icon" />,
+                visible: localDrives.length > 0,
+                items: localDrives,
+                type: 'drives'
+            },
+            {
+                id: 'network-drives',
+                title: `Network drives (${networkDrives.length})`,
+                icon: <FaNetworkWired className="section-icon" />,
+                visible: networkDrives.length > 0,
+                items: networkDrives,
+                type: 'drives'
+            },
+            {
+                id: 'network-devices',
+                title: `Network devices (${networkDevices.length})`,
+                icon: <FaServer className="section-icon" />,
+                visible: networkDevices.length > 0,
+                items: networkDevices,
+                type: 'network'
+            }
+        ]);
+    }, [propDrives, propQuickAccess, propNetworkDevices]);
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -405,8 +604,8 @@ export const ThisPCView: React.FC<ThisPCViewProps> = ({ viewMode, onDriveHover }
                     Folders
                 </h3>
                 <div className={`quick-access-${viewMode}`}>
-                    {quickAccessItems.map((item, index) => (
-                        <div key={index} className="quick-access-item">
+                    {dynamicQuickAccessItems.map((item: QuickAccessItem, index: number) => (
+                        <div key={index} className="quick-access-item" onClick={() => handleQuickAccessClick(item)}>
                             <div className="item-icon-container">
                                 {item.icon}
                             </div>
@@ -422,120 +621,149 @@ export const ThisPCView: React.FC<ThisPCViewProps> = ({ viewMode, onDriveHover }
                 </div>
             </div>
 
-            {/* Drives Section */}
-            <div className="drives-section">
-                <h3 className="section-title">
-                    <FaHdd className="section-icon" />
-                    Devices and drives ({drives.length})
-                </h3>
-                <div className={`drives-container drives-${driveViewMode} drives-scrollable`}>
-                    {drives.map((drive, index) => (
-                        <div 
-                            key={index} 
-                            className={`drive-card ${drive.type} ${drive.status}`}
-                            onMouseEnter={() => handleDriveHover(drive)}
-                        >
-                            <div className="drive-header">
-                                <div className="drive-icon-large">
-                                    {drive.customIcon || drive.icon}
-                                    <div className={`status-dot ${drive.status}`}></div>
-                                    <button 
-                                        className="icon-edit-btn"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setShowIconPicker({ driveIndex: index, show: true });
-                                        }}
-                                        title="Change drive icon"
-                                    >
-                                        <FaCog />
-                                    </button>
-                                </div>
-                                
-                                <div className="drive-info">
-                                    <div className="drive-title">
-                                        <h4 className="drive-name">{drive.name}</h4>
-                                        <span className="drive-letter">({drive.letter})</span>
+            {/* Dynamic Sections */}
+            {sections.filter(section => section.visible).map((section: Section) => (
+                <div key={section.id} className={section.type === 'drives' ? 'drives-section' : 'section'}>
+                    <h3 className="section-title">
+                        {section.icon}
+                        {section.title}
+                    </h3>
+                    
+                    {section.type === 'drives' && (
+                        <div className={`drives-container drives-${driveViewMode} drives-scrollable`}>
+                            {(section.items as DriveInfo[]).map((drive: DriveInfo, index: number) => (
+                                <div 
+                                    key={index} 
+                                    className={`drive-card ${drive.type} ${drive.status}`}
+                                    onClick={() => handleDriveClick(drive)}
+                                    onMouseEnter={() => handleDriveHover(drive)}
+                                >
+                                    <div className="drive-header">
+                                        <div className="drive-icon-large">
+                                            {drive.customIcon || drive.icon}
+                                            <div className={`status-dot ${drive.status}`}></div>
+                                            <button 
+                                                className="icon-edit-btn"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setShowIconPicker({ driveIndex: index, show: true });
+                                                }}
+                                                title="Change drive icon"
+                                            >
+                                                <FaCog />
+                                            </button>
+                                        </div>
+                                        
+                                        <div className="drive-info">
+                                            <div className="drive-title">
+                                                <h4 className="drive-name">{drive.name}</h4>
+                                                <span className="drive-letter">({drive.letter})</span>
+                                            </div>
+                                            <div className="drive-type-badge">
+                                                {drive.type === 'local' && 'Local Disk'}
+                                                {drive.type === 'removable' && 'Removable Disk'}
+                                                {drive.type === 'network' && 'Network Drive'}
+                                                {drive.type === 'cd' && 'CD/DVD Drive'}
+                                            </div>
+                                            {drive.description && (
+                                                <p className="drive-description">{drive.description}</p>
+                                            )}
+                                        </div>
+
+                                        <div className="drive-actions">
+                                            <button className="action-btn" title="Properties">
+                                                <FaCog />
+                                            </button>
+                                            <button className="action-btn" title="Open in new window">
+                                                <FaExternalLinkAlt />
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div className="drive-type-badge">
-                                        {drive.type === 'local' && 'Local Disk'}
-                                        {drive.type === 'removable' && 'Removable Disk'}
-                                        {drive.type === 'network' && 'Network Drive'}
-                                        {drive.type === 'cd' && 'CD/DVD Drive'}
+
+                                    <div className="drive-storage">
+                                        {visualizationMode === 'bar' ? (
+                                            <>
+                                                <div className="storage-bar-container">
+                                                    <div className="storage-bar">
+                                                        <div 
+                                                            className={`storage-fill ${formatBytes(drive.usagePercentage)}`}
+                                                            style={{ 
+                                                                width: `${drive.usagePercentage}%`,
+                                                                background: `linear-gradient(90deg, ${drive.color}, ${drive.color}aa)`
+                                                            }}
+                                                        ></div>
+                                                    </div>
+                                                    <div className="storage-labels">
+                                                        <span className="storage-used">Used: {drive.usedSpace}</span>
+                                                        <span className="storage-free">Free: {drive.freeSpace}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="storage-summary">
+                                                    <div className="storage-total">
+                                                        <strong>{drive.totalSpace}</strong> total
+                                                    </div>
+                                                    <div className={`storage-percentage ${formatBytes(drive.usagePercentage)}`}>
+                                                        {drive.usagePercentage}% used
+                                                    </div>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="pie-visualization">
+                                                <PieChart drive={drive} />
+                                                <div className="storage-details">
+                                                    <div className="detail-item">
+                                                        <div className="detail-color-indicator" style={{ backgroundColor: drive.color }}></div>
+                                                        <span className="detail-label">Used</span>
+                                                        <span className="detail-value">{drive.usedSpace}</span>
+                                                    </div>
+                                                    <div className="detail-item">
+                                                        <div className="detail-color-indicator" style={{ backgroundColor: 'var(--border-primary)' }}></div>
+                                                        <span className="detail-label">Free</span>
+                                                        <span className="detail-value">{drive.freeSpace}</span>
+                                                    </div>
+                                                    <div className="total-space">
+                                                        Total: <strong>{drive.totalSpace}</strong>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
-                                    {drive.description && (
-                                        <p className="drive-description">{drive.description}</p>
+
+                                    {drive.type === 'network' && (
+                                        <div className="network-indicator">
+                                            <FaCloud className="cloud-icon" />
+                                            <span>Connected to network</span>
+                                        </div>
                                     )}
                                 </div>
-
-                                <div className="drive-actions">
-                                    <button className="action-btn" title="Properties">
-                                        <FaCog />
-                                    </button>
-                                    <button className="action-btn" title="Open in new window">
-                                        <FaExternalLinkAlt />
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className="drive-storage">
-                                {visualizationMode === 'bar' ? (
-                                    <>
-                                        <div className="storage-bar-container">
-                                            <div className="storage-bar">
-                                                <div 
-                                                    className={`storage-fill ${formatBytes(drive.usagePercentage)}`}
-                                                    style={{ 
-                                                        width: `${drive.usagePercentage}%`,
-                                                        background: `linear-gradient(90deg, ${drive.color}, ${drive.color}aa)`
-                                                    }}
-                                                ></div>
-                                            </div>
-                                            <div className="storage-labels">
-                                                <span className="storage-used">Used: {drive.usedSpace}</span>
-                                                <span className="storage-free">Free: {drive.freeSpace}</span>
-                                            </div>
-                                        </div>
-                                        <div className="storage-summary">
-                                            <div className="storage-total">
-                                                <strong>{drive.totalSpace}</strong> total
-                                            </div>
-                                            <div className={`storage-percentage ${formatBytes(drive.usagePercentage)}`}>
-                                                {drive.usagePercentage}% used
-                                            </div>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <div className="pie-visualization">
-                                        <PieChart drive={drive} />
-                                        <div className="storage-details">
-                                            <div className="detail-item">
-                                                <div className="detail-color-indicator" style={{ backgroundColor: drive.color }}></div>
-                                                <span className="detail-label">Used</span>
-                                                <span className="detail-value">{drive.usedSpace}</span>
-                                            </div>
-                                            <div className="detail-item">
-                                                <div className="detail-color-indicator" style={{ backgroundColor: 'var(--border-primary)' }}></div>
-                                                <span className="detail-label">Free</span>
-                                                <span className="detail-value">{drive.freeSpace}</span>
-                                            </div>
-                                            <div className="total-space">
-                                                Total: <strong>{drive.totalSpace}</strong>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            {drive.type === 'network' && (
-                                <div className="network-indicator">
-                                    <FaCloud className="cloud-icon" />
-                                    <span>Connected to network</span>
-                                </div>
-                            )}
+                            ))}
                         </div>
-                    ))}
+                    )}
+
+                    {section.type === 'network' && (
+                        <div className="network-devices-container">
+                            {(section.items as NetworkDevice[]).map((device: NetworkDevice, index: number) => (
+                                <div 
+                                    key={index} 
+                                    className="network-device-card"
+                                    onClick={() => console.log('Network device clicked:', device)}
+                                >
+                                    <div className="device-icon-container">
+                                        {device.icon}
+                                        <div className={`device-status-dot ${device.status}`}></div>
+                                    </div>
+                                    <div className="device-info">
+                                        <h4 className="device-name">{device.name}</h4>
+                                        <p className="device-type">{device.type}</p>
+                                        <p className="device-address">{device.address}</p>
+                                        <span className={`device-status ${device.status}`}>{device.status}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
-            </div>
+            ))}
             </div>
         </div>
     );

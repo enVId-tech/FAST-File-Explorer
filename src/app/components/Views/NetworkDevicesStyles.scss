@@ -1,0 +1,143 @@
+/* Network Devices Styling for This PC View */
+.network-devices-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    padding: 0.5rem;
+}
+
+.network-device-card {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    background: var(--bg-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: var(--bg-hover);
+        border-color: var(--border-hover);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .device-icon-container {
+        position: relative;
+        margin-right: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        svg {
+            font-size: 2rem;
+            color: var(--icon-primary);
+        }
+
+        .device-status-dot {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid var(--bg-secondary);
+
+            &.online {
+                background-color: var(--success-color);
+            }
+
+            &.offline {
+                background-color: var(--error-color);
+            }
+
+            &.unknown {
+                background-color: var(--warning-color);
+            }
+        }
+    }
+
+    .device-info {
+        flex: 1;
+
+        .device-name {
+            margin: 0 0 0.25rem 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .device-type {
+            margin: 0 0 0.25rem 0;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-transform: capitalize;
+        }
+
+        .device-address {
+            margin: 0 0 0.25rem 0;
+            font-size: 0.8rem;
+            color: var(--text-tertiary);
+            font-family: monospace;
+        }
+
+        .device-status {
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+
+            &.online {
+                color: var(--success-color);
+            }
+
+            &.offline {
+                color: var(--error-color);
+            }
+
+            &.unknown {
+                color: var(--warning-color);
+            }
+        }
+    }
+}
+
+/* Section styling adjustments */
+.section {
+    .section-title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+
+        .section-icon {
+            font-size: 1rem;
+            color: var(--icon-primary);
+        }
+    }
+}
+
+/* Responsive design for network devices */
+@media (max-width: 768px) {
+    .network-devices-container {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+
+    .network-device-card {
+        padding: 0.75rem;
+
+        .device-icon-container svg {
+            font-size: 1.5rem;
+        }
+
+        .device-info {
+            .device-name {
+                font-size: 0.9rem;
+            }
+        }
+    }
+}

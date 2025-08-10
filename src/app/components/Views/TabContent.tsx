@@ -3,8 +3,10 @@ import { FaFolder, FaFileExcel, FaFilePowerpoint, FaFileWord, FaFileImage, FaFil
 import { DetailsPanel } from '../DetailsPanel';
 import { RecentsView } from './RecentsView';
 import { ThisPCView } from './ThisPCView';
-import { SettingsMenu } from '../SettingsMenu';
+import { FileList } from './FileList';
+import { SettingsMenu } from '../SettingsMenu/SettingsMenu';
 import { Drive, FileItem } from 'shared/file-data';
+import { FileSystemItem } from '../../../shared/ipc-channels';
 import './RecentsThisPCStyles.scss';
 
 // Drive Item Component with usage bar
@@ -78,6 +80,20 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
     const [currentView, setCurrentView] = useState<'thispc' | 'recents' | 'folder'>('thispc');
     const [activeRibbonTab, setActiveRibbonTab] = useState<'home' | 'share' | 'view' | 'manage' | 'organize' | 'tools' | 'help'>('home');
     const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+    
+    // File browser state
+    const [currentPath, setCurrentPath] = useState<string>('');
+    const [selectedFile, setSelectedFile] = useState<FileSystemItem | null>(null);
+    
+    // Navigation history
+    const [navigationHistory, setNavigationHistory] = useState<string[]>([]);
+    const [historyIndex, setHistoryIndex] = useState<number>(-1);
+    
+    // Resizable panel states
+    const [sidebarWidth, setSidebarWidth] = useState(280);
+    const [detailsPanelWidth, setDetailsPanelWidth] = useState(320);
+    const [isResizingSidebar, setIsResizingSidebar] = useState(false);
+    const [isResizingDetails, setIsResizingDetails] = useState(false);
 
     // Convert drive to FileItem for details panel
     const driveToFileItem = (drive: Drive): FileItem => {
@@ -129,13 +145,178 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
         setHoveredDrive(drive);
     };
 
-    const handleSidebarNavigation = (view: string, itemName: string) => {
+    // Resize handlers
+    const handleSidebarResize = (e: React.MouseEvent) => {
+        e.preventDefault();
+        setIsResizingSidebar(true);
+        const startX = e.clientX;
+        const startWidth = sidebarWidth;
+
+        const handleMouseMove = (e: MouseEvent) => {
+            e.preventDefault();
+            const diff = e.clientX - startX;
+            const newWidth = Math.max(200, Math.min(500, startWidth + diff));
+            setSidebarWidth(newWidth);
+        };
+
+        const handleMouseUp = () => {
+            setIsResizingSidebar(false);
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+    };
+
+    const handleDetailsPanelResize = (e: React.MouseEvent) => {
+        e.preventDefault();
+        setIsResizingDetails(true);
+        const startX = e.clientX;
+        const startWidth = detailsPanelWidth;
+
+        const handleMouseMove = (e: MouseEvent) => {
+            e.preventDefault();
+            const diff = startX - e.clientX;
+            const newWidth = Math.max(250, Math.min(600, startWidth + diff));
+            setDetailsPanelWidth(newWidth);
+        };
+
+        const handleMouseUp = () => {
+            setIsResizingDetails(false);
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+    };
+
+    // Navigation functions
+    const navigateToPath = (path: string) => {
+        // Add current path to history if it's different
+        if (currentPath && path !== currentPath) {
+            const newHistory = navigationHistory.slice(0, historyIndex + 1);
+            newHistory.push(currentPath);
+            setNavigationHistory(newHistory);
+            setHistoryIndex(newHistory.length - 1);
+        }
+        
+        setCurrentPath(path);
+        setCurrentView('folder');
+    };
+
+    const navigateBack = () => {
+        if (historyIndex > 0) {
+            const newIndex = historyIndex - 1;
+            setHistoryIndex(newIndex);
+            setCurrentPath(navigationHistory[newIndex]);
+            setCurrentView('folder');
+        }
+    };
+
+    const navigateForward = () => {
+        if (historyIndex < navigationHistory.length - 1) {
+            const newIndex = historyIndex + 1;
+            setHistoryIndex(newIndex);
+            setCurrentPath(navigationHistory[newIndex]);
+            setCurrentView('folder');
+        }
+    };
+
+    const navigateUp = async () => {
+        if (currentPath) {
+            try {
+                const parentPath = await window.electronAPI.fs.getParentDirectory(currentPath);
+                if (parentPath) {
+                    navigateToPath(parentPath);
+                }
+            } catch (error) {
+                console.error('Failed to navigate up:', error);
+            }
+        }
+    };
+
+    // Generate breadcrumbs from current path
+    const generateBreadcrumbs = () => {
+        if (!currentPath) return [];
+        
+        const parts = currentPath.split(/[\\\\/]/).filter(Boolean);
+        const breadcrumbs = [];
+        
+        let currentPathBuild = '';
+        if (window.electronAPI.system.platform === 'win32' && parts[0]?.includes(':')) {
+            // Windows drive
+            currentPathBuild = parts[0] + '\\';
+            breadcrumbs.push({ name: parts[0], path: currentPathBuild });
+            parts.shift();
+        }
+        
+        parts.forEach((part) => {
+            currentPathBuild = currentPathBuild.endsWith('/') || currentPathBuild.endsWith('\\') 
+                ? currentPathBuild + part 
+                : currentPathBuild + (window.electronAPI.system.platform === 'win32' ? '\\' : '/') + part;
+            breadcrumbs.push({ name: part, path: currentPathBuild });
+        });
+        
+        return breadcrumbs;
+    };
+
+    // File browser handlers  
+    const handleFileNavigation = (path: string) => {
+        navigateToPath(path);
+    };
+
+    const handleFileSelect = (file: FileSystemItem) => {
+        setSelectedFile(file);
+        console.log('File selected:', file);
+    };
+
+    const handleDirectorySelect = (directory: FileSystemItem) => {
+        setCurrentPath(directory.path);
+        console.log('Directory selected:', directory);
+    };
+
+    const handleSidebarNavigation = async (view: string, itemName: string) => {
         if (view === 'thispc') {
             setCurrentView('thispc');
+            setSelectedFile(null);
         } else if (view === 'recents') {
             setCurrentView('recents');
+            setSelectedFile(null);
         } else {
             setCurrentView('folder');
+            // Navigate to the selected folder
+            try {
+                let path = '';
+                if (itemName === 'Documents') {
+                    path = await window.electronAPI.fs.getKnownFolder('documents');
+                } else if (itemName === 'Downloads') {
+                    path = await window.electronAPI.fs.getKnownFolder('downloads');
+                } else if (itemName === 'Desktop') {
+                    path = await window.electronAPI.fs.getKnownFolder('desktop');
+                } else if (itemName === 'Pictures') {
+                    path = await window.electronAPI.fs.getKnownFolder('pictures');
+                } else if (itemName === 'Music') {
+                    path = await window.electronAPI.fs.getKnownFolder('music');
+                } else if (itemName === 'Videos') {
+                    path = await window.electronAPI.fs.getKnownFolder('videos');
+                } else if (itemName === 'Home') {
+                    path = await window.electronAPI.fs.getKnownFolder('home');
+                } else {
+                    // Handle drive navigation
+                    const selectedDrive = drives.find(drive => drive.driveName === itemName);
+                    if (selectedDrive) {
+                        path = selectedDrive.drivePath;
+                    }
+                }
+                
+                if (path) {
+                    setCurrentPath(path);
+                }
+            } catch (error) {
+                console.error('Failed to navigate to folder:', error);
+            }
         }
     };
     const fileItems: FileItem[] = [
@@ -268,6 +449,38 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
     ];
 
     // Sidebar items with modern design
+    // Separate local and network drives
+    const localDrives = drives.filter(drive => !drive.flags?.isVirtual && drive.drivePath !== 'Z:');
+    const networkDrives = drives.filter(drive => drive.flags?.isVirtual || drive.drivePath === 'Z:');
+
+    // Sample network devices data
+    const networkDevices = [
+        {
+            name: 'DESKTOP-PC01',
+            type: 'other' as const,
+            address: '192.168.1.100',
+            status: 'online' as const,
+            icon: <FaDesktop style={{ color: '#0078D4' }} />,
+            description: 'Windows desktop computer on network'
+        },
+        {
+            name: 'NAS-SERVER',
+            type: 'storage' as const,
+            address: '192.168.1.50',
+            status: 'online' as const,
+            icon: <FaHdd style={{ color: '#107C10' }} />,
+            description: 'Network attached storage device'
+        },
+        {
+            name: 'PRINTER-HP',
+            type: 'printer' as const,
+            address: '192.168.1.200',
+            status: 'offline' as const,
+            icon: <FaCog style={{ color: '#E74856' }} />,
+            description: 'HP LaserJet network printer'
+        }
+    ];
+
     const sidebarSections = [
         {
             title: 'Quick Access',
@@ -283,8 +496,13 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
             items: [
                 { name: 'This PC', icon: <FaDesktop />, active: currentView === 'thispc', view: 'thispc' },
             ],
-            drives: drives // Add drives separately
-        }
+            drives: localDrives // Local drives only
+        },
+        ...(networkDrives.length > 0 ? [{
+            title: 'Network Locations',
+            items: [],
+            drives: networkDrives // Network drives separately
+        }] : [])
     ];
 
     // Sort files
@@ -344,21 +562,53 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
                 {/* Modern Toolbar */}
                 <div className="toolbar">
                     <div className="toolbar-section">
-                        <button className="toolbar-button"><FaArrowLeft /></button>
-                        <button className="toolbar-button"><FaArrowRight /></button>
-                        <button className="toolbar-button"><FaArrowUp /></button>
+                        <button 
+                            className="toolbar-button" 
+                            onClick={navigateBack}
+                            disabled={historyIndex <= 0}
+                            title="Back"
+                        >
+                            <FaArrowLeft />
+                        </button>
+                        <button 
+                            className="toolbar-button" 
+                            onClick={navigateForward}
+                            disabled={historyIndex >= navigationHistory.length - 1}
+                            title="Forward"
+                        >
+                            <FaArrowRight />
+                        </button>
+                        <button 
+                            className="toolbar-button" 
+                            onClick={navigateUp}
+                            disabled={!currentPath || currentView !== 'folder'}
+                            title="Up"
+                        >
+                            <FaArrowUp />
+                        </button>
                     </div>
                     <div className="address-bar-container">
                         <div className="address-bar">
-                            <span className="path-segment active">
-                                {currentView === 'thispc' && 'This PC'}
-                                {currentView === 'recents' && 'Recent Files'}
-                                {currentView === 'folder' && 'This PC'}
-                            </span>
-                            {currentView === 'folder' && (
+                            {currentView === 'thispc' && (
+                                <span className="path-segment active">This PC</span>
+                            )}
+                            {currentView === 'recents' && (
+                                <span className="path-segment active">Recent Files</span>
+                            )}
+                            {currentView === 'folder' && generateBreadcrumbs().length > 0 && (
                                 <>
-                                    <span className="path-separator">›</span>
-                                    <span className="path-segment">Documents</span>
+                                    {generateBreadcrumbs().map((breadcrumb, index) => (
+                                        <React.Fragment key={breadcrumb.path}>
+                                            {index > 0 && <span className="path-separator">›</span>}
+                                            <span 
+                                                className={`path-segment ${index === generateBreadcrumbs().length - 1 ? 'active' : ''}`}
+                                                onClick={() => index < generateBreadcrumbs().length - 1 && navigateToPath(breadcrumb.path)}
+                                                style={{ cursor: index < generateBreadcrumbs().length - 1 ? 'pointer' : 'default' }}
+                                            >
+                                                {breadcrumb.name}
+                                            </span>
+                                        </React.Fragment>
+                                    ))}
                                 </>
                             )}
                         </div>
@@ -652,7 +902,10 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
                 {/* File Explorer Content */}
                 <div className="file-explorer-content">
                     {/* Modern Sidebar */}
-                    <div className="sidebar">
+                    <div 
+                        className="sidebar" 
+                        style={{ width: `${sidebarWidth}px`, minWidth: '200px', maxWidth: '500px' }}
+                    >
                         <div className="sidebar-main">
                             {sidebarSections.map((section, index) => (
                                 <div key={index} className="sidebar-section">
@@ -694,10 +947,23 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
                         </div>
                     </div>
 
+                    {/* Sidebar Resize Handle */}
+                    <div 
+                        className={`resize-handle resize-handle-vertical ${isResizingSidebar ? 'active' : ''}`}
+                        onMouseDown={handleSidebarResize}
+                        title="Resize sidebar"
+                    />
+
                     {/* File Area */}
                     <div className="file-area">
                         {currentView === 'thispc' && (
-                            <ThisPCView viewMode={viewMode} onDriveHover={handleDriveHover} />
+                            <ThisPCView 
+                                viewMode={viewMode} 
+                                onDriveHover={handleDriveHover} 
+                                drives={drives}
+                                quickAccessItems={undefined}
+                                networkDevices={networkDevices}
+                            />
                         )}
                         
                         {currentView === 'recents' && (
@@ -705,67 +971,35 @@ export const TabContent: React.FC<TabContentProps> = ({ tabId, isActive, viewMod
                         )}
                         
                         {currentView === 'folder' && (
-                            <div className="file-list-container">
-                                {viewMode === 'list' ? (
-                                    <div className="file-list">
-                                        <div className="file-list-header">
-                                            <div className="header-cell" onClick={() => handleSort('name')}>
-                                                Name {getSortIcon('name')}
-                                            </div>
-                                            <div className="header-cell" onClick={() => handleSort('size')}>
-                                                Size {getSortIcon('size')}
-                                            </div>
-                                            <div className="header-cell" onClick={() => handleSort('date')}>
-                                                Date Modified {getSortIcon('date')}
-                                            </div>
-                                            <div className="header-cell" onClick={() => handleSort('type')}>
-                                                Type {getSortIcon('type')}
-                                            </div>
-                                        </div>
-                                        {sortedFiles.map((file, index) => (
-                                            <div 
-                                                key={index} 
-                                                className={`file-item ${selectedItem?.name === file.name ? 'selected' : ''}`}
-                                                onClick={() => handleItemClick(file)}
-                                            >
-                                                <div className="file-info">
-                                                    <span className="file-icon">{file.icon}</span>
-                                                    <span className="file-name">{file.name}</span>
-                                                </div>
-                                                <div className="file-size">{file.size || ''}</div>
-                                                <div className="file-date">{file.dateModified}</div>
-                                                <div className="file-type">{file.type === 'folder' ? 'File folder' : 'File'}</div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="file-grid">
-                                        {sortedFiles.map((file, index) => (
-                                            <div 
-                                                key={index} 
-                                                className={`file-item ${selectedItem?.name === file.name ? 'selected' : ''}`}
-                                                onClick={() => handleItemClick(file)}
-                                            >
-                                                <span className="file-icon">{file.icon}</span>
-                                                <span className="file-name">{file.name}</span>
-                                                <div className="file-meta">
-                                                    <div className="file-size">{file.size || ''}</div>
-                                                    <div className="file-date">{file.dateModified}</div>
-                                                    <div className="file-type">{file.type === 'folder' ? 'File folder' : 'File'}</div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
+                            <FileList
+                                currentPath={currentPath}
+                                viewMode={viewMode as 'list' | 'grid'}
+                                onNavigate={handleFileNavigation}
+                                onFileSelect={handleFileSelect}
+                                selectedFile={selectedFile}
+                            />
                         )}
                     </div>
 
+                    {/* Details Panel Resize Handle */}
+                    {showDetailsPanel && (
+                        <div 
+                            className={`resize-handle resize-handle-vertical ${isResizingDetails ? 'active' : ''}`}
+                            onMouseDown={handleDetailsPanelResize}
+                            title="Resize details panel"
+                        />
+                    )}
+
                     {/* Details Panel */}
-                    <DetailsPanel 
-                        selectedItem={hoveredDrive ? driveToFileItem(hoveredDrive) : selectedItem} 
-                        isVisible={showDetailsPanel} 
-                    />
+                    <div 
+                        className={`details-panel-container ${showDetailsPanel ? 'visible' : 'hidden'}`}
+                        style={{ width: showDetailsPanel ? `${detailsPanelWidth}px` : '0px', minWidth: showDetailsPanel ? '250px' : '0px', maxWidth: '600px' }}
+                    >
+                        <DetailsPanel 
+                            selectedItem={hoveredDrive ? driveToFileItem(hoveredDrive) : selectedItem} 
+                            isVisible={showDetailsPanel} 
+                        />
+                    </div>
                 </div>
             </div>
             

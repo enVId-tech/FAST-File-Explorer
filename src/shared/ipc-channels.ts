@@ -1,3 +1,36 @@
+// Enhanced file system interfaces
+export interface FileSystemItem {
+    name: string;
+    path: string;
+    type: 'file' | 'directory';
+    size: number;
+    modified: Date;
+    created: Date;
+    extension?: string;
+    isHidden: boolean;
+    isSystem: boolean;
+    permissions: {
+        read: boolean;
+        write: boolean;
+        execute: boolean;
+    };
+}
+
+export interface DirectoryContents {
+    items: FileSystemItem[];
+    totalItems: number;
+    path: string;
+    parent?: string;
+    error?: string;
+}
+
+export interface DirectoryListOptions {
+    includeHidden?: boolean;
+    sortBy?: 'name' | 'size' | 'modified';
+    sortDirection?: 'asc' | 'desc';
+    maxItems?: number;
+}
+
 // Define the shape of messages sent to the main process
 export interface IpcMainToRenderer {
     'update-tabs': (tabs: string[]) => void;
@@ -10,6 +43,11 @@ export interface IpcRendererToMain {
     'new-tab': (url: string) => void;
     'switch-tab': (tabId: string) => void;
     'close-tab': (tabId: string) => void;
+    // Enhanced file system operations
+    'fs-get-directory-contents': (dirPath: string, options?: DirectoryListOptions) => Promise<DirectoryContents>;
+    'fs-directory-exists': (dirPath: string) => Promise<boolean>;
+    'fs-get-parent-directory': (dirPath: string) => Promise<string | null>;
+    'fs-get-known-folder': (folderType: string) => Promise<string>;
 }
 
 // Define Tab interface

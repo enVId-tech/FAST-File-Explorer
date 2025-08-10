@@ -15,6 +15,7 @@
 @use './components/ColorPicker/ColorPicker.scss';
 @use './components/DetailsPanel/DetailsPanel.scss';
 @use './components/SettingsMenu/SettingsMenu.scss';
+@use './components/Views/NetworkDevicesStyles.scss';
 
 // Global theme transition support
 :root {
@@ -169,10 +170,22 @@ body {
       box-shadow: none;
       border: 1px solid var(--border-color);
       
-      &:hover {
+      &:hover:not(:disabled) {
         transform: none;
         box-shadow: none;
         border-color: var(--accent-color);
+      }
+      
+      &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        color: var(--text-tertiary);
+        border-color: var(--border-color);
+        
+        &:hover {
+          background: transparent;
+          border-color: var(--border-color);
+        }
       }
     }
   }
@@ -994,6 +1007,106 @@ body {
     background: var(--scrollbar-hover);
     opacity: 1;
     transition: none; /* Remove transition during active dragging */
+  }
+}
+
+// Resizable Components
+.resize-handle {
+  position: relative;
+  background: transparent;
+  transition: background-color 0.2s ease;
+  user-select: none;
+  z-index: 10;
+  
+  &.resize-handle-vertical {
+    width: 4px;
+    cursor: col-resize;
+    min-height: 100%;
+    
+    &:hover, &.active {
+      background: var(--accent-color);
+    }
+    
+    // Expand hit area for easier grabbing
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -4px;
+      right: -4px;
+      bottom: 0;
+      background: transparent;
+    }
+    
+    // Visual indicator on hover
+    &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 2px;
+      height: 20px;
+      background: var(--text-secondary);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      border-radius: 1px;
+    }
+    
+    &:hover::after {
+      opacity: 0.5;
+    }
+  }
+  
+  &.resize-handle-horizontal {
+    height: 4px;
+    cursor: row-resize;
+    width: 100%;
+    
+    &:hover, &.active {
+      background: var(--accent-color);
+    }
+    
+    // Expand hit area for easier grabbing
+    &::before {
+      content: '';
+      position: absolute;
+      top: -4px;
+      left: 0;
+      right: 0;
+      bottom: -4px;
+      background: transparent;
+    }
+  }
+}
+
+// Details Panel Container
+.details-panel-container {
+  flex-shrink: 0;
+  overflow: hidden;
+  transition: width 0.2s ease;
+  
+  &.hidden {
+    width: 0 !important;
+    min-width: 0 !important;
+  }
+  
+  &.visible {
+    border-left: 1px solid var(--border-primary);
+  }
+}
+
+// File Explorer Layout Updates
+.file-explorer-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  
+  .file-area {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
 }
 

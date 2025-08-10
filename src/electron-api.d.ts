@@ -1,7 +1,12 @@
+import { DirectoryContents, DirectoryListOptions } from './shared/ipc-channels';
+
 export {};
 declare global {
   interface Window {
     electronAPI: {
+      // Generic IPC invoke method
+      invoke: <T = any>(channel: string, ...args: any[]) => Promise<T>;
+      
       testAPI: () => Promise<string>;
       window: {
         minimize: () => Promise<void>;
@@ -29,6 +34,18 @@ declare global {
         getMetadata: (dataPath: string) => Promise<{folderName: string, name: string} | null>;
         getDrives: () => Promise<{name: string, path: string}[]>;
         getRecentFiles: () => Promise<{name: string, path: string, lastOpened: string, size?: string}[]>;
+      },
+      // Enhanced file system methods
+      fs: {
+        getDirectoryContents: (dirPath: string, options?: DirectoryListOptions) => Promise<DirectoryContents>;
+        directoryExists: (dirPath: string) => Promise<boolean>;
+        getParentDirectory: (dirPath: string) => Promise<string | null>;
+        getKnownFolder: (folderType: string) => Promise<string>;
+      },
+      // System information
+      system: {
+        platform: string;
+        pathSeparator: string;
       }
     };
   }

@@ -5,6 +5,12 @@ import { contextBridge, ipcRenderer } from 'electron';
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld('electronAPI', {
+    // Generic IPC invoke method for flexibility
+    invoke: <T = any>(channel: string, ...args: any[]): Promise<T> => 
+        ipcRenderer.invoke(channel, ...args),
+        
+    testAPI: () => ipcRenderer.invoke('test-api'),
+    
     window: {
         minimize: () => ipcRenderer.invoke('window-minimize'),
         maximize: () => ipcRenderer.invoke('window-maximize'),
@@ -29,5 +35,23 @@ contextBridge.exposeInMainWorld('electronAPI', {
         getDirectory: (folderPath: string) => ipcRenderer.invoke('data-get-directory', folderPath),
         getMetadata: (dataPath: string) => ipcRenderer.invoke('data-get-metadata', dataPath),
         getDrives: () => ipcRenderer.invoke('data-get-drives'),
+        getRecentFiles: () => ipcRenderer.invoke('data-get-recent-files'),
+    },
+    // Enhanced file system methods
+    fs: {
+        getDirectoryContents: (dirPath: string, options?: any) => 
+            ipcRenderer.invoke('fs-get-directory-contents', dirPath, options),
+        directoryExists: (dirPath: string) => 
+            ipcRenderer.invoke('fs-directory-exists', dirPath),
+        getParentDirectory: (dirPath: string) => 
+            ipcRenderer.invoke('fs-get-parent-directory', dirPath),
+        getKnownFolder: (folderType: string) => 
+            ipcRenderer.invoke('fs-get-known-folder', folderType),
+    },
+    
+    // System information
+    system: {
+        platform: process.platform,
+        pathSeparator: process.platform === 'win32' ? '\\' : '/'
     }
 });
