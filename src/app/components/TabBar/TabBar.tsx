@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { FaTimes, FaPlus, FaWindowMinimize, FaWindowMaximize, FaRegFile, FaFolder } from 'react-icons/fa';
+import { FaTimes, FaPlus, FaWindowMinimize, FaWindowMaximize, FaRegFile, FaFolder, FaSearchPlus, FaSearchMinus, FaSearch } from 'react-icons/fa';
 import { ThemeSelector, Theme } from '../ThemeSelector/ThemeSelector';
 
 interface Tab {
@@ -14,6 +14,7 @@ interface TabBarProps {
     activeTabId: string;
     isMaximized: boolean;
     currentTheme: Theme;
+    zoomLevel: number;
     onTabSelect: (tabId: string) => void;
     onTabClose: (tabId: string) => void;
     onNewTab: () => void;
@@ -21,6 +22,9 @@ interface TabBarProps {
     onMaximize: () => void;
     onClose: () => void;
     onThemeChange: (theme: Theme) => void;
+    onZoomIn: () => void;
+    onZoomOut: () => void;
+    onResetZoom: () => void;
 }
 
 export const TabBar: React.FC<TabBarProps> = ({
@@ -28,13 +32,17 @@ export const TabBar: React.FC<TabBarProps> = ({
     activeTabId,
     isMaximized,
     currentTheme,
+    zoomLevel,
     onTabSelect,
     onTabClose,
     onNewTab,
     onMinimize,
     onMaximize,
     onClose,
-    onThemeChange
+    onThemeChange,
+    onZoomIn,
+    onZoomOut,
+    onResetZoom
 }) => {
     const tabsContainerRef = useRef<HTMLDivElement>(null);
     const [tabSizeClass, setTabSizeClass] = useState<string>('');
@@ -214,6 +222,31 @@ export const TabBar: React.FC<TabBarProps> = ({
             )}
             
             <div className="window-controls">
+                <div className="zoom-controls">
+                    <button 
+                        className="zoom-button zoom-out" 
+                        onClick={onZoomOut}
+                        disabled={zoomLevel <= 50}
+                        title={`Zoom Out (Ctrl+-) - Current: ${zoomLevel}%`}
+                    >
+                        <FaSearchMinus />
+                    </button>
+                    <button 
+                        className="zoom-button zoom-reset" 
+                        onClick={onResetZoom}
+                        title={`Reset Zoom (Ctrl+0) - Current: ${zoomLevel}%`}
+                    >
+                        <span className="zoom-level">{zoomLevel}%</span>
+                    </button>
+                    <button 
+                        className="zoom-button zoom-in" 
+                        onClick={onZoomIn}
+                        disabled={zoomLevel >= 200}
+                        title={`Zoom In (Ctrl++) - Current: ${zoomLevel}%`}
+                    >
+                        <FaSearchPlus />
+                    </button>
+                </div>
                 <ThemeSelector
                     currentTheme={currentTheme}
                     onThemeChange={onThemeChange}

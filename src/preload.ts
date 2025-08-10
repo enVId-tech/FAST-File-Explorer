@@ -16,6 +16,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
         maximize: () => ipcRenderer.invoke('window-maximize'),
         unmaximize: () => ipcRenderer.invoke('window-unmaximize'),
         close: () => ipcRenderer.invoke('window-close'),
+        getBounds: () => ipcRenderer.invoke('window-get-bounds'),
+        setBounds: (bounds: {x?: number, y?: number, width?: number, height?: number}) => 
+            ipcRenderer.invoke('window-set-bounds', bounds),
     },
     tab: {
         add: (url: string) => ipcRenderer.invoke('tab-add', url),

@@ -13,6 +13,8 @@ declare global {
         maximize: () => Promise<void>;
         unmaximize: () => Promise<void>;
         close: () => Promise<void>;
+        getBounds: () => Promise<{x: number, y: number, width: number, height: number}>;
+        setBounds: (bounds: {x?: number, y?: number, width?: number, height?: number}) => Promise<void>;
       };
       // Tab management
       tab: {

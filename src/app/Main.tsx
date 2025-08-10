@@ -45,6 +45,18 @@ const Main = React.memo(function Main(): React.JSX.Element {
     });
     
     const [isThemeSelectorOpen, setIsThemeSelectorOpen] = useState(false);
+    
+    // Initialize zoom level from localStorage or default to 100%
+    const [zoomLevel, setZoomLevel] = useState(() => {
+        try {
+            const savedZoom = localStorage.getItem('fast-file-explorer-zoom-level');
+            return savedZoom ? parseInt(savedZoom, 10) : 100;
+        } catch (error) {
+            console.warn('Failed to load zoom level from localStorage:', error);
+            return 100;
+        }
+    });
+    
     const [tabs, setTabs] = useState<Tab[]>([
         { id: 'tab-1', title: 'This PC', url: 'home', isActive: true },
     ]);
@@ -95,6 +107,165 @@ const Main = React.memo(function Main(): React.JSX.Element {
             console.warn('Failed to save view mode to localStorage:', error);
         }
     }, [viewMode]);
+
+    // Save zoom level to localStorage and apply to document with better scaling
+    useEffect(() => {
+        try {
+            localStorage.setItem('fast-file-explorer-zoom-level', zoomLevel.toString());
+            
+            // Use CSS transform instead of zoom for better control - INSTANT APPLICATION
+            const zoomFactor = zoomLevel / 100;
+            const rootElement = document.documentElement;
+            const bodyElement = document.body;
+            
+            // Apply transform-based scaling immediately
+            bodyElement.style.transform = `scale(${zoomFactor})`;
+            bodyElement.style.transformOrigin = 'top left';
+            
+            // Adjust the container dimensions to prevent scrollbars/gaps - INSTANT
+            if (zoomFactor !== 1) {
+                bodyElement.style.width = `${100 / zoomFactor}%`;
+                bodyElement.style.height = `${100 / zoomFactor}%`;
+                rootElement.style.overflow = 'hidden';
+            } else {
+                bodyElement.style.width = '';
+                bodyElement.style.height = '';
+                rootElement.style.overflow = '';
+            }
+            
+            // Optional: Still adjust window size for very dramatic zoom changes
+            // BUT with no delay for immediate response
+            const adjustWindowSize = async () => {
+                if (window.electronAPI?.window && (zoomLevel <= 70 || zoomLevel >= 130)) {
+                    try {
+                        const bounds = await window.electronAPI.window.getBounds();
+                        
+                        // Only adjust for significant zoom changes
+                        let newWidth = bounds.width;
+                        let newHeight = bounds.height;
+                        
+                        if (zoomLevel <= 70) {
+                            // When zoomed out significantly, increase window size
+                            const sizeFactor = 1 + (70 - zoomLevel) / 100;
+                            newWidth = Math.min(Math.round(bounds.width * sizeFactor), 1600);
+                            newHeight = Math.min(Math.round(bounds.height * sizeFactor), 1200);
+                        } else if (zoomLevel >= 130) {
+                            // When zoomed in significantly, potentially decrease window size
+                            const sizeFactor = 1 - (zoomLevel - 130) / 400;
+                            newWidth = Math.max(Math.round(bounds.width * sizeFactor), 800);
+                            newHeight = Math.max(Math.round(bounds.height * sizeFactor), 600);
+                        }
+                        
+                        const widthDiff = Math.abs(bounds.width - newWidth);
+                        const heightDiff = Math.abs(bounds.height - newHeight);
+                        
+                        if (widthDiff > 50 || heightDiff > 50) {
+                            const newX = bounds.x + Math.round((bounds.width - newWidth) / 2);
+                            const newY = bounds.y + Math.round((bounds.height - newHeight) / 2);
+                            
+                            await window.electronAPI.window.setBounds({
+                                x: newX,
+                                y: newY,
+                                width: newWidth,
+                                height: newHeight
+                            });
+                        }
+                    } catch (error) {
+                        console.warn('Failed to adjust window size:', error);
+                    }
+                }
+            };
+            
+            // Apply window resize immediately, no debouncing for instant response
+            adjustWindowSize();
+            
+        } catch (error) {
+            console.warn('Failed to save or apply zoom level:', error);
+        }
+    }, [zoomLevel]);
+
+    // Zoom handlers
+    const handleZoomIn = useCallback(() => {
+        setZoomLevel(prev => {
+            const newLevel = Math.min(prev + 10, 200); // Max 200%
+            // Show a temporary toast notification (optional)
+            if (newLevel !== prev) {
+                console.log(`Zoom: ${newLevel}%`);
+            }
+            return newLevel;
+        });
+    }, []);
+
+    const handleZoomOut = useCallback(() => {
+        setZoomLevel(prev => {
+            const newLevel = Math.max(prev - 10, 50); // Min 50%
+            // Show a temporary toast notification (optional)
+            if (newLevel !== prev) {
+                console.log(`Zoom: ${newLevel}%`);
+            }
+            return newLevel;
+        });
+    }, []);
+
+    const handleResetZoom = useCallback(() => {
+        setZoomLevel(100);
+        console.log('Zoom: 100% (Reset)');
+    }, []);
+
+    // Keyboard shortcuts for zoom
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.ctrlKey || event.metaKey) {
+                switch (event.key) {
+                    case '+':
+                    case '=':
+                        event.preventDefault();
+                        handleZoomIn();
+                        break;
+                    case '-':
+                        event.preventDefault();
+                        handleZoomOut();
+                        break;
+                    case '0':
+                        event.preventDefault();
+                        handleResetZoom();
+                        break;
+                }
+            }
+        };
+
+        const handleWheel = (event: WheelEvent) => {
+            // Ctrl/Cmd + wheel for zoom
+            if (event.ctrlKey || event.metaKey) {
+                event.preventDefault();
+                if (event.deltaY < 0) {
+                    handleZoomIn();
+                } else if (event.deltaY > 0) {
+                    handleZoomOut();
+                }
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+        document.addEventListener('wheel', handleWheel, { passive: false });
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+            document.removeEventListener('wheel', handleWheel);
+        };
+    }, [handleZoomIn, handleZoomOut, handleResetZoom]);
+
+    // Cleanup zoom styles on unmount
+    useEffect(() => {
+        return () => {
+            const bodyElement = document.body;
+            const rootElement = document.documentElement;
+            bodyElement.style.transform = '';
+            bodyElement.style.transformOrigin = '';
+            bodyElement.style.width = '';
+            bodyElement.style.height = '';
+            rootElement.style.overflow = '';
+        };
+    }, []);
 
     // Close theme selector when clicking outside
     useEffect(() => {
@@ -299,6 +470,7 @@ const Main = React.memo(function Main(): React.JSX.Element {
                 activeTabId={activeTabId}
                 isMaximized={isMaximized}
                 currentTheme={theme}
+                zoomLevel={zoomLevel}
                 onTabSelect={handleTabSelect}
                 onTabClose={handleTabClose}
                 onNewTab={handleNewTab}
@@ -306,6 +478,9 @@ const Main = React.memo(function Main(): React.JSX.Element {
                 onMaximize={maximize}
                 onClose={close}
                 onThemeChange={handleThemeChange}
+                onZoomIn={handleZoomIn}
+                onZoomOut={handleZoomOut}
+                onResetZoom={handleResetZoom}
             />
 
             {/* Render content for each tab */}

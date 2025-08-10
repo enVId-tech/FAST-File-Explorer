@@ -30,6 +30,18 @@
   box-sizing: border-box;
 }
 
+/* Zoom scaling optimizations - NO TRANSITIONS for instant zoom */
+body {
+  /* Remove transition for instant zoom changes */
+  will-change: transform;
+}
+
+/* Ensure zoom transforms are instant but preserve other animations */
+body * {
+  /* Prevent any inherited transitions from affecting zoom */
+  transition-property: background-color, color, border-color, box-shadow, opacity !important;
+}
+
 /* Optimize rendering for interactive elements */
 button, input, select, textarea {
   will-change: background-color;

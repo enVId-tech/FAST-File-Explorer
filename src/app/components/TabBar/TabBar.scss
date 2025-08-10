@@ -319,6 +319,76 @@
     z-index: 1000; /* Ensure window controls are above other content */
 }
 
+.zoom-controls {
+    display: flex;
+    align-items: center;
+    gap: 1px;
+    margin-right: 8px;
+    background: var(--background-secondary);
+    border-radius: 6px;
+    padding: 2px;
+    border: 1px solid var(--border-color);
+    
+    @media (max-width: 800px) {
+        margin-right: 4px;
+    }
+    
+    @media (max-width: 600px) {
+        .zoom-button.zoom-reset .zoom-level {
+            display: none;
+        }
+        .zoom-button.zoom-reset::after {
+            content: '⌘';
+            font-size: 12px;
+        }
+    }
+}
+
+.zoom-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 11px;
+    /* Instant feedback - no transition delay for zoom controls */
+    transition: background-color 0.1s ease, color 0.1s ease;
+    border-radius: 4px;
+    
+    &:hover:not(:disabled) {
+        background: var(--hover-bg);
+        color: var(--accent-color);
+    }
+    
+    &:active:not(:disabled) {
+        /* Instant visual feedback on click */
+        background: var(--accent-color-light);
+        transform: scale(0.95);
+        transition: none; /* No transition during active state for instant response */
+    }
+    
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    &.zoom-reset {
+        width: auto;
+        min-width: 40px;
+        padding: 0 6px;
+        font-size: 10px;
+        font-weight: 600;
+        
+        .zoom-level {
+            white-space: nowrap;
+        }
+    }
+}
+
 .control-button {
     display: flex;
     align-items: center;

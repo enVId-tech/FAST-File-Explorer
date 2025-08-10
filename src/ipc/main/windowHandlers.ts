@@ -28,3 +28,18 @@ ipcMain.handle('window-close', () => {
         focusedWindow.close();
     }
 });
+
+ipcMain.handle('window-get-bounds', () => {
+    const focusedWindow = BrowserWindow.getFocusedWindow();
+    if (focusedWindow) {
+        return focusedWindow.getBounds();
+    }
+    return { x: 0, y: 0, width: 1200, height: 800 };
+});
+
+ipcMain.handle('window-set-bounds', (event, bounds: {x?: number, y?: number, width?: number, height?: number}) => {
+    const focusedWindow = BrowserWindow.getFocusedWindow();
+    if (focusedWindow) {
+        focusedWindow.setBounds(bounds);
+    }
+});
