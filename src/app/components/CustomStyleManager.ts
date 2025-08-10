@@ -1,4 +1,4 @@
-import { CustomStyle } from './CustomStyleEditor';
+import { CustomStyle } from '../components/CustomStyleEditor/CustomStyleEditor';
 
 export class CustomStyleManager {
   private static readonly STORAGE_KEY = 'fast-file-explorer-custom-styles';

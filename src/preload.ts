@@ -51,6 +51,22 @@ contextBridge.exposeInMainWorld('electronAPI', {
         getKnownFolder: (folderType: string) => 
             ipcRenderer.invoke('fs-get-known-folder', folderType),
     },
+    // Settings management
+    settings: {
+        getAll: () => ipcRenderer.invoke('settings-get-all'),
+        getKnownFolders: () => ipcRenderer.invoke('settings-get-known-folders'),
+        getKnownFolder: (folderType: string) => ipcRenderer.invoke('settings-get-known-folder', folderType),
+        updateKnownFolder: (folderType: string, newPath: string) => 
+            ipcRenderer.invoke('settings-update-known-folder', folderType, newPath),
+        updateKnownFolders: (folders: any) => 
+            ipcRenderer.invoke('settings-update-known-folders', folders),
+        resetKnownFolders: () => ipcRenderer.invoke('settings-reset-known-folders'),
+        validateFolder: (folderPath: string) => 
+            ipcRenderer.invoke('settings-validate-folder', folderPath),
+        update: (key: string, value: any) => 
+            ipcRenderer.invoke('settings-update', key, value),
+        getPath: () => ipcRenderer.invoke('settings-get-path'),
+    },
     
     // System information
     system: {

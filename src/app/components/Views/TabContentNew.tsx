@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FaFolder, FaFileExcel, FaFilePowerpoint, FaFileWord, FaFileImage, FaFileCode, FaFile, FaCopy, FaCut, FaPaste, FaTrash, FaEdit, FaFolderPlus, FaCog, FaArrowLeft, FaArrowRight, FaArrowUp, FaSearch, FaThLarge, FaBars, FaHdd, FaDesktop, FaDownload, FaMusic, FaVideo, FaFilePdf, FaSortAlphaDown, FaSortAlphaUp, FaSortNumericDown, FaSortNumericUp } from 'react-icons/fa';
-import { DetailsPanel } from './DetailsPanel';
+import { DetailsPanel } from '../DetailsPanel';
 
 interface FileItem {
     name: string;

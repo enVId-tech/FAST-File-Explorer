@@ -437,3 +437,205 @@
         box-shadow: none;
     }
 }
+
+/* Known Folders Settings Styles */
+.known-folders-settings {
+    padding: 20px;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.settings-description {
+    margin-bottom: 24px;
+    
+    p {
+        color: var(--text-secondary);
+        font-size: 14px;
+        line-height: 1.5;
+        margin: 0;
+    }
+}
+
+.folder-list {
+    margin-bottom: 24px;
+}
+
+.folder-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+    padding: 16px;
+    background: var(--background-secondary);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+    
+    &:hover {
+        border-color: var(--accent-color);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+}
+
+.folder-label {
+    min-width: 120px;
+    margin-right: 16px;
+}
+
+.folder-name {
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.folder-path-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.folder-display-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 12px;
+}
+
+.folder-path {
+    flex: 1;
+    padding: 8px 12px;
+    background: var(--background-primary);
+    border: 1px solid var(--border-color-light);
+    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: var(--text-secondary);
+    word-break: break-all;
+}
+
+.folder-edit-btn {
+    padding: 8px;
+    background: var(--background-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+        background: var(--hover-bg);
+        color: var(--accent-color);
+        border-color: var(--accent-color);
+    }
+    
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}
+
+.folder-edit-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 8px;
+}
+
+.folder-path-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 2px solid var(--accent-color);
+    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    background: var(--background-primary);
+    color: var(--text-primary);
+    
+    &:focus {
+        outline: none;
+        border-color: var(--accent-hover);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}
+
+.folder-edit-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.folder-save-btn,
+.folder-cancel-btn {
+    padding: 8px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}
+
+.folder-save-btn {
+    background: var(--accent-color);
+    color: white;
+    
+    &:hover:not(:disabled) {
+        background: var(--accent-hover);
+        transform: translateY(-1px);
+    }
+}
+
+.folder-cancel-btn {
+    background: var(--background-secondary);
+    color: var(--text-secondary);
+    border-color: var(--border-color);
+    
+    &:hover:not(:disabled) {
+        background: var(--hover-bg);
+        color: var(--text-primary);
+        border-color: var(--text-secondary);
+    }
+}
+
+.folder-actions {
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color-light);
+}
+
+.reset-folders-btn {
+    padding: 10px 16px;
+    background: var(--background-secondary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    &:hover:not(:disabled) {
+        background: #fef3c7;
+        color: #92400e;
+        border-color: #f59e0b;
+    }
+    
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}
+
+.loading-indicator {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}

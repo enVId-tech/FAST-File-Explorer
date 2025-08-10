@@ -6,6 +6,7 @@ import fsStat from 'fs';
 import os from 'os';
 import nodeDiskInfo from 'node-disk-info';
 import { Drive } from 'shared/file-data';
+import { settingsManager } from './settingsManager';
 
 // Enhanced file system interfaces
 interface FileSystemItem {
@@ -328,25 +329,32 @@ export default function initializeDataHandlers() {
         return parent === dirPath ? null : parent; // Return null if already at root
     });
 
-    // Navigate to specific known folders
+    // Navigate to specific known folders - now uses settings manager
     ipcMain.handle('fs-get-known-folder', async (event, folderType: string) => {
-        switch (folderType) {
-            case 'home':
-                return os.homedir();
-            case 'desktop':
-                return path.join(os.homedir(), 'Desktop');
-            case 'documents':
-                return path.join(os.homedir(), 'Documents');
-            case 'downloads':
-                return path.join(os.homedir(), 'Downloads');
-            case 'pictures':
-                return path.join(os.homedir(), 'Pictures');
-            case 'music':
-                return path.join(os.homedir(), 'Music');
-            case 'videos':
-                return path.join(os.homedir(), 'Videos');
-            default:
-                throw new Error(`Unknown folder type: ${folderType}`);
+        try {
+            return await settingsManager.getKnownFolder(folderType);
+        } catch (error) {
+            console.error(`Failed to get known folder ${folderType}:`, error);
+            
+            // Fallback to hardcoded paths if settings fail
+            switch (folderType) {
+                case 'home':
+                    return os.homedir();
+                case 'desktop':
+                    return path.join(os.homedir(), 'Desktop');
+                case 'documents':
+                    return path.join(os.homedir(), 'Documents');
+                case 'downloads':
+                    return path.join(os.homedir(), 'Downloads');
+                case 'pictures':
+                    return path.join(os.homedir(), 'Pictures');
+                case 'music':
+                    return path.join(os.homedir(), 'Music');
+                case 'videos':
+                    return path.join(os.homedir(), 'Videos');
+                default:
+                    throw new Error(`Unknown folder type: ${folderType}`);
+            }
         }
     });
 

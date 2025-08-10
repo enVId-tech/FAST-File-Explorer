@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FaCog, FaPalette, FaDesktop, FaKeyboard, FaSync, FaFolderOpen, FaShieldAlt, FaInfoCircle, FaDownload } from 'react-icons/fa';
+import { FaCog, FaPalette, FaDesktop, FaKeyboard, FaSync, FaFolderOpen, FaShieldAlt, FaInfoCircle, FaDownload, FaHome, FaEdit, FaCheck, FaTimes, FaUndo } from 'react-icons/fa';
 import './SettingsMenu.scss';
 
 interface SettingsMenuProps {
@@ -9,7 +9,91 @@ interface SettingsMenuProps {
 
 export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose }) => {
     const [activeCategory, setActiveCategory] = useState('general');
+    const [knownFolders, setKnownFolders] = useState<any>({});
+    const [editingFolder, setEditingFolder] = useState<string | null>(null);
+    const [editValue, setEditValue] = useState<string>('');
+    const [isLoading, setIsLoading] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
+
+    // Load known folders when settings menu opens
+    useEffect(() => {
+        if (isOpen && activeCategory === 'knownFolders') {
+            loadKnownFolders();
+        }
+    }, [isOpen, activeCategory]);
+
+    const loadKnownFolders = async () => {
+        try {
+            setIsLoading(true);
+            const folders = await window.electronAPI?.settings?.getKnownFolders();
+            if (folders) {
+                setKnownFolders(folders);
+            }
+        } catch (error) {
+            console.error('Failed to load known folders:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleFolderEdit = (folderType: string) => {
+        setEditingFolder(folderType);
+        setEditValue(knownFolders[folderType] || '');
+    };
+
+    const handleFolderSave = async (folderType: string) => {
+        if (!editValue.trim()) return;
+
+        try {
+            setIsLoading(true);
+            
+            // Validate folder first
+            const validation = await window.electronAPI?.settings?.validateFolder(editValue);
+            if (!validation?.valid) {
+                alert(`Invalid folder path: ${editValue}\n${validation?.error || 'Path must exist and be a directory.'}`);
+                return;
+            }
+
+            // Update the folder
+            await window.electronAPI?.settings?.updateKnownFolder(folderType, editValue);
+            
+            // Update local state
+            setKnownFolders((prev: any) => ({
+                ...prev,
+                [folderType]: editValue
+            }));
+            
+            setEditingFolder(null);
+            setEditValue('');
+        } catch (error: any) {
+            console.error('Failed to update folder:', error);
+            alert(`Failed to update folder: ${error.message}`);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleFolderCancel = () => {
+        setEditingFolder(null);
+        setEditValue('');
+    };
+
+    const handleResetFolders = async () => {
+        if (!confirm('Reset all known folders to default locations? This cannot be undone.')) {
+            return;
+        }
+
+        try {
+            setIsLoading(true);
+            await window.electronAPI?.settings?.resetKnownFolders();
+            await loadKnownFolders();
+        } catch (error: any) {
+            console.error('Failed to reset folders:', error);
+            alert(`Failed to reset folders: ${error.message}`);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     // Close menu when clicking outside
     useEffect(() => {
@@ -65,8 +149,14 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose }) =
             ]
         },
         {
+            id: 'knownFolders',
+            name: 'Known Folders',
+            icon: <FaHome />,
+            settings: [] // Dynamic settings loaded from backend
+        },
+        {
             id: 'folders',
-            name: 'Folders',
+            name: 'Folder Options',
             icon: <FaFolderOpen />,
             settings: [
                 { id: 'defaultLocation', name: 'Default location', type: 'dropdown', value: 'This PC', options: ['This PC', 'Documents', 'Desktop', 'Downloads'] },
@@ -196,18 +286,88 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose }) =
                             {currentCategory?.name}
                         </div>
                         
-                        <div className="settings-list">
-                            {currentCategory?.settings.map(setting => (
-                                <div key={setting.id} className="setting-item">
-                                    <div className="setting-label">
-                                        {setting.name}
-                                    </div>
-                                    <div className="setting-control">
-                                        {renderSettingControl(setting)}
-                                    </div>
+                        {activeCategory === 'knownFolders' ? (
+                            <div className="known-folders-settings">
+                                {isLoading && <div className="loading-indicator">Loading...</div>}
+                                
+                                <div className="settings-description">
+                                    <p>Customize the paths for known folders used throughout the application. These paths will be used when navigating to common locations like Documents, Downloads, etc.</p>
                                 </div>
-                            ))}
-                        </div>
+                                
+                                <div className="folder-list">
+                                    {Object.entries(knownFolders).map(([folderType, folderPath]: [string, any]) => (
+                                        <div key={folderType} className="folder-item">
+                                            <div className="folder-label">
+                                                <span className="folder-name">{folderType.charAt(0).toUpperCase() + folderType.slice(1)}</span>
+                                            </div>
+                                            <div className="folder-path-container">
+                                                {editingFolder === folderType ? (
+                                                    <div className="folder-edit-container">
+                                                        <input 
+                                                            type="text"
+                                                            value={editValue}
+                                                            onChange={(e) => setEditValue(e.target.value)}
+                                                            className="folder-path-input"
+                                                            disabled={isLoading}
+                                                        />
+                                                        <div className="folder-edit-actions">
+                                                            <button 
+                                                                className="folder-save-btn"
+                                                                onClick={() => handleFolderSave(folderType)}
+                                                                disabled={isLoading || !editValue.trim()}
+                                                            >
+                                                                <FaCheck />
+                                                            </button>
+                                                            <button 
+                                                                className="folder-cancel-btn"
+                                                                onClick={handleFolderCancel}
+                                                                disabled={isLoading}
+                                                            >
+                                                                <FaTimes />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="folder-display-container">
+                                                        <span className="folder-path">{folderPath}</span>
+                                                        <button 
+                                                            className="folder-edit-btn"
+                                                            onClick={() => handleFolderEdit(folderType)}
+                                                            disabled={isLoading}
+                                                        >
+                                                            <FaEdit />
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                
+                                <div className="folder-actions">
+                                    <button 
+                                        className="reset-folders-btn"
+                                        onClick={handleResetFolders}
+                                        disabled={isLoading}
+                                    >
+                                        <FaUndo /> Reset to Defaults
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="settings-list">
+                                {currentCategory?.settings.map(setting => (
+                                    <div key={setting.id} className="setting-item">
+                                        <div className="setting-label">
+                                            {setting.name}
+                                        </div>
+                                        <div className="setting-control">
+                                            {renderSettingControl(setting)}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { FaSave, FaUndo, FaTrash, FaPlus, FaCopy, FaPalette, FaEye } from 'react-icons/fa';
-import { ColorPicker } from './ColorPicker/ColorPicker';
-import { IconSelector } from './IconSelector/IconSelector';
+import { ColorPicker } from '../ColorPicker/ColorPicker';
+import { IconSelector } from '../IconSelector/IconSelector';
 import './CustomStyleEditor.scss';
 
 export interface CustomStyle {

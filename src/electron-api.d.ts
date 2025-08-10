@@ -44,6 +44,18 @@ declare global {
         getParentDirectory: (dirPath: string) => Promise<string | null>;
         getKnownFolder: (folderType: string) => Promise<string>;
       },
+      // Settings management
+      settings: {
+        getAll: () => Promise<AppSettings>;
+        getKnownFolders: () => Promise<KnownFolderSettings>;
+        getKnownFolder: (folderType: string) => Promise<string>;
+        updateKnownFolder: (folderType: string, newPath: string) => Promise<{success: boolean}>;
+        updateKnownFolders: (folders: Partial<KnownFolderSettings>) => Promise<{success: boolean}>;
+        resetKnownFolders: () => Promise<{success: boolean}>;
+        validateFolder: (folderPath: string) => Promise<{valid: boolean, error?: string}>;
+        update: (key: keyof AppSettings, value: any) => Promise<{success: boolean}>;
+        getPath: () => Promise<string>;
+      },
       // System information
       system: {
         platform: string;
@@ -51,4 +63,24 @@ declare global {
       }
     };
   }
+}
+
+// Settings interfaces for type safety
+interface KnownFolderSettings {
+  home: string;
+  desktop: string;
+  documents: string;
+  downloads: string;
+  pictures: string;
+  music: string;
+  videos: string;
+  [key: string]: string;
+}
+
+interface AppSettings {
+  knownFolders: KnownFolderSettings;
+  theme: string;
+  viewMode: string;
+  zoomLevel: number;
+  version: string;
 }

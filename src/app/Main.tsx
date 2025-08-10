@@ -18,8 +18,6 @@ interface Tab {
 
 // Memoized component for better performance
 const Main = React.memo(function Main(): React.JSX.Element {
-    const [currentPath, setCurrentPath] = useState('This PC > Documents');
-    
     // Initialize view mode from localStorage or default to list
     const [viewMode, setViewMode] = useState(() => {
         try {
@@ -420,16 +418,6 @@ const Main = React.memo(function Main(): React.JSX.Element {
         }
     };
 
-    const getChildrenFolders = async (folderPath: string) => {
-        try {
-            const folders = await window.electronAPI?.data.getDirectory(folderPath);
-            return folders;
-        } catch (error) {
-            console.error('Failed to get child folders:', error);
-            return [];
-        }
-    };
-
     const getDrives = async () => {
         try {
             const drives = await window.electronAPI?.data.getDrives();
@@ -462,15 +450,6 @@ const Main = React.memo(function Main(): React.JSX.Element {
     }, [activeTabId, tabs.length]); // Include dependencies to ensure current state is used
 
     useEffect(() => {
-        // Use the documents folder as a placeholder path to test functionality
-        getFolderMetadata('C:\\Users\\theli\\Documents').then(metadata => {
-            console.log('Folder metadata:', metadata);
-        });
-
-        getChildrenFolders('C:\\Users\\theli\\Documents').then(folders => {
-            console.log('Child folders:', folders);
-        });
-
         getDrives().then((drives: any) => {
             console.log('Drive data:', drives);
             setDrives(drives.driveDetails);

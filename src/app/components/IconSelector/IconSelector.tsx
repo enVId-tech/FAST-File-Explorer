@@ -5,6 +5,13 @@ import * as BootstrapIcons from 'react-icons/bs';
 import * as FeatherIcons from 'react-icons/fi';
 import './IconSelector.scss';
 
+const allIcons = {
+  ...ReactIcons,
+  ...MaterialIcons,
+  ...BootstrapIcons,
+  ...FeatherIcons,
+};
+
 interface IconSelectorProps {
   selectedIcon: string;
   onIconSelect: (iconName: string) => void;
