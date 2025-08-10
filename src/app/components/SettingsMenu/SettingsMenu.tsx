@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FaCog, FaPalette, FaDesktop, FaKeyboard, FaSync, FaFolderOpen, FaShieldAlt, FaInfoCircle, FaDownload, FaHome, FaEdit, FaCheck, FaTimes, FaUndo } from 'react-icons/fa';
 import './SettingsMenu.scss';
+import { BUILD_VERSION, getBuildDateString, getVersionDisplayString } from '../../../version';
 
 interface SettingsMenuProps {
     isOpen: boolean;
@@ -190,8 +191,9 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose }) =
             name: 'About',
             icon: <FaInfoCircle />,
             settings: [
-                { id: 'version', name: 'Version', type: 'text', value: '1.0.0', readonly: true },
-                { id: 'build', name: 'Build', type: 'text', value: '2024.08.09', readonly: true },
+                { id: 'version', name: 'Version', type: 'text', value: getVersionDisplayString(), readonly: true },
+                { id: 'buildVersion', name: 'Build Version', type: 'text', value: BUILD_VERSION, readonly: true },
+                { id: 'buildDate', name: 'Build Date', type: 'text', value: getBuildDateString(), readonly: true },
                 { id: 'checkUpdates', name: 'Check for updates', type: 'button', value: 'Check Now' },
             ]
         }

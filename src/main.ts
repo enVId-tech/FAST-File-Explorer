@@ -2,6 +2,7 @@ import { app, BrowserWindow } from 'electron';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
 import { initializeIpcHandlers } from './ipc/main/ipcSetup';
+import { getVersionDisplayString } from './version';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -17,11 +18,13 @@ const createWindow = () => {
     height: 800,
     minWidth: 800,
     minHeight: 600,
+    title: `Fast File Explorer ${getVersionDisplayString()}`,
     frame: false,
     titleBarStyle: 'hidden',
     icon: path.join(app.getAppPath(), 'assets', 'icon.png'),
-    // Disable window animations for instant resizing
-    thickFrame: false, // Disable thick frame on Windows for faster resizing
+    // Enable window snapping and native Windows features
+    thickFrame: true, // Enable thick frame on Windows for native snapping support
+    resizable: true, // Ensure window is resizable for snapping
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -54,11 +57,22 @@ const createWindow = () => {
   if (process.env.NODE_ENV === 'development' || process.env.MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     mainWindow.webContents.openDevTools();
   }
+
+  // Enable native window snapping (Aero Snap) on Windows
+  if (process.platform === 'win32') {
+    // Enable window snapping by allowing native window management
+    mainWindow.setResizable(true);
+    mainWindow.setMaximizable(true);
+    mainWindow.setMinimizable(true);
+  }
 };
 
 app.whenReady().then(() => {
   createWindow();
   initializeIpcHandlers(mainWindow);
+
+  // Log application startup with version info
+  console.log(`🚀 Fast File Explorer ${getVersionDisplayString()} started successfully`);
 
   // Security: Prevent navigation to external URLs
   mainWindow.webContents.on('will-navigate', (event, url) => {
