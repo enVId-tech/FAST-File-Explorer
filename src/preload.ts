@@ -19,6 +19,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
         getBounds: () => ipcRenderer.invoke('window-get-bounds'),
         setBounds: (bounds: {x?: number, y?: number, width?: number, height?: number}) => 
             ipcRenderer.invoke('window-set-bounds', bounds),
+        addMaximizeListener: () => ipcRenderer.invoke('window-add-maximize-listener'),
+        removeMaximizeListener: () => ipcRenderer.invoke('window-remove-maximize-listener'),
+        onMaximizeChange: (callback: (event: any, maximized: boolean) => void) => {
+            ipcRenderer.on('window-maximized', callback);
+        },
     },
     tab: {
         add: (url: string) => ipcRenderer.invoke('tab-add', url),

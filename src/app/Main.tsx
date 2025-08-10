@@ -449,6 +449,26 @@ const Main = React.memo(function Main(): React.JSX.Element {
         };
     }, [activeTabId, tabs.length]); // Include dependencies to ensure current state is used
 
+    // Listen for window maximize/unmaximize events from main process
+    useEffect(() => {
+        const handleWindowMaximized = (event: any, maximized: boolean) => {
+            setIsMaximized(maximized);
+        };
+
+        // Add listener for window state changes
+        if (window.electronAPI?.window) {
+            window.electronAPI.window.onMaximizeChange(handleWindowMaximized);
+            window.electronAPI.window.addMaximizeListener();
+        }
+
+        return () => {
+            // Cleanup listener
+            if (window.electronAPI?.window) {
+                window.electronAPI.window.removeMaximizeListener();
+            }
+        };
+    }, []);
+
     useEffect(() => {
         getDrives().then((drives: any) => {
             console.log('Drive data:', drives);

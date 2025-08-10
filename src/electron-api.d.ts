@@ -15,6 +15,9 @@ declare global {
         close: () => Promise<void>;
         getBounds: () => Promise<{x: number, y: number, width: number, height: number}>;
         setBounds: (bounds: {x?: number, y?: number, width?: number, height?: number}) => Promise<void>;
+        addMaximizeListener: () => Promise<boolean>;
+        removeMaximizeListener: () => Promise<boolean>;
+        onMaximizeChange: (callback: (event: any, maximized: boolean) => void) => void;
       };
       // Tab management
       tab: {
