@@ -1,9 +1,12 @@
 {
   "name": "fast-file-explorer",
   "productName": "Fast File Explorer",
-  "version": "25.08.10.5-alpha",
+  "version": "25.08.11.3-release",
   "description": "Fast File Explorer is a powerful tool for quickly navigating and managing your file system.",
   "main": ".vite/build/main.js",
+  "config": {
+    "forge": "forge.config.cjs"
+  },
   "scripts": {
     "prebuild": "node scripts/generate-version.js",
     "prestart": "node scripts/generate-version.js",
@@ -37,7 +40,7 @@
     "sass": "^1.90.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2",
-    "vite": "^7.1.1"
+    "vite": "^5.4.11"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.8.3",
@@ -47,7 +50,8 @@
     "@electron-forge/maker-zip": "^7.8.3",
     "@electron-forge/plugin-auto-unpack-natives": "^7.8.3",
     "@electron-forge/plugin-fuses": "^7.8.3",
-    "@electron/fuses": "^2.0.0",
+    "@electron/fuses": "^1.0.0",
+    "@rollup/rollup-win32-x64-msvc": "^4.46.2",
     "@types/electron-squirrel-startup": "^1.0.2",
     "@types/react-dom": "^19.1.7",
     "electron": "37.2.6"
