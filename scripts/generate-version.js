@@ -22,16 +22,24 @@ function generateBuildVersion(version) {
     const day = now.getDate().toString().padStart(2, '0');
 
     // Get today's date in YYYY-MM-DD format for git log
-    const todayStr = now.toISOString().split('T')[0];
+    const todayStr = [
+      now.getFullYear(),
+      (now.getMonth() + 1).toString().padStart(2, '0'),
+      now.getDate().toString().padStart(2, '0')
+    ].join('-');
 
     // Get commits for today
     let commitCount = 0;
     try {
-      // Get commit count for today
       const gitCmd = `git log --since="${todayStr} 00:00:00" --until="${todayStr} 23:59:59" --oneline --count`;
       const result = execSync(gitCmd, { encoding: 'utf8', cwd: process.cwd() });
 
-      commitCount = result.split('\n').length;
+      if (result) {
+        console.log(`Git command output: ${result}`);
+        commitCount = result.split('\n').length;
+      } else {
+        console.log('No commits found for today');
+      }
     } catch (gitError) {
       console.warn('Warning: Could not get git commit count, using default value 1');
       console.warn('Git error:', gitError.message);
