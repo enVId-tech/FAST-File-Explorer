@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaHdd, FaDesktop, FaFolder, FaDownload, FaMusic, FaVideo, FaFileImage, FaSdCard, FaUsb, FaServer, FaCloud, FaNetworkWired, FaCog, FaBars, FaThLarge, FaExternalLinkAlt, FaGamepad, FaDatabase, FaTimes, FaChartBar, FaChartPie, FaArchive, FaHardHat } from 'react-icons/fa';
+import { useSettings } from '../../contexts/SettingsContext';
+import { formatFileSize } from '../../../shared/fileSizeUtils';
 
 interface Section {
     id: string;
@@ -59,15 +61,14 @@ export const ThisPCView: React.FC<ThisPCViewProps> = ({
     quickAccessItems: propQuickAccess, 
     networkDevices: propNetworkDevices 
 }) => {
+    const { settings } = useSettings();
+    
     // Convert actual drive data to DriveInfo format
     const convertActualDrives = (actualDrives: any[] = []): DriveInfo[] => {
         return actualDrives.map(drive => {
+            // Use settings-aware file size formatting
             const formatBytes = (bytes: number): string => {
-                if (bytes === 0) return '0 B';
-                const k = 1024;
-                const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-                const i = Math.floor(Math.log(bytes) / Math.log(k));
-                return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+                return formatFileSize(bytes, settings.fileSizeUnit);
             };
 
             const usagePercentage = drive.total > 0 ? Math.round((drive.used / drive.total) * 100) : 0;

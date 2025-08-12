@@ -16,6 +16,7 @@ import {
 } from 'react-icons/fa';
 import { FileSystemItem, DirectoryContents } from '../../../shared/ipc-channels';
 import { formatFileSize, type FileSizeUnit } from '../../../shared/fileSizeUtils';
+import { useSettings } from '../../contexts/SettingsContext';
 import './FileList.scss';
 
 interface FileListProps {
@@ -94,25 +95,13 @@ export const FileList = React.memo<FileListProps>(({
     onFileSelect,
     selectedFile
 }) => {
+    const { settings } = useSettings();
     const [directoryContents, setDirectoryContents] = useState<DirectoryContents | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
-    const [fileSizeUnit, setFileSizeUnit] = useState<FileSizeUnit>('decimal');
 
-    // Load file size unit preference
-    useEffect(() => {
-        const loadFileSizeUnit = async () => {
-            try {
-                const settings = await window.electronAPI?.settings?.getAll();
-                if (settings?.fileSizeUnit) {
-                    setFileSizeUnit(settings.fileSizeUnit);
-                }
-            } catch (error) {
-                console.warn('Failed to load file size unit setting:', error);
-            }
-        };
-        loadFileSizeUnit();
-    }, []);
+    // Get file size unit from settings context (no need for separate state)
+    const fileSizeUnit = settings.fileSizeUnit;
 
     // Get file icon based on extension
     const getFileIcon = useCallback((item: FileSystemItem) => {

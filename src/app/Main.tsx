@@ -8,6 +8,7 @@ import { TabContent } from './components/Views';
 import { Theme } from './components/ThemeSelector/ThemeSelector';
 import { CustomStyleManager } from './components/CustomStyleManager';
 import { Drive } from 'shared/file-data';
+import { SettingsProvider } from './contexts/SettingsContext';
 
 interface Tab {
     id: string;
@@ -477,38 +478,40 @@ const Main = React.memo(function Main(): React.JSX.Element {
     }, []);
 
     return (
-        <div className="file-explorer">
-            {/* Tab Bar replaces Title Bar */}
-            <TabBar
-                tabs={tabs}
-                activeTabId={activeTabId}
-                isMaximized={isMaximized}
-                currentTheme={theme}
-                zoomLevel={zoomLevel}
-                onTabSelect={handleTabSelect}
-                onTabClose={handleTabClose}
-                onNewTab={handleNewTab}
-                onMinimize={minimize}
-                onMaximize={maximize}
-                onClose={close}
-                onThemeChange={handleThemeChange}
-                onZoomIn={handleZoomIn}
-                onZoomOut={handleZoomOut}
-                onResetZoom={handleResetZoom}
-            />
-
-            {/* Render content for each tab */}
-            {tabs.map((tab) => (
-                <TabContent
-                    key={tab.id}
-                    tabId={tab.id}
-                    isActive={tab.id === activeTabId}
-                    viewMode={viewMode}
-                    setViewMode={setViewMode}
-                    drives={drives}
+        <SettingsProvider>
+            <div className="file-explorer">
+                {/* Tab Bar replaces Title Bar */}
+                <TabBar
+                    tabs={tabs}
+                    activeTabId={activeTabId}
+                    isMaximized={isMaximized}
+                    currentTheme={theme}
+                    zoomLevel={zoomLevel}
+                    onTabSelect={handleTabSelect}
+                    onTabClose={handleTabClose}
+                    onNewTab={handleNewTab}
+                    onMinimize={minimize}
+                    onMaximize={maximize}
+                    onClose={close}
+                    onThemeChange={handleThemeChange}
+                    onZoomIn={handleZoomIn}
+                    onZoomOut={handleZoomOut}
+                    onResetZoom={handleResetZoom}
                 />
-            ))}
-        </div>
+
+                {/* Render content for each tab */}
+                {tabs.map((tab) => (
+                    <TabContent
+                        key={tab.id}
+                        tabId={tab.id}
+                        isActive={tab.id === activeTabId}
+                        viewMode={viewMode}
+                        setViewMode={setViewMode}
+                        drives={drives}
+                    />
+                ))}
+            </div>
+        </SettingsProvider>
     );
 });
 

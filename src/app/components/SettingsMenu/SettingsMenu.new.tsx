@@ -215,7 +215,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose }) =
         switch (setting.type) {
             case 'toggle':
                 return (
-                    <div className="toggle-switch">
+                    <div className="setting-toggle">
                         <input
                             type="checkbox"
                             checked={setting.value}
@@ -232,7 +232,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose }) =
                         value={setting.value}
                         onChange={(e) => handleSettingUpdate(setting.key, e.target.value)}
                         disabled={isLoading}
-                        className="setting-dropdown"
+                        className="setting-select"
                     >
                         {setting.options.map((option: string, index: number) => (
                             <option key={option} value={option}>
@@ -249,7 +249,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose }) =
                         value={setting.value}
                         onChange={(e) => handleSettingUpdate(setting.key, Number(e.target.value))}
                         disabled={isLoading}
-                        className="setting-number"
+                        className="setting-input"
                         min="0"
                         max="100"
                     />
@@ -261,7 +261,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose }) =
     };
 
     return (
-        <div className="settings-menu-overlay">
+        <div className="settings-overlay">
             <div ref={menuRef} className="settings-menu">
                 <div className="settings-header">
                     <h2>Settings</h2>
@@ -298,88 +298,79 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose }) =
                         </button>
                     </div>
 
-                    <div className="settings-panel">
+                    <div className="settings-main">
                         {activeCategory !== 'folders' && activeCategory !== 'about' && (
-                            <>
-                                <div className="settings-panel-header">
-                                    <div className="panel-icon">{settingsCategories.find(cat => cat.id === activeCategory)?.icon}</div>
-                                    <h2>{settingsCategories.find(cat => cat.id === activeCategory)?.name}</h2>
-                                </div>
+                            <div className="settings-section">
+                                <h3>{settingsCategories.find(cat => cat.id === activeCategory)?.name}</h3>
                                 <div className="settings-list">
                                     {settingsCategories
                                         .find(cat => cat.id === activeCategory)
                                         ?.settings.map((setting) => (
                                         <div key={setting.id} className="setting-item">
-                                            <label className="setting-label">{setting.name}</label>
+                                            <div className="setting-info">
+                                                <label>{setting.name}</label>
+                                            </div>
                                             <div className="setting-control">
                                                 {renderSetting(setting)}
                                             </div>
                                         </div>
                                     ))}
                                 </div>
-                            </>
+                            </div>
                         )}
 
                         {activeCategory === 'folders' && (
-                            <div className="known-folders-settings">
-                                <div className="settings-panel-header">
-                                    <div className="panel-icon"><FaFolderOpen /></div>
-                                    <h2>Known Folders</h2>
-                                </div>
-                                <div className="settings-description">
-                                    <p>Configure the default locations for common folder types.</p>
-                                </div>
-                                <div className="folder-list">
+                            <div className="settings-section">
+                                <h3>Known Folders</h3>
+                                <div className="settings-list">
                                     {Object.entries(settings.knownFolders).map(([folderType, folderPath]: [string, any]) => (
-                                        <div key={folderType} className="folder-item">
-                                            <div className="folder-label">
-                                                <div className="folder-name">{folderType.charAt(0).toUpperCase() + folderType.slice(1)}</div>
+                                        <div key={folderType} className="setting-item folder-item">
+                                            <div className="setting-info">
+                                                <label>{folderType.charAt(0).toUpperCase() + folderType.slice(1)}</label>
+                                                {editingFolder !== folderType && (
+                                                    <span className="folder-path">{folderPath}</span>
+                                                )}
                                             </div>
-                                            <div className="folder-path-container">
-                                                {editingFolder !== folderType ? (
-                                                    <div className="folder-display-container">
-                                                        <div className="folder-path">{folderPath}</div>
-                                                        <button
-                                                            onClick={() => handleFolderEdit(folderType)}
-                                                            className="folder-edit-btn"
-                                                            title="Edit folder path"
-                                                        >
-                                                            <FaEdit />
-                                                        </button>
-                                                    </div>
-                                                ) : (
-                                                    <div className="folder-edit-container">
+                                            <div className="setting-control">
+                                                {editingFolder === folderType ? (
+                                                    <div className="folder-edit">
                                                         <input
                                                             type="text"
                                                             value={editValue}
                                                             onChange={(e) => setEditValue(e.target.value)}
-                                                            className="folder-path-input"
+                                                            className="folder-input"
                                                             placeholder="Enter folder path..."
                                                         />
-                                                        <div className="folder-edit-actions">
-                                                            <button
-                                                                onClick={() => handleFolderSave(folderType)}
-                                                                className="folder-save-btn"
-                                                                title="Save"
-                                                            >
-                                                                <FaCheck />
-                                                            </button>
-                                                            <button
-                                                                onClick={handleFolderCancel}
-                                                                className="folder-cancel-btn"
-                                                                title="Cancel"
-                                                            >
-                                                                <FaTimes />
-                                                            </button>
-                                                        </div>
+                                                        <button
+                                                            onClick={() => handleFolderSave(folderType)}
+                                                            className="save-button"
+                                                            title="Save"
+                                                        >
+                                                            <FaCheck />
+                                                        </button>
+                                                        <button
+                                                            onClick={handleFolderCancel}
+                                                            className="cancel-button"
+                                                            title="Cancel"
+                                                        >
+                                                            <FaTimes />
+                                                        </button>
                                                     </div>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => handleFolderEdit(folderType)}
+                                                        className="edit-button"
+                                                        title="Edit"
+                                                    >
+                                                        <FaEdit />
+                                                    </button>
                                                 )}
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                                 <div className="folder-actions">
-                                    <button onClick={resetKnownFolders} className="reset-folders-btn">
+                                    <button onClick={resetKnownFolders} className="reset-button">
                                         <FaUndo />
                                         Reset to Defaults
                                     </button>
@@ -388,32 +379,27 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose }) =
                         )}
 
                         {activeCategory === 'about' && (
-                            <>
-                                <div className="settings-panel-header">
-                                    <div className="panel-icon"><FaInfoCircle /></div>
-                                    <h2>About FAST File Explorer</h2>
-                                </div>
-                                <div className="settings-list">
-                                    <div className="about-content">
-                                        <div className="version-info">
-                                            <h4>Version Information</h4>
-                                            <p><strong>Version:</strong> {getVersionDisplayString()}</p>
-                                            <p><strong>Build:</strong> {BUILD_VERSION}</p>
-                                            <p><strong>Built on:</strong> {getBuildDateString()}</p>
-                                        </div>
-                                        <div className="app-info">
-                                            <h4>Application</h4>
-                                            <p>FAST File Explorer is a modern, high-performance file manager built with Electron and React.</p>
-                                        </div>
+                            <div className="settings-section">
+                                <h3>About FAST File Explorer</h3>
+                                <div className="about-content">
+                                    <div className="version-info">
+                                        <h4>Version Information</h4>
+                                        <p><strong>Version:</strong> {getVersionDisplayString()}</p>
+                                        <p><strong>Build:</strong> {BUILD_VERSION}</p>
+                                        <p><strong>Built on:</strong> {getBuildDateString()}</p>
+                                    </div>
+                                    <div className="app-info">
+                                        <h4>Application</h4>
+                                        <p>FAST File Explorer is a modern, high-performance file manager built with Electron and React.</p>
                                     </div>
                                 </div>
-                            </>
+                            </div>
                         )}
                     </div>
                 </div>
 
                 {isLoading && (
-                    <div className="loading-indicator">
+                    <div className="loading-overlay">
                         <div className="loading-spinner">Loading...</div>
                     </div>
                 )}
