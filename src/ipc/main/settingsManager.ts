@@ -20,6 +20,22 @@ export interface AppSettings {
     viewMode: string;
     zoomLevel: number;
     version: string;
+    // File system settings
+    fileSizeUnit: 'decimal' | 'binary'; // GB/MB/TB vs GiB/MiB/TiB
+    showHiddenFiles: boolean;
+    showFileExtensions: boolean;
+    defaultSortBy: 'name' | 'size' | 'modified' | 'type';
+    defaultSortOrder: 'asc' | 'desc';
+    // UI/UX settings
+    enableAnimations: boolean;
+    showThumbnails: boolean;
+    thumbnailSize: 'small' | 'medium' | 'large';
+    compactMode: boolean;
+    doubleClickToOpen: boolean;
+    // Performance settings
+    enableFilePreview: boolean;
+    maxPreviewFileSize: number; // in MB
+    enableQuickSearch: boolean;
 }
 
 class SettingsManager {
@@ -45,7 +61,23 @@ class SettingsManager {
             theme: 'win11-light',
             viewMode: 'list',
             zoomLevel: 100,
-            version: '1.0.0'
+            version: '1.0.0',
+            // File system settings
+            fileSizeUnit: 'decimal',
+            showHiddenFiles: false,
+            showFileExtensions: true,
+            defaultSortBy: 'name',
+            defaultSortOrder: 'asc',
+            // UI/UX settings
+            enableAnimations: true,
+            showThumbnails: true,
+            thumbnailSize: 'medium',
+            compactMode: false,
+            doubleClickToOpen: true,
+            // Performance settings
+            enableFilePreview: true,
+            maxPreviewFileSize: 10,
+            enableQuickSearch: true,
         };
     }
 

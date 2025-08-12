@@ -15,6 +15,7 @@ import {
     FaExclamationTriangle
 } from 'react-icons/fa';
 import { FileSystemItem, DirectoryContents } from '../../../shared/ipc-channels';
+import { formatFileSize, type FileSizeUnit } from '../../../shared/fileSizeUtils';
 import './FileList.scss';
 
 interface FileListProps {
@@ -96,6 +97,22 @@ export const FileList = React.memo<FileListProps>(({
     const [directoryContents, setDirectoryContents] = useState<DirectoryContents | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const [fileSizeUnit, setFileSizeUnit] = useState<FileSizeUnit>('decimal');
+
+    // Load file size unit preference
+    useEffect(() => {
+        const loadFileSizeUnit = async () => {
+            try {
+                const settings = await window.electronAPI?.settings?.getAll();
+                if (settings?.fileSizeUnit) {
+                    setFileSizeUnit(settings.fileSizeUnit);
+                }
+            } catch (error) {
+                console.warn('Failed to load file size unit setting:', error);
+            }
+        };
+        loadFileSizeUnit();
+    }, []);
 
     // Get file icon based on extension
     const getFileIcon = useCallback((item: FileSystemItem) => {
@@ -153,20 +170,11 @@ export const FileList = React.memo<FileListProps>(({
         }
     }, []);
 
-    // Format file size
-    const formatFileSize = useCallback((size: number) => {
+    // Format file size using user's preferred unit system
+    const formatFileSizeWithSettings = useCallback((size: number) => {
         if (size === 0) return '-';
-        const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-        let index = 0;
-        let fileSize = size;
-
-        while (fileSize >= 1024 && index < units.length - 1) {
-            fileSize /= 1024;
-            index++;
-        }
-
-        return `${fileSize.toFixed(index === 0 ? 0 : 1)} ${units[index]}`;
-    }, []);
+        return formatFileSize(size, fileSizeUnit, 1);
+    }, [fileSizeUnit]);
 
     // Format date
     const formatDate = useCallback((date: Date) => {
@@ -278,7 +286,7 @@ export const FileList = React.memo<FileListProps>(({
                             onDoubleClick={handleItemDoubleClick}
                             viewMode={viewMode}
                             getFileIcon={getFileIcon}
-                            formatFileSize={formatFileSize}
+                            formatFileSize={formatFileSizeWithSettings}
                             formatDate={formatDate}
                         />
                     ))}
@@ -299,7 +307,7 @@ export const FileList = React.memo<FileListProps>(({
                     onDoubleClick={handleItemDoubleClick}
                     viewMode={viewMode}
                     getFileIcon={getFileIcon}
-                    formatFileSize={formatFileSize}
+                    formatFileSize={formatFileSizeWithSettings}
                     formatDate={formatDate}
                 />
             ))}

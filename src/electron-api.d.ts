@@ -86,4 +86,20 @@ interface AppSettings {
   viewMode: string;
   zoomLevel: number;
   version: string;
+  // File system settings
+  fileSizeUnit: 'decimal' | 'binary';
+  showHiddenFiles: boolean;
+  showFileExtensions: boolean;
+  defaultSortBy: 'name' | 'size' | 'modified' | 'type';
+  defaultSortOrder: 'asc' | 'desc';
+  // UI/UX settings
+  enableAnimations: boolean;
+  showThumbnails: boolean;
+  thumbnailSize: 'small' | 'medium' | 'large';
+  compactMode: boolean;
+  doubleClickToOpen: boolean;
+  // Performance settings
+  enableFilePreview: boolean;
+  maxPreviewFileSize: number;
+  enableQuickSearch: boolean;
 }

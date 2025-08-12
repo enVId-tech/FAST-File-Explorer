@@ -11,17 +11,51 @@ interface SettingsMenuProps {
 export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose }) => {
     const [activeCategory, setActiveCategory] = useState('general');
     const [knownFolders, setKnownFolders] = useState<any>({});
+    const [settings, setSettings] = useState<any>({});
     const [editingFolder, setEditingFolder] = useState<string | null>(null);
     const [editValue, setEditValue] = useState<string>('');
     const [isLoading, setIsLoading] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
-    // Load known folders when settings menu opens
+    // Load all settings when settings menu opens
     useEffect(() => {
-        if (isOpen && activeCategory === 'knownFolders') {
-            loadKnownFolders();
+        if (isOpen) {
+            loadAllSettings();
         }
-    }, [isOpen, activeCategory]);
+    }, [isOpen]);
+
+    const loadAllSettings = async () => {
+        try {
+            setIsLoading(true);
+            const allSettings = await window.electronAPI?.settings?.getAll();
+            if (allSettings) {
+                setSettings(allSettings);
+                setKnownFolders(allSettings.knownFolders);
+            }
+        } catch (error: any) {
+            console.error('Failed to load settings:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const updateSetting = async (key: string, value: any) => {
+        try {
+            setIsLoading(true);
+            await window.electronAPI?.settings?.update(key as any, value);
+            
+            // Update local state
+            setSettings((prev: any) => ({
+                ...prev,
+                [key]: value
+            }));
+        } catch (error: any) {
+            console.error(`Failed to update setting ${key}:`, error);
+            alert(`Failed to update setting: ${error.message}`);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const loadKnownFolders = async () => {
         try {
@@ -121,21 +155,37 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose }) =
             name: 'General',
             icon: <FaCog />,
             settings: [
-                { id: 'startup', name: 'Open on startup', type: 'toggle', value: false },
-                { id: 'notifications', name: 'Show notifications', type: 'toggle', value: true },
-                { id: 'updates', name: 'Check for updates automatically', type: 'toggle', value: true },
-                { id: 'language', name: 'Language', type: 'dropdown', value: 'English', options: ['English', 'Spanish', 'French', 'German'] },
-            ]
-        },
-        {
-            id: 'appearance',
-            name: 'Appearance',
-            icon: <FaPalette />,
-            settings: [
-                { id: 'theme', name: 'Theme', type: 'dropdown', value: 'Windows 11 Light', options: ['Windows 11 Light', 'Windows 11 Dark', 'Windows 10 Light', 'Windows 10 Dark', 'Cyberpunk', 'Retro', 'Futuristic', 'Nature'] },
-                { id: 'accentColor', name: 'Accent color', type: 'color', value: '#2563eb' },
-                { id: 'fontSize', name: 'Font size', type: 'dropdown', value: 'Medium', options: ['Small', 'Medium', 'Large'] },
-                { id: 'iconSize', name: 'Icon size', type: 'dropdown', value: 'Medium', options: ['Small', 'Medium', 'Large'] },
+                { 
+                    id: 'defaultSortBy', 
+                    name: 'Default sort by', 
+                    type: 'dropdown', 
+                    value: settings.defaultSortBy || 'name', 
+                    options: ['name', 'size', 'modified', 'type'],
+                    key: 'defaultSortBy'
+                },
+                { 
+                    id: 'defaultSortOrder', 
+                    name: 'Default sort order', 
+                    type: 'dropdown', 
+                    value: settings.defaultSortOrder || 'asc', 
+                    options: ['asc', 'desc'],
+                    optionLabels: ['Ascending', 'Descending'],
+                    key: 'defaultSortOrder'
+                },
+                { 
+                    id: 'doubleClickToOpen', 
+                    name: 'Double-click to open', 
+                    type: 'toggle', 
+                    value: settings.doubleClickToOpen ?? true,
+                    key: 'doubleClickToOpen'
+                },
+                { 
+                    id: 'enableQuickSearch', 
+                    name: 'Enable quick search', 
+                    type: 'toggle', 
+                    value: settings.enableQuickSearch ?? true,
+                    key: 'enableQuickSearch'
+                }
             ]
         },
         {
@@ -143,10 +193,82 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose }) =
             name: 'Display',
             icon: <FaDesktop />,
             settings: [
-                { id: 'viewMode', name: 'Default view mode', type: 'dropdown', value: 'List', options: ['List', 'Grid', 'Tiles'] },
-                { id: 'showHidden', name: 'Show hidden files', type: 'toggle', value: false },
-                { id: 'showExtensions', name: 'Show file extensions', type: 'toggle', value: true },
-                { id: 'detailsPanel', name: 'Show details panel', type: 'toggle', value: true },
+                { 
+                    id: 'fileSizeUnit', 
+                    name: 'File size units', 
+                    type: 'dropdown', 
+                    value: settings.fileSizeUnit || 'decimal', 
+                    options: ['decimal', 'binary'],
+                    optionLabels: ['Decimal (GB, MB, TB)', 'Binary (GiB, MiB, TiB)'],
+                    key: 'fileSizeUnit'
+                },
+                { 
+                    id: 'showHiddenFiles', 
+                    name: 'Show hidden files', 
+                    type: 'toggle', 
+                    value: settings.showHiddenFiles ?? false,
+                    key: 'showHiddenFiles'
+                },
+                { 
+                    id: 'showFileExtensions', 
+                    name: 'Show file extensions', 
+                    type: 'toggle', 
+                    value: settings.showFileExtensions ?? true,
+                    key: 'showFileExtensions'
+                },
+                { 
+                    id: 'showThumbnails', 
+                    name: 'Show thumbnails', 
+                    type: 'toggle', 
+                    value: settings.showThumbnails ?? true,
+                    key: 'showThumbnails'
+                },
+                { 
+                    id: 'thumbnailSize', 
+                    name: 'Thumbnail size', 
+                    type: 'dropdown', 
+                    value: settings.thumbnailSize || 'medium', 
+                    options: ['small', 'medium', 'large'],
+                    optionLabels: ['Small', 'Medium', 'Large'],
+                    key: 'thumbnailSize'
+                },
+                { 
+                    id: 'compactMode', 
+                    name: 'Compact mode', 
+                    type: 'toggle', 
+                    value: settings.compactMode ?? false,
+                    key: 'compactMode'
+                }
+            ]
+        },
+        {
+            id: 'performance',
+            name: 'Performance',
+            icon: <FaSync />,
+            settings: [
+                { 
+                    id: 'enableAnimations', 
+                    name: 'Enable animations', 
+                    type: 'toggle', 
+                    value: settings.enableAnimations ?? true,
+                    key: 'enableAnimations'
+                },
+                { 
+                    id: 'enableFilePreview', 
+                    name: 'Enable file preview', 
+                    type: 'toggle', 
+                    value: settings.enableFilePreview ?? true,
+                    key: 'enableFilePreview'
+                },
+                { 
+                    id: 'maxPreviewFileSize', 
+                    name: 'Max preview file size (MB)', 
+                    type: 'number', 
+                    value: settings.maxPreviewFileSize || 10,
+                    min: 1,
+                    max: 100,
+                    key: 'maxPreviewFileSize'
+                }
             ]
         },
         {
@@ -154,16 +276,6 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose }) =
             name: 'Known Folders',
             icon: <FaHome />,
             settings: [] // Dynamic settings loaded from backend
-        },
-        {
-            id: 'folders',
-            name: 'Folder Options',
-            icon: <FaFolderOpen />,
-            settings: [
-                { id: 'defaultLocation', name: 'Default location', type: 'dropdown', value: 'This PC', options: ['This PC', 'Documents', 'Desktop', 'Downloads'] },
-                { id: 'newTabLocation', name: 'New tab opens to', type: 'dropdown', value: 'This PC', options: ['This PC', 'Last location', 'Documents', 'Desktop'] },
-                { id: 'folderOptions', name: 'Folder options in new window', type: 'toggle', value: false },
-            ]
         },
         {
             id: 'shortcuts',
@@ -174,16 +286,6 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose }) =
                 { id: 'ctrlW', name: 'Ctrl+W', type: 'text', value: 'Close Tab', readonly: true },
                 { id: 'ctrlN', name: 'Ctrl+N', type: 'text', value: 'New Window', readonly: true },
                 { id: 'f5', name: 'F5', type: 'text', value: 'Refresh', readonly: true },
-            ]
-        },
-        {
-            id: 'privacy',
-            name: 'Privacy',
-            icon: <FaShieldAlt />,
-            settings: [
-                { id: 'recentFiles', name: 'Show recent files', type: 'toggle', value: true },
-                { id: 'fileHistory', name: 'Save file access history', type: 'toggle', value: true },
-                { id: 'analytics', name: 'Send usage analytics', type: 'toggle', value: false },
             ]
         },
         {
@@ -208,8 +310,13 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose }) =
                     <label className="toggle-switch">
                         <input 
                             type="checkbox" 
-                            defaultChecked={setting.value}
-                            disabled={setting.readonly}
+                            checked={setting.value}
+                            disabled={setting.readonly || isLoading}
+                            onChange={(e) => {
+                                if (setting.key && !setting.readonly) {
+                                    updateSetting(setting.key, e.target.checked);
+                                }
+                            }}
                         />
                         <span className="toggle-slider"></span>
                     </label>
@@ -218,29 +325,66 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose }) =
             case 'dropdown':
                 return (
                     <select 
-                        defaultValue={setting.value}
-                        disabled={setting.readonly}
+                        value={setting.value}
+                        disabled={setting.readonly || isLoading}
                         className="setting-dropdown"
+                        onChange={(e) => {
+                            if (setting.key && !setting.readonly) {
+                                updateSetting(setting.key, e.target.value);
+                            }
+                        }}
                     >
-                        {setting.options?.map((option: string) => (
-                            <option key={option} value={option}>{option}</option>
+                        {setting.options?.map((option: string, index: number) => (
+                            <option key={option} value={option}>
+                                {setting.optionLabels ? setting.optionLabels[index] : option}
+                            </option>
                         ))}
                     </select>
+                );
+            
+            case 'number':
+                return (
+                    <input 
+                        type="number" 
+                        value={setting.value}
+                        disabled={setting.readonly || isLoading}
+                        min={setting.min}
+                        max={setting.max}
+                        className="setting-number"
+                        onChange={(e) => {
+                            if (setting.key && !setting.readonly) {
+                                updateSetting(setting.key, parseInt(e.target.value, 10));
+                            }
+                        }}
+                    />
                 );
             
             case 'color':
                 return (
                     <input 
                         type="color" 
-                        defaultValue={setting.value}
-                        disabled={setting.readonly}
+                        value={setting.value}
+                        disabled={setting.readonly || isLoading}
                         className="setting-color"
+                        onChange={(e) => {
+                            if (setting.key && !setting.readonly) {
+                                updateSetting(setting.key, e.target.value);
+                            }
+                        }}
                     />
                 );
             
             case 'button':
                 return (
-                    <button className="setting-button">
+                    <button 
+                        className="setting-button"
+                        disabled={isLoading}
+                        onClick={() => {
+                            if (setting.onClick) {
+                                setting.onClick();
+                            }
+                        }}
+                    >
                         {setting.value}
                     </button>
                 );
@@ -249,9 +393,15 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose }) =
                 return (
                     <input 
                         type="text" 
-                        defaultValue={setting.value}
+                        value={setting.value}
                         readOnly={setting.readonly}
+                        disabled={isLoading}
                         className="setting-text"
+                        onChange={(e) => {
+                            if (setting.key && !setting.readonly) {
+                                updateSetting(setting.key, e.target.value);
+                            }
+                        }}
                     />
                 );
         }
