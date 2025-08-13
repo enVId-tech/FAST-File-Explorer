@@ -17,6 +17,7 @@ import {
 import { FileSystemItem, DirectoryContents } from '../../../shared/ipc-channels';
 import { formatFileSize } from '../../../shared/fileSizeUtils';
 import { useSettings } from '../../contexts/SettingsContext';
+import { CustomContextMenu } from '../CustomContextMenu/CustomContextMenu';
 import './FileList.scss';
 import { VirtualizedList } from '../VirtualizedList/VirtualizedList';
 
@@ -34,17 +35,19 @@ const FileItem = React.memo<{
     isSelected: boolean;
     onClick: (item: FileSystemItem) => void;
     onDoubleClick: (item: FileSystemItem) => void;
+    onContextMenu: (event: React.MouseEvent, item: FileSystemItem) => void;
     viewMode: 'list' | 'grid';
     getFileIcon: (item: FileSystemItem) => React.ReactElement;
     formatFileSize: (size: number) => string;
     formatDate: (date: Date) => string;
-}>(({ item, isSelected, onClick, onDoubleClick, viewMode, getFileIcon, formatFileSize, formatDate }) => {
+}>(({ item, isSelected, onClick, onDoubleClick, onContextMenu, viewMode, getFileIcon, formatFileSize, formatDate }) => {
     if (viewMode === 'list') {
         return (
             <div
                 className={`file-list-item ${isSelected ? 'selected' : ''}`}
                 onClick={() => onClick(item)}
                 onDoubleClick={() => onDoubleClick(item)}
+                onContextMenu={(e) => onContextMenu(e, item)}
             >
                 <div className="file-list-column name-column">
                     <div className="file-name-container">
@@ -70,6 +73,7 @@ const FileItem = React.memo<{
             className={`file-grid-item ${isSelected ? 'selected' : ''}`}
             onClick={() => onClick(item)}
             onDoubleClick={() => onDoubleClick(item)}
+            onContextMenu={(e) => onContextMenu(e, item)}
         >
             <div className="file-grid-icon">
                 {getFileIcon(item)}
@@ -94,6 +98,19 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
     const [directoryContents, setDirectoryContents] = useState<DirectoryContents | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    
+    // Context menu state
+    const [contextMenu, setContextMenu] = useState<{
+        visible: boolean;
+        x: number;
+        y: number;
+        item: FileSystemItem | null;
+    }>({
+        visible: false,
+        x: 0,
+        y: 0,
+        item: null,
+    });
 
     // Get file size unit from settings context (no need for separate state)
     const fileSizeUnit = settings.fileSizeUnit;
@@ -178,6 +195,39 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
             return 'Unknown';
         }
     }, []);
+
+    // Context menu handlers
+    const handleContextMenu = useCallback((event: React.MouseEvent, item: FileSystemItem) => {
+        event.preventDefault();
+        setContextMenu({
+            visible: true,
+            x: event.clientX,
+            y: event.clientY,
+            item: item,
+        });
+    }, []);
+
+    const handleCloseContextMenu = useCallback(() => {
+        setContextMenu(prev => ({ ...prev, visible: false }));
+    }, []);
+
+    const handleContextMenuAction = useCallback((action: string, items: FileSystemItem[]) => {
+        console.log(`Context menu action: ${action} on items:`, items);
+        // Here you would implement the actual file operations
+        handleCloseContextMenu();
+    }, [handleCloseContextMenu]);
+
+    // Close context menu when clicking elsewhere
+    useEffect(() => {
+        const handleClickOutside = () => {
+            if (contextMenu.visible) {
+                handleCloseContextMenu();
+            }
+        };
+
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, [contextMenu.visible, handleCloseContextMenu]);
 
     // Load directory contents
     const loadDirectory = useCallback(async (path: string) => {
@@ -276,6 +326,7 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
                                 isSelected={selectedFile?.path === item.path}
                                 onClick={handleItemClick}
                                 onDoubleClick={handleItemDoubleClick}
+                                onContextMenu={handleContextMenu}
                                 viewMode={viewMode}
                                 getFileIcon={getFileIcon}
                                 formatFileSize={formatFileSizeWithSettings}
@@ -284,6 +335,17 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
                         );
                     }}
                 />
+                
+                {/* Context Menu */}
+                {contextMenu.visible && contextMenu.item && (
+                    <CustomContextMenu
+                        position={{ x: contextMenu.x, y: contextMenu.y }}
+                        isVisible={contextMenu.visible}
+                        selectedItems={[contextMenu.item]}
+                        onAction={handleContextMenuAction}
+                        onClose={handleCloseContextMenu}
+                    />
+                )}
             </div>
         );
     }
@@ -298,12 +360,24 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
                     isSelected={selectedFile?.path === item.path}
                     onClick={handleItemClick}
                     onDoubleClick={handleItemDoubleClick}
+                    onContextMenu={handleContextMenu}
                     viewMode={viewMode}
                     getFileIcon={getFileIcon}
                     formatFileSize={formatFileSizeWithSettings}
                     formatDate={formatDate}
                 />
             ))}
+            
+            {/* Context Menu */}
+            {contextMenu.visible && contextMenu.item && (
+                <CustomContextMenu
+                    position={{ x: contextMenu.x, y: contextMenu.y }}
+                    isVisible={contextMenu.visible}
+                    selectedItems={[contextMenu.item]}
+                    onAction={handleContextMenuAction}
+                    onClose={handleCloseContextMenu}
+                />
+            )}
         </div>
     );
 });

@@ -504,7 +504,10 @@ const Main = React.memo(function Main(): React.JSX.Element {
     const handleShowSettings = useCallback(() => setIsSettingsOpen(true), []);
     const handleCloseSettings = useCallback(() => setIsSettingsOpen(false), []);
     
-    const handleShowSetup = useCallback(() => setIsSetupOpen(true), []);
+    const handleShowSetup = useCallback(() => {
+        console.log('handleShowSetup called!');
+        setIsSetupOpen(true);
+    }, []);
     const handleCloseSetup = useCallback(() => setIsSetupOpen(false), []);
     const handleCompleteSetup = useCallback(() => {
         setIsSetupOpen(false);
@@ -516,7 +519,10 @@ const Main = React.memo(function Main(): React.JSX.Element {
         }
     }, []);
     
-    const handleShowFileTransfer = useCallback(() => setIsFileTransferOpen(true), []);
+    const handleShowFileTransfer = useCallback(() => {
+        console.log('handleShowFileTransfer called!');
+        setIsFileTransferOpen(true);
+    }, []);
     const handleCloseFileTransfer = useCallback(() => setIsFileTransferOpen(false), []);
 
     return (
@@ -573,6 +579,25 @@ const Main = React.memo(function Main(): React.JSX.Element {
                     onClose={handleCloseFileTransfer}
                     fileSizeUnit={'decimal'}
                 />
+                
+                {/* Debug info - remove in production */}
+                {process.env.NODE_ENV === 'development' && (
+                    <div style={{ 
+                        position: 'fixed', 
+                        top: '10px', 
+                        right: '10px', 
+                        background: 'rgba(0,0,0,0.8)', 
+                        color: 'white', 
+                        padding: '8px', 
+                        fontSize: '12px',
+                        zIndex: 10000,
+                        borderRadius: '4px'
+                    }}>
+                        Setup: {isSetupOpen.toString()}<br/>
+                        Transfer: {isFileTransferOpen.toString()}<br/>
+                        Settings: {isSettingsOpen.toString()}
+                    </div>
+                )}
             </div>
         </SettingsProvider>
     );

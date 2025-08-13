@@ -62,6 +62,20 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
         setEditValue('');
     };
 
+    const handleSetupWizard = () => {
+        onClose(); // Close settings menu first
+        setTimeout(() => {
+            onShowSetup?.(); // Then show setup wizard
+        }, 100); // Small delay to ensure smooth transition
+    };
+
+    const handleShowFileTransferUI = () => {
+        onClose(); // Close settings menu first
+        setTimeout(() => {
+            onShowFileTransferUI?.(); // Then show file transfer UI
+        }, 100); // Small delay to ensure smooth transition
+    };
+
     const resetKnownFolders = async () => {
         if (window.confirm('Are you sure you want to reset all known folders to their default locations?')) {
             try {
@@ -414,7 +428,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
                                     <p>Configure FAST File Explorer with initial setup options and advanced features.</p>
                                 </div>
                                 <div className="setup-actions">
-                                    <button className="setup-action-button" onClick={onShowSetup}>
+                                    <button className="setup-action-button" onClick={handleSetupWizard}>
                                         <FaRocket />
                                         <div>
                                             <h4>Run Setup Wizard</h4>
@@ -425,16 +439,22 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
                                 <div className="setup-info">
                                     <h4>Current Configuration</h4>
                                     <div className="config-item">
-                                        <strong>Explorer Mode:</strong> FAST Mode (Recommended)
+                                        <strong>Theme:</strong><span>{settings?.theme || 'Default'}</span>
                                     </div>
                                     <div className="config-item">
-                                        <strong>WSL Installation:</strong> Not configured
+                                        <strong>View Mode:</strong><span>{settings?.viewMode || 'List'}</span>
                                     </div>
                                     <div className="config-item">
-                                        <strong>File Transfer UI:</strong> Available in Developer settings
+                                        <strong>File Size Format:</strong><span>{settings?.fileSizeUnit === 'binary' ? 'Binary (1024)' : 'Decimal (1000)'}</span>
                                     </div>
                                     <div className="config-item">
-                                        <strong>Custom Context Menu:</strong> Ready to enable
+                                        <strong>Hidden Files:</strong><span>{settings?.showHiddenFiles ? 'Visible' : 'Hidden'}</span>
+                                    </div>
+                                    <div className="config-item">
+                                        <strong>Animations:</strong><span>{settings?.enableAnimations ? 'Enabled' : 'Disabled'}</span>
+                                    </div>
+                                    <div className="config-item">
+                                        <strong>File Extensions:</strong><span>{settings?.showFileExtensions ? 'Shown' : 'Hidden'}</span>
                                     </div>
                                 </div>
                             </div>
@@ -469,7 +489,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
                                             <div className="option-actions">
                                                 <button 
                                                     className="dev-action-button"
-                                                    onClick={onShowFileTransferUI}
+                                                    onClick={handleShowFileTransferUI}
                                                 >
                                                     Show File Transfer UI
                                                 </button>
@@ -515,26 +535,44 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
                         )}
 
                         {activeCategory === 'about' && (
-                            <>
+                            <div className="about-settings">
                                 <div className="settings-panel-header">
                                     <div className="panel-icon"><FaInfoCircle /></div>
                                     <h2>About FAST File Explorer</h2>
                                 </div>
-                                <div className="settings-list">
-                                    <div className="about-content">
-                                        <div className="version-info">
-                                            <h4>Version Information</h4>
-                                            <p><strong>Version:</strong> {getVersionDisplayString()}</p>
-                                            <p><strong>Build:</strong> {BUILD_VERSION}</p>
-                                            <p><strong>Built on:</strong> {getBuildDateString()}</p>
-                                        </div>
-                                        <div className="app-info">
-                                            <h4>Application</h4>
-                                            <p>FAST File Explorer is a modern, high-performance file manager built with Electron and React.</p>
+                                <div className="settings-description">
+                                    <p>A next-generation file manager designed for speed, efficiency, and modern workflows.</p>
+                                </div>
+                                <div className="about-content">
+                                    <div className="version-info">
+                                        <h4>Version Information</h4>
+                                        <p><strong>Version:</strong><span>{getVersionDisplayString()}</span></p>
+                                        <p><strong>Build:</strong><span>{BUILD_VERSION}</span></p>
+                                        <p><strong>Built:</strong><span>{getBuildDateString()}</span></p>
+                                        <p><strong>Platform:</strong><span>Windows (Electron)</span></p>
+                                    </div>
+                                    <div className="app-info">
+                                        <h4>Technology Stack</h4>
+                                        <p><strong>Frontend:</strong><span>React 19 + TypeScript</span></p>
+                                        <p><strong>Desktop:</strong><span>Electron 37</span></p>
+                                        <p><strong>Build Tool:</strong><span>Vite + ESBuild</span></p>
+                                        <p><strong>Styling:</strong><span>SCSS with CSS Variables</span></p>
+                                    </div>
+                                    <div className="app-features">
+                                        <h4>Key Features</h4>
+                                        <div className="feature-list">
+                                            <div className="feature-item">High-performance virtualized lists</div>
+                                            <div className="feature-item">Modern tabbed interface</div>
+                                            <div className="feature-item">Customizable themes & styling</div>
+                                            <div className="feature-item">Advanced file operations</div>
+                                            <div className="feature-item">WSL integration support</div>
+                                            <div className="feature-item">Developer-friendly tools</div>
+                                            <div className="feature-item">Keyboard shortcuts</div>
+                                            <div className="feature-item">File transfer monitoring</div>
                                         </div>
                                     </div>
                                 </div>
-                            </>
+                            </div>
                         )}
                     </div>
                 </div>
