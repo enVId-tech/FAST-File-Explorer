@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback, ReactNode } from 'react';
 
 // Define settings interface matching the backend
 export interface KnownFolderSettings {
@@ -90,32 +90,42 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     // Load settings on mount
     useEffect(() => {
         loadSettings();
+        // Apply initial CSS flags from defaults immediately
+        document.documentElement.classList.toggle('no-animations', !defaultSettings.enableAnimations);
+        document.documentElement.classList.toggle('no-thumbnails', !defaultSettings.showThumbnails);
+        document.documentElement.style.setProperty('--compact-mode', defaultSettings.compactMode ? '1' : '0');
     }, []);
 
-    const loadSettings = async (): Promise<void> => {
+    const loadSettings = useCallback(async (): Promise<void> => {
         try {
             setIsLoading(true);
             const loadedSettings = await window.electronAPI?.settings.getAll();
             if (loadedSettings) {
                 // Merge with defaults to ensure all properties exist
-                setSettings({ ...defaultSettings, ...loadedSettings });
+                const merged = { ...defaultSettings, ...loadedSettings } as AppSettings;
+                setSettings(merged);
+                // Apply CSS flags for loaded settings
+                document.documentElement.classList.toggle('no-animations', !merged.enableAnimations);
+                document.documentElement.classList.toggle('no-thumbnails', !merged.showThumbnails);
+                document.documentElement.style.setProperty('--compact-mode', merged.compactMode ? '1' : '0');
             }
         } catch (error) {
             console.error('Failed to load settings:', error);
-            // Use defaults if loading fails
             setSettings(defaultSettings);
         } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
 
-    const updateSetting = async <K extends keyof AppSettings>(
+    const updateSetting = useCallback(async <K extends keyof AppSettings>(
         key: K, 
         value: AppSettings[K]
     ): Promise<void> => {
+        // Keep a snapshot for revert on failure
+        const prev = settings;
         try {
             // Update local state immediately for instant UI response
-            const newSettings = { ...settings, [key]: value };
+            const newSettings = { ...settings, [key]: value } as AppSettings;
             setSettings(newSettings);
 
             // Save to backend
@@ -124,75 +134,60 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
             // Trigger any component-specific updates based on the setting
             handleSettingChange(key, value);
         } catch (error) {
-            console.error(`Failed to update setting ${key}:`, error);
+            console.error(`Failed to update setting ${String(key)}:`, error);
             // Revert local state on error
-            setSettings(settings);
-            throw error;
+            setSettings(prev);
+            throw error as any;
         }
-    };
+    }, [settings]);
 
-    const resetSettings = async (): Promise<void> => {
+    const resetSettings = useCallback(async (): Promise<void> => {
         try {
             setIsLoading(true);
-            // There's no resetSettings method in the API, so we'll reset by updating all settings to defaults
-            for (const [key, value] of Object.entries(defaultSettings)) {
-                if (key !== 'knownFolders') { // Skip known folders as they have their own reset method
-                    await window.electronAPI?.settings.update(key as keyof AppSettings, value);
+            // Reset by updating all settings to defaults
+            const entries = Object.entries(defaultSettings) as [keyof AppSettings, any][];
+            for (const [key, value] of entries) {
+                if (key !== 'knownFolders') {
+                    await window.electronAPI?.settings.update(key, value);
                 }
             }
             await window.electronAPI?.settings.resetKnownFolders();
             setSettings(defaultSettings);
+            // Apply CSS flags
+            document.documentElement.classList.toggle('no-animations', !defaultSettings.enableAnimations);
+            document.documentElement.classList.toggle('no-thumbnails', !defaultSettings.showThumbnails);
+            document.documentElement.style.setProperty('--compact-mode', defaultSettings.compactMode ? '1' : '0');
         } catch (error) {
             console.error('Failed to reset settings:', error);
         } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
 
     // Handle specific setting changes that require immediate UI updates
-    const handleSettingChange = (key: keyof AppSettings, value: any) => {
+    const handleSettingChange = useCallback((key: keyof AppSettings, value: any) => {
         switch (key) {
             case 'compactMode':
-                // Update CSS custom property for compact mode
-                document.documentElement.style.setProperty(
-                    '--compact-mode', 
-                    value ? '1' : '0'
-                );
+                document.documentElement.style.setProperty('--compact-mode', value ? '1' : '0');
                 break;
-            
             case 'enableAnimations':
-                // Trigger animations enable/disable
                 document.documentElement.classList.toggle('no-animations', !value);
                 break;
-            
             case 'showThumbnails':
-                // Trigger thumbnail visibility change
                 document.documentElement.classList.toggle('no-thumbnails', !value);
                 break;
-            
-            case 'fileSizeUnit':
-                // Trigger file size display updates - components will re-render due to context change
-                console.log(`File size unit changed to: ${value}`);
-                break;
-            
-            case 'showHiddenFiles':
-                // Trigger hidden files visibility change
-                console.log(`Hidden files visibility changed to: ${value}`);
-                break;
-            
             default:
-                // For other settings, the context change will trigger re-renders
                 break;
         }
-    };
+    }, []);
 
-    const contextValue: SettingsContextType = {
+    const contextValue: SettingsContextType = useMemo(() => ({
         settings,
         updateSetting,
         loadSettings,
         resetSettings,
         isLoading,
-    };
+    }), [settings, updateSetting, loadSettings, resetSettings, isLoading]);
 
     return (
         <SettingsContext.Provider value={contextValue}>

@@ -15,9 +15,10 @@ import {
     FaExclamationTriangle
 } from 'react-icons/fa';
 import { FileSystemItem, DirectoryContents } from '../../../shared/ipc-channels';
-import { formatFileSize, type FileSizeUnit } from '../../../shared/fileSizeUtils';
+import { formatFileSize } from '../../../shared/fileSizeUtils';
 import { useSettings } from '../../contexts/SettingsContext';
 import './FileList.scss';
+import { VirtualizedList } from '../VirtualizedList/VirtualizedList';
 
 interface FileListProps {
     currentPath: string;
@@ -88,13 +89,7 @@ const FileItem = React.memo<{
     );
 });
 
-export const FileList = React.memo<FileListProps>(({
-    currentPath,
-    viewMode,
-    onNavigate,
-    onFileSelect,
-    selectedFile
-}) => {
+export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNavigate, onFileSelect, selectedFile }) => {
     const { settings } = useSettings();
     const [directoryContents, setDirectoryContents] = useState<DirectoryContents | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
@@ -103,12 +98,22 @@ export const FileList = React.memo<FileListProps>(({
     // Get file size unit from settings context (no need for separate state)
     const fileSizeUnit = settings.fileSizeUnit;
 
+    // Build list options from settings once
+    const listOptions = useMemo(() => {
+        const sortBy = settings.defaultSortBy === 'type' ? 'name' : settings.defaultSortBy;
+        return {
+            includeHidden: settings.showHiddenFiles,
+            sortBy,
+            sortDirection: settings.defaultSortOrder as 'asc' | 'desc',
+            maxItems: 5000,
+        };
+    }, [settings.showHiddenFiles, settings.defaultSortBy, settings.defaultSortOrder]);
+
     // Get file icon based on extension
     const getFileIcon = useCallback((item: FileSystemItem) => {
         if (item.type === 'directory') {
             return <FaFolder className="file-icon directory-icon" />;
         }
-
         const ext = item.extension?.toLowerCase();
         switch (ext) {
             case '.jpg':
@@ -168,7 +173,7 @@ export const FileList = React.memo<FileListProps>(({
     // Format date
     const formatDate = useCallback((date: Date) => {
         try {
-            return date.toLocaleString();
+            return new Date(date).toLocaleString();
         } catch {
             return 'Unknown';
         }
@@ -177,17 +182,10 @@ export const FileList = React.memo<FileListProps>(({
     // Load directory contents
     const loadDirectory = useCallback(async (path: string) => {
         if (!path) return;
-        
         setLoading(true);
         setError(null);
-
         try {
-            const contents = await window.electronAPI.fs.getDirectoryContents(path, {
-                includeHidden: false,
-                sortBy: 'name',
-                sortDirection: 'asc'
-            });
-            
+            const contents = await window.electronAPI.fs.getDirectoryContents(path, listOptions);
             setDirectoryContents(contents);
         } catch (err) {
             console.error('Failed to load directory:', err);
@@ -196,7 +194,7 @@ export const FileList = React.memo<FileListProps>(({
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [listOptions]);
 
     // Handle file/folder clicks with memoization
     const handleItemClick = useCallback((item: FileSystemItem) => {
@@ -215,11 +213,9 @@ export const FileList = React.memo<FileListProps>(({
     }, [onNavigate]);
 
     // Memoized directory items for performance
-    const directoryItems = useMemo(() => {
-        return directoryContents?.items || [];
-    }, [directoryContents?.items]);
+    const directoryItems = useMemo(() => directoryContents?.items || [], [directoryContents]);
 
-    // Load directory when path changes
+    // Load directory when path or list options change
     useEffect(() => {
         loadDirectory(currentPath);
     }, [currentPath, loadDirectory]);
@@ -246,7 +242,7 @@ export const FileList = React.memo<FileListProps>(({
     }
 
     // Render empty state
-    if (!directoryContents || directoryContents.items.length === 0) {
+    if (!directoryContents || directoryItems.length === 0) {
         return (
             <div className="file-list-empty">
                 <FaFolder className="empty-icon" />
@@ -255,8 +251,9 @@ export const FileList = React.memo<FileListProps>(({
         );
     }
 
-    // Render file list in list view
+    // Render file list in list view with virtualization for large directories
     if (viewMode === 'list') {
+        const rowHeight = 40; // keep in sync with CSS padding/line-height
         return (
             <div className="file-list-view">
                 <div className="file-list-header">
@@ -265,21 +262,28 @@ export const FileList = React.memo<FileListProps>(({
                     <div className="file-list-column type-column">Type</div>
                     <div className="file-list-column size-column">Size</div>
                 </div>
-                <div className="file-list-content">
-                    {directoryItems.map((item, index) => (
-                        <FileItem
-                            key={`${item.name}-${index}`}
-                            item={item}
-                            isSelected={selectedFile?.path === item.path}
-                            onClick={handleItemClick}
-                            onDoubleClick={handleItemDoubleClick}
-                            viewMode={viewMode}
-                            getFileIcon={getFileIcon}
-                            formatFileSize={formatFileSizeWithSettings}
-                            formatDate={formatDate}
-                        />
-                    ))}
-                </div>
+                <VirtualizedList
+                    itemCount={directoryItems.length}
+                    itemHeight={rowHeight}
+                    overscan={10}
+                    className="file-list-content"
+                    renderItem={(index) => {
+                        const item = directoryItems[index];
+                        return (
+                            <FileItem
+                                key={`${item.path}`}
+                                item={item}
+                                isSelected={selectedFile?.path === item.path}
+                                onClick={handleItemClick}
+                                onDoubleClick={handleItemDoubleClick}
+                                viewMode={viewMode}
+                                getFileIcon={getFileIcon}
+                                formatFileSize={formatFileSizeWithSettings}
+                                formatDate={formatDate}
+                            />
+                        );
+                    }}
+                />
             </div>
         );
     }
@@ -287,9 +291,9 @@ export const FileList = React.memo<FileListProps>(({
     // Render file list in grid view
     return (
         <div className="file-grid-view">
-            {directoryItems.map((item, index) => (
+            {directoryItems.map((item) => (
                 <FileItem
-                    key={`${item.name}-${index}`}
+                    key={item.path}
                     item={item}
                     isSelected={selectedFile?.path === item.path}
                     onClick={handleItemClick}
