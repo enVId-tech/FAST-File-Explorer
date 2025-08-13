@@ -1,0 +1,234 @@
+.custom-context-menu {
+    position: fixed;
+    background: var(--background-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    padding: 4px;
+    min-width: 200px;
+    z-index: 10000;
+    backdrop-filter: blur(8px);
+    animation: contextMenuIn 0.15s ease-out;
+    user-select: none;
+}
+
+@keyframes contextMenuIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+    position: relative;
+    font-size: 13px;
+    color: var(--text-primary);
+    gap: 10px;
+}
+
+.menu-item:hover:not(.disabled) {
+    background: var(--accent-color-light);
+    color: var(--accent-color);
+}
+
+.menu-item.disabled {
+    color: var(--text-tertiary);
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.menu-item.has-submenu::after {
+    content: '';
+    position: absolute;
+    right: 8px;
+    width: 0;
+    height: 0;
+    border-left: 4px solid currentColor;
+    border-top: 3px solid transparent;
+    border-bottom: 3px solid transparent;
+    opacity: 0.6;
+}
+
+.menu-icon {
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: inherit;
+    flex-shrink: 0;
+}
+
+.menu-label {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.submenu-arrow {
+    font-size: 10px;
+    color: var(--text-secondary);
+    margin-left: auto;
+}
+
+.menu-separator {
+    height: 1px;
+    background: var(--border-color-light);
+    margin: 4px 0;
+}
+
+/* Submenu */
+.submenu {
+    position: fixed;
+    background: var(--background-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    padding: 4px;
+    min-width: 180px;
+    z-index: 10001;
+    animation: submenuIn 0.12s ease-out;
+}
+
+@keyframes submenuIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateX(0);
+    }
+}
+
+/* Themed variations */
+[data-theme="win11-dark"] .custom-context-menu,
+[data-theme="win10-dark"] .custom-context-menu {
+    background: rgba(32, 32, 32, 0.95);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="win11-light"] .custom-context-menu,
+[data-theme="win10-light"] .custom-context-menu {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Cyberpunk theme */
+[data-theme="cyberpunk"] .custom-context-menu {
+    background: rgba(0, 0, 0, 0.9);
+    border-color: #00ffff;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+}
+
+[data-theme="cyberpunk"] .menu-item:hover:not(.disabled) {
+    background: rgba(0, 255, 255, 0.2);
+    color: #00ffff;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+/* Nature theme */
+[data-theme="nature"] .custom-context-menu {
+    background: rgba(40, 60, 40, 0.95);
+    border-color: rgba(100, 150, 100, 0.3);
+}
+
+[data-theme="nature"] .menu-item:hover:not(.disabled) {
+    background: rgba(80, 120, 80, 0.3);
+    color: #90ee90;
+}
+
+/* Futuristic theme */
+[data-theme="futuristic"] .custom-context-menu {
+    background: rgba(20, 20, 40, 0.95);
+    border-color: rgba(100, 100, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(100, 100, 255, 0.2);
+}
+
+[data-theme="futuristic"] .menu-item:hover:not(.disabled) {
+    background: rgba(100, 100, 255, 0.2);
+    color: #8080ff;
+}
+
+/* Retro theme */
+[data-theme="retro"] .custom-context-menu {
+    background: rgba(50, 30, 20, 0.95);
+    border-color: rgba(255, 200, 100, 0.3);
+}
+
+[data-theme="retro"] .menu-item:hover:not(.disabled) {
+    background: rgba(255, 200, 100, 0.2);
+    color: #ffcc80;
+}
+
+/* Keyboard navigation support */
+.menu-item:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: -2px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .custom-context-menu {
+        min-width: 180px;
+        max-width: calc(100vw - 20px);
+    }
+    
+    .menu-item {
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+    
+    .menu-icon {
+        width: 18px;
+        height: 18px;
+        font-size: 14px;
+    }
+    
+    .submenu {
+        min-width: 160px;
+    }
+}
+
+/* High contrast support */
+@media (prefers-contrast: high) {
+    .custom-context-menu {
+        border-width: 2px;
+    }
+    
+    .menu-item:hover:not(.disabled) {
+        background: var(--accent-color);
+        color: var(--background-primary);
+    }
+    
+    .menu-separator {
+        height: 2px;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .custom-context-menu {
+        animation: none;
+    }
+    
+    .submenu {
+        animation: none;
+    }
+    
+    .menu-item {
+        transition: none;
+    }
+}

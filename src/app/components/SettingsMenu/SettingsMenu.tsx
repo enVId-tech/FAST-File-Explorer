@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FaCog, FaPalette, FaDesktop, FaKeyboard, FaSync, FaFolderOpen, FaShieldAlt, FaInfoCircle, FaDownload, FaHome, FaEdit, FaCheck, FaTimes, FaUndo } from 'react-icons/fa';
+import { FaCog, FaPalette, FaDesktop, FaKeyboard, FaSync, FaFolderOpen, FaShieldAlt, FaInfoCircle, FaDownload, FaHome, FaEdit, FaCheck, FaTimes, FaUndo, FaRocket, FaWrench } from 'react-icons/fa';
 import './SettingsMenu.scss';
 import { BUILD_VERSION, getBuildDateString, getVersionDisplayString } from '../../../version';
 import { useSettings } from '../../contexts/SettingsContext';
@@ -7,13 +7,16 @@ import { useSettings } from '../../contexts/SettingsContext';
 interface SettingsMenuProps {
     isOpen: boolean;
     onClose: () => void;
+    onShowSetup?: () => void;
+    onShowFileTransferUI?: () => void;
 }
 
-export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose }) => {
+export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onShowSetup, onShowFileTransferUI }) => {
     const { settings, updateSetting, isLoading } = useSettings();
-    const [activeCategory, setActiveCategory] = useState('general');
+    const [activeCategory, setActiveCategory] = useState<'general' | 'appearance' | 'performance' | 'security' | 'folders' | 'setup' | 'developer' | 'about'>('general');
     const [editingFolder, setEditingFolder] = useState<string | null>(null);
     const [editValue, setEditValue] = useState<string>('');
+    const [devFileTransferEnabled, setDevFileTransferEnabled] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
     // Handle setting updates with immediate UI feedback
@@ -276,7 +279,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose }) =
                             <button
                                 key={category.id}
                                 className={`settings-category ${activeCategory === category.id ? 'active' : ''}`}
-                                onClick={() => setActiveCategory(category.id)}
+                                onClick={() => setActiveCategory(category.id as typeof activeCategory)}
                             >
                                 {category.icon}
                                 <span>{category.name}</span>
@@ -290,6 +293,20 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose }) =
                             <span>Known Folders</span>
                         </button>
                         <button
+                            className={`settings-category ${activeCategory === 'setup' ? 'active' : ''}`}
+                            onClick={() => setActiveCategory('setup')}
+                        >
+                            <FaRocket />
+                            <span>Setup</span>
+                        </button>
+                        <button
+                            className={`settings-category ${activeCategory === 'developer' ? 'active' : ''}`}
+                            onClick={() => setActiveCategory('developer')}
+                        >
+                            <FaWrench />
+                            <span>Developer</span>
+                        </button>
+                        <button
                             className={`settings-category ${activeCategory === 'about' ? 'active' : ''}`}
                             onClick={() => setActiveCategory('about')}
                         >
@@ -299,7 +316,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose }) =
                     </div>
 
                     <div className="settings-panel">
-                        {activeCategory !== 'folders' && activeCategory !== 'about' && (
+                        {activeCategory !== 'folders' && activeCategory !== 'about' && activeCategory !== 'setup' && activeCategory !== 'developer' && (
                             <>
                                 <div className="settings-panel-header">
                                     <div className="panel-icon">{settingsCategories.find(cat => cat.id === activeCategory)?.icon}</div>
@@ -383,6 +400,116 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose }) =
                                         <FaUndo />
                                         Reset to Defaults
                                     </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeCategory === 'setup' && (
+                            <div className="setup-settings">
+                                <div className="settings-panel-header">
+                                    <div className="panel-icon"><FaRocket /></div>
+                                    <h2>Setup & Configuration</h2>
+                                </div>
+                                <div className="settings-description">
+                                    <p>Configure FAST File Explorer with initial setup options and advanced features.</p>
+                                </div>
+                                <div className="setup-actions">
+                                    <button className="setup-action-button" onClick={onShowSetup}>
+                                        <FaRocket />
+                                        <div>
+                                            <h4>Run Setup Wizard</h4>
+                                            <p>Configure explorer mode, performance options, and features</p>
+                                        </div>
+                                    </button>
+                                </div>
+                                <div className="setup-info">
+                                    <h4>Current Configuration</h4>
+                                    <div className="config-item">
+                                        <strong>Explorer Mode:</strong> FAST Mode (Recommended)
+                                    </div>
+                                    <div className="config-item">
+                                        <strong>WSL Installation:</strong> Not configured
+                                    </div>
+                                    <div className="config-item">
+                                        <strong>File Transfer UI:</strong> Available in Developer settings
+                                    </div>
+                                    <div className="config-item">
+                                        <strong>Custom Context Menu:</strong> Ready to enable
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeCategory === 'developer' && (
+                            <div className="developer-settings">
+                                <div className="settings-panel-header">
+                                    <div className="panel-icon"><FaWrench /></div>
+                                    <h2>Developer Options</h2>
+                                </div>
+                                <div className="settings-description">
+                                    <p>Experimental features and developer tools. Use with caution.</p>
+                                </div>
+                                <div className="developer-options">
+                                    <div className="developer-option">
+                                        <div className="option-header">
+                                            <div>
+                                                <h4>File Transfer UI Demo</h4>
+                                                <p>Show the experimental file transfer monitoring interface</p>
+                                            </div>
+                                            <label className="toggle-switch">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={devFileTransferEnabled}
+                                                    onChange={(e) => setDevFileTransferEnabled(e.target.checked)}
+                                                />
+                                                <span className="toggle-slider"></span>
+                                            </label>
+                                        </div>
+                                        {devFileTransferEnabled && (
+                                            <div className="option-actions">
+                                                <button 
+                                                    className="dev-action-button"
+                                                    onClick={onShowFileTransferUI}
+                                                >
+                                                    Show File Transfer UI
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                    
+                                    <div className="developer-option">
+                                        <div className="option-header">
+                                            <div>
+                                                <h4>Custom Context Menu</h4>
+                                                <p>Enable the new right-click context menu (demo)</p>
+                                            </div>
+                                            <label className="toggle-switch">
+                                                <input
+                                                    type="checkbox"
+                                                    defaultChecked={false}
+                                                    disabled
+                                                />
+                                                <span className="toggle-slider"></span>
+                                            </label>
+                                        </div>
+                                        <p className="dev-note">Coming soon - integrated with file list</p>
+                                    </div>
+                                    
+                                    <div className="developer-option">
+                                        <div className="option-header">
+                                            <div>
+                                                <h4>Debug Mode</h4>
+                                                <p>Enable additional logging and debug information</p>
+                                            </div>
+                                            <label className="toggle-switch">
+                                                <input
+                                                    type="checkbox"
+                                                    defaultChecked={false}
+                                                />
+                                                <span className="toggle-slider"></span>
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         )}

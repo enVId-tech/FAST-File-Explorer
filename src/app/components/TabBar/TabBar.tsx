@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { FaTimes, FaPlus, FaWindowMinimize, FaWindowMaximize, FaRegFile, FaFolder, FaSearchPlus, FaSearchMinus, FaSearch } from 'react-icons/fa';
+import { FaTimes, FaPlus, FaWindowMinimize, FaWindowMaximize, FaRegFile, FaFolder, FaSearchPlus, FaSearchMinus, FaSearch, FaCog } from 'react-icons/fa';
 import { ThemeSelector, Theme } from '../ThemeSelector/ThemeSelector';
 
 interface Tab {
@@ -25,6 +25,7 @@ interface TabBarProps {
     onZoomIn: () => void;
     onZoomOut: () => void;
     onResetZoom: () => void;
+    onShowSettings?: () => void;
 }
 
 export const TabBar: React.FC<TabBarProps> = ({
@@ -42,7 +43,8 @@ export const TabBar: React.FC<TabBarProps> = ({
     onThemeChange,
     onZoomIn,
     onZoomOut,
-    onResetZoom
+    onResetZoom,
+    onShowSettings
 }) => {
     const tabsContainerRef = useRef<HTMLDivElement>(null);
     const [tabSizeClass, setTabSizeClass] = useState<string>('');
@@ -253,6 +255,11 @@ export const TabBar: React.FC<TabBarProps> = ({
                     isOpen={isThemeSelectorOpen}
                     onToggle={() => setIsThemeSelectorOpen(!isThemeSelectorOpen)}
                 />
+                {onShowSettings && (
+                    <button className="control-button settings" onClick={onShowSettings} title="Settings">
+                        <FaCog />
+                    </button>
+                )}
                 <button className="control-button minimize" onClick={onMinimize}>
                     <FaWindowMinimize />
                 </button>

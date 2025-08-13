@@ -7,8 +7,11 @@ import { TabBar } from './components/TabBar';
 import { TabContent } from './components/Views';
 import { Theme } from './components/ThemeSelector/ThemeSelector';
 import { CustomStyleManager } from './components/CustomStyleManager';
+import { SettingsMenu } from './components/SettingsMenu/SettingsMenu';
+import { SetupWizard } from './components/SetupWizard/SetupWizard';
+import { FileTransferUI } from './components/FileTransferUI/FileTransferUI';
 import { Drive } from 'shared/file-data';
-import { SettingsProvider } from './contexts/SettingsContext';
+import { SettingsProvider, useSettings } from './contexts/SettingsContext';
 
 interface Tab {
     id: string;
@@ -17,8 +20,9 @@ interface Tab {
     isActive: boolean;
 }
 
-// Memoized component for better performance
+// Memoized component for better performance  
 const Main = React.memo(function Main(): React.JSX.Element {
+    
     // Initialize view mode from localStorage or default to list
     const [viewMode, setViewMode] = useState(() => {
         try {
@@ -63,6 +67,18 @@ const Main = React.memo(function Main(): React.JSX.Element {
 
     // Drive data
     const [drives, setDrives] = useState<Drive[]>([]);
+    
+    // UI state for modal components
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [isSetupOpen, setIsSetupOpen] = useState(false);
+    const [isFileTransferOpen, setIsFileTransferOpen] = useState(false);
+    const [hasCompletedSetup, setHasCompletedSetup] = useState(() => {
+        try {
+            return localStorage.getItem('fast-file-explorer-setup-completed') === 'true';
+        } catch {
+            return false;
+        }
+    });
 
     // Apply theme to document element and save to localStorage
     useEffect(() => {
@@ -477,6 +493,32 @@ const Main = React.memo(function Main(): React.JSX.Element {
         });
     }, []);
 
+    // Check if setup should be shown on first load
+    useEffect(() => {
+        if (!hasCompletedSetup) {
+            setIsSetupOpen(true);
+        }
+    }, [hasCompletedSetup]);
+
+    // Handler functions for UI components
+    const handleShowSettings = useCallback(() => setIsSettingsOpen(true), []);
+    const handleCloseSettings = useCallback(() => setIsSettingsOpen(false), []);
+    
+    const handleShowSetup = useCallback(() => setIsSetupOpen(true), []);
+    const handleCloseSetup = useCallback(() => setIsSetupOpen(false), []);
+    const handleCompleteSetup = useCallback(() => {
+        setIsSetupOpen(false);
+        setHasCompletedSetup(true);
+        try {
+            localStorage.setItem('fast-file-explorer-setup-completed', 'true');
+        } catch (error) {
+            console.warn('Failed to save setup completion status:', error);
+        }
+    }, []);
+    
+    const handleShowFileTransfer = useCallback(() => setIsFileTransferOpen(true), []);
+    const handleCloseFileTransfer = useCallback(() => setIsFileTransferOpen(false), []);
+
     return (
         <SettingsProvider>
             <div className="file-explorer">
@@ -497,6 +539,7 @@ const Main = React.memo(function Main(): React.JSX.Element {
                     onZoomIn={handleZoomIn}
                     onZoomOut={handleZoomOut}
                     onResetZoom={handleResetZoom}
+                    onShowSettings={handleShowSettings}
                 />
 
                 {/* Render content for each tab */}
@@ -510,6 +553,26 @@ const Main = React.memo(function Main(): React.JSX.Element {
                         drives={drives}
                     />
                 ))}
+                
+                {/* Modal Components */}
+                <SettingsMenu
+                    isOpen={isSettingsOpen}
+                    onClose={handleCloseSettings}
+                    onShowSetup={handleShowSetup}
+                    onShowFileTransferUI={handleShowFileTransfer}
+                />
+                
+                <SetupWizard
+                    isOpen={isSetupOpen}
+                    onComplete={handleCompleteSetup}
+                    onSkip={handleCloseSetup}
+                />
+                
+                <FileTransferUI
+                    isVisible={isFileTransferOpen}
+                    onClose={handleCloseFileTransfer}
+                    fileSizeUnit={'decimal'}
+                />
             </div>
         </SettingsProvider>
     );
