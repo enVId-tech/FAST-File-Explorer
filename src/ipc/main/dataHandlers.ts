@@ -390,34 +390,53 @@ export default function initializeDataHandlers() {
         return getMetadata(folderPath);
     });
 
-    // Get drive information
+    // Get drive information - optimized with timeout and caching
+    let driveCache: Drive[] = [];
+    let drivesCacheTime = 0;
+    const DRIVE_CACHE_TTL = 30000; // 30 seconds cache
+    
     ipcMain.handle('data-get-drives', async () => {
         // console.log('Fetching available drives...');
-        const drives = await drivelist.list();
-        const diskInfo = await nodeDiskInfo.getDiskInfo();
-        // console.log('Available drives:', drives);
+        
+        // Return cached drives if available and fresh
+        if (driveCache.length > 0 && Date.now() - drivesCacheTime < DRIVE_CACHE_TTL) {
+            return driveCache;
+        }
 
-        const driveDetails: Drive[] = [];
+        try {
+            // Use Promise.race with timeout to prevent indefinite blocking
+            const drivePromise = Promise.all([
+                drivelist.list(),
+                nodeDiskInfo.getDiskInfo()
+            ]);
 
-        // Iterate through each drive and find its disk information
-        // Check for matching drive and disk information, and then get data from matched index
-        Object.values(diskInfo).forEach((disk) => {
-            let details: Drive = {
-                driveName: disk.filesystem,
-                drivePath: disk.mounted,
-                available: disk.available,
-                used: disk.used,
-                total: disk.blocks,
-                percentageUsed: disk.capacity,
-            }
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('Drive enumeration timeout')), 5000);
+            });
 
-            // Match drive information with disk information
-            // Push matched details to driveDetails array
-            drives.forEach((drive) => {
-                if (drive.mountpoints[0]?.path.includes(disk.mounted)) {
-                    details = {
-                        ...details,
-                        busType: drive.busType === "INVALID" ? "NVMe" : drive.busType,
+            const [drives, diskInfo] = await Promise.race([drivePromise, timeoutPromise]) as [any[], any];
+
+            const driveDetails: Drive[] = [];
+
+            // Iterate through each drive and find its disk information
+            // Check for matching drive and disk information, and then get data from matched index
+            Object.values(diskInfo).forEach((disk: any) => {
+                let details: Drive = {
+                    driveName: disk.filesystem,
+                    drivePath: disk.mounted,
+                    available: disk.available,
+                    used: disk.used,
+                    total: disk.blocks,
+                    percentageUsed: disk.capacity,
+                }
+
+                // Match drive information with disk information
+                // Push matched details to driveDetails array
+                drives.forEach((drive) => {
+                    if (drive.mountpoints[0]?.path.includes(disk.mounted)) {
+                        details = {
+                            ...details,
+                            busType: drive.busType === "INVALID" ? "NVMe" : drive.busType,
                         description: drive.description,
                         flags: {
                             isCard: drive.isCard ?? false,
@@ -436,7 +455,18 @@ export default function initializeDataHandlers() {
 
             driveDetails.push(details);
         });
+
+        // Cache the results
+        driveCache = driveDetails;
+        drivesCacheTime = Date.now();
+
         return { driveDetails };
+
+        } catch (error) {
+            console.error('Failed to fetch drives:', error);
+            // Return cached drives or empty array on error
+            return { driveDetails: driveCache.length > 0 ? driveCache : [] };
+        }
     });
 
     console.log('Folder handlers registered successfully');

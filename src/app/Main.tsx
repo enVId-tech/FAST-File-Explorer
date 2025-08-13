@@ -110,21 +110,34 @@ const Main = React.memo(function Main(): React.JSX.Element {
                     
                     // Use multiple strategies for non-blocking execution
                     const loadDriveData = async () => {
-                        const rawDriveData = await window.electronAPI.data.getDrives();
-                        
-                        // Process in small chunks to avoid blocking
-                        const processedDrives: Drive[] = rawDriveData.map((drive: any) => ({
-                            name: drive.name || 'Unknown Drive',
-                            path: drive.path || '',
-                            driveName: drive.driveName || drive.name || 'Unknown Drive',
-                            drivePath: drive.drivePath || drive.path || '',
-                            available: drive.available || 0,
-                            total: drive.total || 0,
-                            used: drive.used || 0
-                        }));
-                        
-                        if (mounted) {
-                            setDrives(processedDrives);
+                        try {
+                            // Add timeout to prevent infinite blocking
+                            const timeoutPromise = new Promise((_, reject) => {
+                                setTimeout(() => reject(new Error('Drive loading timeout')), 8000);
+                            });
+
+                            const drivePromise = window.electronAPI.data.getDrives();
+                            const rawDriveData = await Promise.race([drivePromise, timeoutPromise]) as any[];
+
+                            // Process in small chunks to avoid blocking
+                            const processedDrives: Drive[] = rawDriveData.map((drive: any) => ({
+                                name: drive.name || 'Unknown Drive',
+                                path: drive.path || '',
+                                driveName: drive.driveName || drive.name || 'Unknown Drive',
+                                drivePath: drive.drivePath || drive.path || '',
+                                available: drive.available || 0,
+                                total: drive.total || 0,
+                                used: drive.used || 0
+                            }));
+                            
+                            if (mounted) {
+                                setDrives(processedDrives);
+                            }
+                        } catch (error) {
+                            console.error('Failed to load drives:', error);
+                            if (mounted) {
+                                setDrives([]); // Empty drives array, app still works
+                            }
                         }
                     };
                     
@@ -135,12 +148,8 @@ const Main = React.memo(function Main(): React.JSX.Element {
                         // Fallback to non-blocking setTimeout
                         setTimeout(loadDriveData, 10);
                     }
-                    
                 } catch (error) {
-                    console.error('Failed to load drives:', error);
-                    if (mounted) {
-                        setDrives([]); // Empty drives array, app still works
-                    }
+                    console.error('Failed to initialize drive loading:', error);
                 }
             };
             

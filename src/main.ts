@@ -22,6 +22,7 @@ const createWindow = () => {
     frame: false,
     titleBarStyle: 'hidden',
     icon: path.join(app.getAppPath(), 'assets', 'icon.png'),
+    show: false, // Don't show until ready
     // Enable window snapping and native Windows features
     thickFrame: true, // Enable thick frame on Windows for native snapping support
     resizable: true, // Ensure window is resizable for snapping
@@ -36,6 +37,11 @@ const createWindow = () => {
       backgroundThrottling: false, // Keep renderer active in background
       offscreen: false, // Disable offscreen rendering for better performance
     },
+  });
+
+  // Show window when ready to prevent white flash
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show();
   });
 
   // and load the index.html of the app.
@@ -69,7 +75,11 @@ const createWindow = () => {
 
 app.whenReady().then(() => {
   createWindow();
-  initializeIpcHandlers(mainWindow);
+  
+  // Initialize IPC handlers asynchronously to prevent blocking
+  setImmediate(() => {
+    initializeIpcHandlers(mainWindow);
+  });
 
   // Log application startup with version info
   console.log(`Fast File Explorer ${getVersionDisplayString()} started successfully`);
