@@ -1145,6 +1145,103 @@
     }
 }
 
+// Universal button styling - modern buttons like dev-action-button
+.settings-button, .modern-button {
+    background: var(--accent-primary);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 100px;
+    justify-content: center;
+
+    &:hover {
+        background: color-mix(in srgb, var(--accent-primary) 85%, white);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+        
+        &:hover {
+            background: var(--accent-primary);
+            transform: none;
+            box-shadow: none;
+        }
+    }
+
+    // Secondary variant
+    &.secondary {
+        background: var(--tertiary-bg, var(--secondary-bg));
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+
+        &:hover {
+            background: var(--border-color);
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+    }
+
+    // Danger variant
+    &.danger {
+        background: #e53e3e;
+
+        &:hover {
+            background: color-mix(in srgb, #e53e3e 85%, white);
+        }
+    }
+}
+
+// Modern dropdown styling
+.modern-dropdown, select {
+    background: var(--tertiary-bg, var(--secondary-bg));
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-primary);
+    padding: 10px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><polyline points='6,9 12,15 18,9'></polyline></svg>");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 16px;
+    padding-right: 32px;
+
+    &:hover {
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    &:focus {
+        outline: none;
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    }
+
+    option {
+        background: var(--secondary-bg);
+        color: var(--text-primary);
+        padding: 8px 12px;
+    }
+}
+
 .loading-indicator {
     text-align: center;
     padding: 20px;

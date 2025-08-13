@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { FaCog, FaPalette, FaDesktop, FaKeyboard, FaSync, FaFolderOpen, FaShieldAlt, FaInfoCircle, FaDownload, FaHome, FaEdit, FaCheck, FaTimes, FaUndo, FaRocket, FaWrench } from 'react-icons/fa';
 import './SettingsMenu.scss';
 import { BUILD_VERSION, getBuildDateString, getVersionDisplayString } from '../../../version';
-import { useSettings } from '../../contexts/SettingsContext';
+import { useSettings, AppSettings } from '../../contexts/SettingsContext';
 
 interface SettingsMenuProps {
     isOpen: boolean;
@@ -74,6 +74,17 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
         setTimeout(() => {
             onShowFileTransferUI?.(); // Then show file transfer UI
         }, 100); // Small delay to ensure smooth transition
+    };
+
+    const handleToggleChange = async (settingKey: string) => {
+        try {
+            const currentValue = (settings as any)[settingKey];
+            await updateSetting(settingKey as keyof AppSettings, !currentValue);
+            console.log(`Toggle ${settingKey} changed to:`, !currentValue);
+        } catch (error: any) {
+            console.error(`Failed to update toggle ${settingKey}:`, error);
+            alert(`Failed to update setting: ${error.message}`);
+        }
     };
 
     const resetKnownFolders = async () => {
@@ -249,7 +260,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
                         value={setting.value}
                         onChange={(e) => handleSettingUpdate(setting.key, e.target.value)}
                         disabled={isLoading}
-                        className="setting-dropdown"
+                        className="modern-dropdown"
                     >
                         {setting.options.map((option: string, index: number) => (
                             <option key={option} value={option}>
@@ -372,7 +383,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
                                                         <div className="folder-path">{folderPath}</div>
                                                         <button
                                                             onClick={() => handleFolderEdit(folderType)}
-                                                            className="folder-edit-btn"
+                                                            className="modern-button secondary"
                                                             title="Edit folder path"
                                                         >
                                                             <FaEdit />
@@ -390,14 +401,14 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
                                                         <div className="folder-edit-actions">
                                                             <button
                                                                 onClick={() => handleFolderSave(folderType)}
-                                                                className="folder-save-btn"
+                                                                className="modern-button primary"
                                                                 title="Save"
                                                             >
                                                                 <FaCheck />
                                                             </button>
                                                             <button
                                                                 onClick={handleFolderCancel}
-                                                                className="folder-cancel-btn"
+                                                                className="modern-button secondary"
                                                                 title="Cancel"
                                                             >
                                                                 <FaTimes />
@@ -410,7 +421,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
                                     ))}
                                 </div>
                                 <div className="folder-actions">
-                                    <button onClick={resetKnownFolders} className="reset-folders-btn">
+                                    <button onClick={resetKnownFolders} className="modern-button danger">
                                         <FaUndo />
                                         Reset to Defaults
                                     </button>
@@ -428,7 +439,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
                                     <p>Configure FAST File Explorer with initial setup options and advanced features.</p>
                                 </div>
                                 <div className="setup-actions">
-                                    <button className="setup-action-button" onClick={handleSetupWizard}>
+                                    <button className="modern-button primary setup-action-button" onClick={handleSetupWizard}>
                                         <FaRocket />
                                         <div>
                                             <h4>Run Setup Wizard</h4>
@@ -488,7 +499,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
                                         {devFileTransferEnabled && (
                                             <div className="option-actions">
                                                 <button 
-                                                    className="dev-action-button"
+                                                    className="modern-button primary dev-action-button"
                                                     onClick={handleShowFileTransferUI}
                                                 >
                                                     Show File Transfer UI

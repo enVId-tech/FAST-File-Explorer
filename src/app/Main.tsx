@@ -13,6 +13,25 @@ import { FileTransferUI } from './components/FileTransferUI/FileTransferUI';
 import { Drive } from 'shared/file-data';
 import { SettingsProvider, useSettings } from './contexts/SettingsContext';
 
+// Component to handle animation control based on settings
+const AnimationController: React.FC = () => {
+    const { settings } = useSettings();
+    
+    useEffect(() => {
+        // Set CSS custom property to control animations globally
+        document.documentElement.style.setProperty(
+            '--animation-duration', 
+            settings.enableAnimations ? '0.2s' : '0s'
+        );
+        document.documentElement.style.setProperty(
+            '--transition-duration', 
+            settings.enableAnimations ? '0.2s' : '0s'
+        );
+    }, [settings.enableAnimations]);
+    
+    return null; // This component only manages CSS properties
+};
+
 interface Tab {
     id: string;
     title: string;
@@ -527,6 +546,7 @@ const Main = React.memo(function Main(): React.JSX.Element {
 
     return (
         <SettingsProvider>
+            <AnimationController />
             <div className="file-explorer">
                 {/* Tab Bar replaces Title Bar */}
                 <TabBar

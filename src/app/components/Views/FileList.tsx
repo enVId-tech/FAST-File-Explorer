@@ -40,11 +40,29 @@ const FileItem = React.memo<{
     getFileIcon: (item: FileSystemItem) => React.ReactElement;
     formatFileSize: (size: number) => string;
     formatDate: (date: Date) => string;
-}>(({ item, isSelected, onClick, onDoubleClick, onContextMenu, viewMode, getFileIcon, formatFileSize, formatDate }) => {
+    showFileExtensions: boolean;
+    compactMode: boolean;
+}>(({ item, isSelected, onClick, onDoubleClick, onContextMenu, viewMode, getFileIcon, formatFileSize, formatDate, showFileExtensions, compactMode }) => {
+    
+    // Format file name based on settings
+    const displayName = React.useMemo(() => {
+        if (item.type === 'directory') {
+            return item.name; // Always show full name for directories
+        }
+        
+        if (showFileExtensions || !item.extension) {
+            return item.name; // Show full name if extensions enabled or no extension
+        }
+        
+        // Hide extension: remove the last dot and everything after
+        const lastDotIndex = item.name.lastIndexOf('.');
+        return lastDotIndex > 0 ? item.name.substring(0, lastDotIndex) : item.name;
+    }, [item.name, item.type, item.extension, showFileExtensions]);
+
     if (viewMode === 'list') {
         return (
             <div
-                className={`file-list-item ${isSelected ? 'selected' : ''}`}
+                className={`file-list-item ${isSelected ? 'selected' : ''} ${compactMode ? 'compact' : ''}`}
                 onClick={() => onClick(item)}
                 onDoubleClick={() => onDoubleClick(item)}
                 onContextMenu={(e) => onContextMenu(e, item)}
@@ -52,7 +70,7 @@ const FileItem = React.memo<{
                 <div className="file-list-column name-column">
                     <div className="file-name-container">
                         {getFileIcon(item)}
-                        <span className="file-name">{item.name}</span>
+                        <span className="file-name">{displayName}</span>
                     </div>
                 </div>
                 <div className="file-list-column date-column">
@@ -70,7 +88,7 @@ const FileItem = React.memo<{
 
     return (
         <div
-            className={`file-grid-item ${isSelected ? 'selected' : ''}`}
+            className={`file-grid-item ${isSelected ? 'selected' : ''} ${compactMode ? 'compact' : ''}`}
             onClick={() => onClick(item)}
             onDoubleClick={() => onDoubleClick(item)}
             onContextMenu={(e) => onContextMenu(e, item)}
@@ -79,7 +97,7 @@ const FileItem = React.memo<{
                 {getFileIcon(item)}
             </div>
             <div className="file-grid-name">
-                {item.name}
+                {displayName}
             </div>
             <div className="file-grid-details">
                 <span className="file-grid-size">
@@ -98,6 +116,7 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
     const [directoryContents, setDirectoryContents] = useState<DirectoryContents | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const [searchTerm, setSearchTerm] = useState<string>('');
     
     // Context menu state
     const [contextMenu, setContextMenu] = useState<{
@@ -264,11 +283,29 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
 
     // Memoized directory items for performance
     const directoryItems = useMemo(() => directoryContents?.items || [], [directoryContents]);
+    
+    // Filtered items based on search term
+    const filteredItems = useMemo(() => {
+        if (!searchTerm.trim()) {
+            return directoryItems;
+        }
+        
+        const searchLower = searchTerm.toLowerCase().trim();
+        return directoryItems.filter(item => 
+            item.name.toLowerCase().includes(searchLower) ||
+            (item.extension && item.extension.toLowerCase().includes(searchLower))
+        );
+    }, [directoryItems, searchTerm]);
 
     // Load directory when path or list options change
     useEffect(() => {
         loadDirectory(currentPath);
     }, [currentPath, loadDirectory]);
+
+    // Clear search when path changes
+    useEffect(() => {
+        setSearchTerm('');
+    }, [currentPath]);
 
     // Render loading state
     if (loading) {
@@ -292,20 +329,40 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
     }
 
     // Render empty state
-    if (!directoryContents || directoryItems.length === 0) {
+    if (!directoryContents || filteredItems.length === 0) {
+        const isSearching = searchTerm.trim().length > 0;
+        const hasItems = directoryContents?.items && directoryContents.items.length > 0;
+        
         return (
             <div className="file-list-empty">
                 <FaFolder className="empty-icon" />
-                <span>This folder is empty</span>
+                {isSearching && hasItems ? (
+                    <>
+                        <span>No files found matching "{searchTerm}"</span>
+                        <small>Try a different search term</small>
+                    </>
+                ) : (
+                    <span>This folder is empty</span>
+                )}
             </div>
         );
     }
 
     // Render file list in list view with virtualization for large directories
     if (viewMode === 'list') {
-        const rowHeight = 40; // keep in sync with CSS padding/line-height
+        const rowHeight = settings.compactMode ? 32 : 40; // adjust height based on compact mode
         return (
             <div className="file-list-view">
+                {/* Search bar */}
+                <div className="file-search-bar">
+                    <input
+                        type="text"
+                        placeholder="Search in current folder..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="search-input"
+                    />
+                </div>
                 <div className="file-list-header">
                     <div className="file-list-column name-column">Name</div>
                     <div className="file-list-column date-column">Date modified</div>
@@ -313,12 +370,12 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
                     <div className="file-list-column size-column">Size</div>
                 </div>
                 <VirtualizedList
-                    itemCount={directoryItems.length}
+                    itemCount={filteredItems.length}
                     itemHeight={rowHeight}
                     overscan={10}
                     className="file-list-content"
                     renderItem={(index) => {
-                        const item = directoryItems[index];
+                        const item = filteredItems[index];
                         return (
                             <FileItem
                                 key={`${item.path}`}
@@ -331,6 +388,8 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
                                 getFileIcon={getFileIcon}
                                 formatFileSize={formatFileSizeWithSettings}
                                 formatDate={formatDate}
+                                showFileExtensions={settings.showFileExtensions}
+                                compactMode={settings.compactMode}
                             />
                         );
                     }}
@@ -353,7 +412,18 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
     // Render file list in grid view
     return (
         <div className="file-grid-view">
-            {directoryItems.map((item) => (
+            {/* Search bar */}
+            <div className="file-search-bar">
+                <input
+                    type="text"
+                    placeholder="Search in current folder..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="search-input"
+                />
+            </div>
+            <div className="file-grid-content">
+                {filteredItems.map((item) => (
                 <FileItem
                     key={item.path}
                     item={item}
@@ -365,8 +435,11 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
                     getFileIcon={getFileIcon}
                     formatFileSize={formatFileSizeWithSettings}
                     formatDate={formatDate}
+                    showFileExtensions={settings.showFileExtensions}
+                    compactMode={settings.compactMode}
                 />
             ))}
+            </div>
             
             {/* Context Menu */}
             {contextMenu.visible && contextMenu.item && (

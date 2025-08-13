@@ -1,4 +1,33 @@
 /* File List Styles */
+
+/* Search Bar */
+.file-search-bar {
+    padding: 8px 12px;
+    background: var(--background-secondary);
+    border-bottom: 1px solid var(--border-color);
+    
+    .search-input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        background: var(--background-primary);
+        color: var(--text-primary);
+        font-size: 14px;
+        transition: border-color var(--transition-duration, 0.2s) ease, box-shadow var(--transition-duration, 0.2s) ease;
+        
+        &:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.1);
+        }
+        
+        &::placeholder {
+            color: var(--text-secondary);
+        }
+    }
+}
+
 .file-list-loading,
 .file-list-error,
 .file-list-empty {
@@ -98,12 +127,28 @@
     padding: 8px 12px;
     border-bottom: 1px solid var(--border-color-light);
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: background-color var(--transition-duration, 0.2s) ease;
     font-size: 13px;
     height: 40px; /* fixed height to match virtualization rowHeight */
     /* Performance optimizations */
     contain: layout style;
     will-change: background-color;
+    
+    &.compact {
+        padding: 4px 12px;
+        height: 32px;
+        font-size: 12px;
+        
+        .file-name-container {
+            gap: 6px;
+        }
+        
+        .file-icon {
+            width: 14px;
+            height: 14px;
+            font-size: 14px;
+        }
+    }
 }
 
 .file-list-item:hover {
@@ -163,10 +208,33 @@
     padding: 12px;
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all var(--transition-duration, 0.2s) ease;
     text-align: center;
     background: var(--background-primary);
     border: 1px solid transparent;
+    
+    &.compact {
+        padding: 8px;
+        
+        .file-grid-icon {
+            margin-bottom: 4px;
+            
+            .file-icon {
+                font-size: 24px;
+            }
+        }
+        
+        .file-grid-name {
+            font-size: 11px;
+            margin-bottom: 2px;
+            -webkit-line-clamp: 1;
+            line-clamp: 1;
+        }
+        
+        .file-grid-details {
+            font-size: 10px;
+        }
+    }
 }
 
 .file-grid-item:hover {
