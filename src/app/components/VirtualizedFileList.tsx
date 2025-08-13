@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { FixedSizeList as List } from 'react-window';
 import { FaFile, FaFolder, FaSpinner, FaExclamationTriangle } from 'react-icons/fa';
-import { FileSystemItem } from '../../../shared/ipc-channels';
-import { useSettings } from '../../contexts/SettingsContext';
+import { FileSystemItem } from '../../shared/ipc-channels';
+import { useSettings } from '../contexts/SettingsContext';
 import './FileList.scss';
 
 interface VirtualizedFileListProps {

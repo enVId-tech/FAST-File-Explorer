@@ -437,7 +437,7 @@ const Main = React.memo(function Main(): React.JSX.Element {
                     <div className="titlebar-title">Fast File Explorer</div>
                     <div className="titlebar-controls">
                         <button className="titlebar-button" onClick={handleMinimize}>_</button>
-                        <button className="titlebar-button" onClick={handleMaximize}>
+                        <button className="titlebar-button" onClick={() => handleMaximize(isMaximized, setIsMaximized)}>
                             {isMaximized ? '⧉' : '□'}
                         </button>
                         <button className="titlebar-button close" onClick={handleClose}>×</button>
@@ -448,9 +448,20 @@ const Main = React.memo(function Main(): React.JSX.Element {
                 <TabBar
                     tabs={tabs}
                     activeTabId={activeTabId}
-                    onTabClick={tabHandlers.setActiveTab}
+                    isMaximized={isMaximized}
+                    currentTheme={theme}
+                    zoomLevel={zoomLevel}
+                    onTabSelect={tabHandlers.setActiveTab}
                     onTabClose={tabHandlers.closeTab}
-                    onNewTab={tabHandlers.addTab}
+                    onNewTab={() => tabHandlers.addTab("New Tab", "about:blank")}
+                    onMinimize={handleMinimize}
+                    onMaximize={() => handleMaximize(isMaximized, setIsMaximized)}
+                    onClose={handleClose}
+                    onThemeChange={setTheme}
+                    onZoomIn={handleZoomIn}
+                    onZoomOut={handleZoomOut}
+                    onResetZoom={handleResetZoom}
+                    onShowSettings={modalHandlers.openSettings}
                 />
 
                 {/* Main content with lazy loading */}
@@ -475,12 +486,8 @@ const Main = React.memo(function Main(): React.JSX.Element {
                             <LazySettingsMenu
                                 isOpen={isSettingsOpen}
                                 onClose={modalHandlers.closeSettings}
-                                theme={theme}
-                                setTheme={setTheme}
-                                zoomLevel={zoomLevel}
-                                onZoomIn={handleZoomIn}
-                                onZoomOut={handleZoomOut}
-                                onResetZoom={handleResetZoom}
+                                onShowSetup={modalHandlers.openSetup}
+                                onShowFileTransferUI={modalHandlers.openFileTransfer}
                             />
                         </LazyComponentErrorBoundary>
                     </Suspense>
@@ -491,10 +498,12 @@ const Main = React.memo(function Main(): React.JSX.Element {
                         <LazyComponentErrorBoundary>
                             <LazySetupWizard
                                 isOpen={isSetupOpen}
-                                onClose={modalHandlers.closeSetup}
-                                onComplete={() => {
+                                onSkip={modalHandlers.closeSetup}
+                                onComplete={(settings) => {
                                     setHasCompletedSetup(true);
                                     setIsSetupOpen(false);
+                                    // Here you could save the setup settings if needed
+                                    localStorage.setItem('fast-file-explorer-setup-completed', 'true');
                                 }}
                             />
                         </LazyComponentErrorBoundary>
@@ -505,8 +514,9 @@ const Main = React.memo(function Main(): React.JSX.Element {
                     <Suspense fallback={<ComponentLoader message="Loading file transfer..." />}>
                         <LazyComponentErrorBoundary>
                             <LazyFileTransferUI
-                                isOpen={isFileTransferOpen}
+                                isVisible={isFileTransferOpen}
                                 onClose={modalHandlers.closeFileTransfer}
+                                fileSizeUnit="binary"
                             />
                         </LazyComponentErrorBoundary>
                     </Suspense>
