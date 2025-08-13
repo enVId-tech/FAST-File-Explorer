@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import './main.scss';
 import './components/TabBar/TabBar.scss';
 import './components/ThemeSelector/ThemeSelector.scss';
+import './components/LazyComponents.scss';
+import './initialization.scss';
 import { handleMinimize, handleMaximize, handleClose } from './components/window_handlers/handlers';
 import { TabBar } from './components/TabBar';
-import { TabContent } from './components/Views';
 import { Theme } from './components/ThemeSelector/ThemeSelector';
 import { CustomStyleManager } from './components/CustomStyleManager';
 import { SettingsMenu } from './components/SettingsMenu/SettingsMenu';
@@ -12,6 +13,12 @@ import { SetupWizard } from './components/SetupWizard/SetupWizard';
 import { FileTransferUI } from './components/FileTransferUI/FileTransferUI';
 import { Drive } from 'shared/file-data';
 import { SettingsProvider, useSettings } from './contexts/SettingsContext';
+import { ComponentLoader, LazyComponentErrorBoundary } from './components/LazyComponents';
+
+// Lazy load the heavy TabContent component
+const LazyTabContent = React.lazy(() => 
+  import('./components/Views/TabContent').then(module => ({ default: module.TabContent }))
+);
 
 // Component to handle animation control based on settings
 const AnimationController: React.FC = () => {
@@ -84,8 +91,70 @@ const Main = React.memo(function Main(): React.JSX.Element {
     ]);
     const [activeTabId, setActiveTabId] = useState('tab-1');
 
-    // Drive data
+    // Drive data with truly async, non-blocking loading
     const [drives, setDrives] = useState<Drive[]>([]);
+    const [drivesLoading, setDrivesLoading] = useState(false); // Start false - UI loads immediately
+    
+    // Completely async drive loading that doesn't block UI
+    useEffect(() => {
+        let mounted = true;
+        
+        const loadDrivesAsync = () => {
+            // Don't show loading initially - UI should be responsive
+            const loadInBackground = async () => {
+                try {
+                    // Small delay to let UI render first
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                    
+                    if (!mounted) return;
+                    
+                    // Use multiple strategies for non-blocking execution
+                    const loadDriveData = async () => {
+                        const rawDriveData = await window.electronAPI.data.getDrives();
+                        
+                        // Process in small chunks to avoid blocking
+                        const processedDrives: Drive[] = rawDriveData.map((drive: any) => ({
+                            name: drive.name || 'Unknown Drive',
+                            path: drive.path || '',
+                            driveName: drive.driveName || drive.name || 'Unknown Drive',
+                            drivePath: drive.drivePath || drive.path || '',
+                            available: drive.available || 0,
+                            total: drive.total || 0,
+                            used: drive.used || 0
+                        }));
+                        
+                        if (mounted) {
+                            setDrives(processedDrives);
+                        }
+                    };
+                    
+                    // Use requestIdleCallback for background loading
+                    if ('requestIdleCallback' in window) {
+                        (window as any).requestIdleCallback(loadDriveData, { timeout: 100 });
+                    } else {
+                        // Fallback to non-blocking setTimeout
+                        setTimeout(loadDriveData, 10);
+                    }
+                    
+                } catch (error) {
+                    console.error('Failed to load drives:', error);
+                    if (mounted) {
+                        setDrives([]); // Empty drives array, app still works
+                    }
+                }
+            };
+            
+            // Start loading immediately but don't block UI
+            loadInBackground();
+        };
+        
+        // Schedule drive loading without blocking
+        loadDrivesAsync();
+        
+        return () => {
+            mounted = false;
+        };
+    }, []);
     
     // UI state for modal components
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -454,16 +523,6 @@ const Main = React.memo(function Main(): React.JSX.Element {
         }
     };
 
-    const getDrives = async () => {
-        try {
-            const drives = await window.electronAPI?.data.getDrives();
-            return drives;
-        } catch (error) {
-            console.error("Failed to get drive assignments:", error)
-            return [];
-        }
-    }
-
     useEffect(() => {
         const handleKeydown = (event: KeyboardEvent) => {
             if (event.key === 't' && (event.ctrlKey || event.metaKey)) {
@@ -505,12 +564,13 @@ const Main = React.memo(function Main(): React.JSX.Element {
         };
     }, []);
 
-    useEffect(() => {
-        getDrives().then((drives: any) => {
-            console.log('Drive data:', drives);
-            setDrives(drives.driveDetails);
-        });
-    }, []);
+    // Remove duplicate drive loading - already handled in async initialization
+    // useEffect(() => {
+    //     getDrives().then((drives: any) => {
+    //         console.log('Drive data:', drives);
+    //         setDrives(drives.driveDetails);
+    //     });
+    // }, []);
 
     // Check if setup should be shown on first load
     useEffect(() => {
@@ -544,6 +604,7 @@ const Main = React.memo(function Main(): React.JSX.Element {
     }, []);
     const handleCloseFileTransfer = useCallback(() => setIsFileTransferOpen(false), []);
 
+    // UI is always ready immediately - drives load in background
     return (
         <SettingsProvider>
             <AnimationController />
@@ -568,16 +629,20 @@ const Main = React.memo(function Main(): React.JSX.Element {
                     onShowSettings={handleShowSettings}
                 />
 
-                {/* Render content for each tab */}
+                {/* Render content for each tab with lazy loading */}
                 {tabs.map((tab) => (
-                    <TabContent
-                        key={tab.id}
-                        tabId={tab.id}
-                        isActive={tab.id === activeTabId}
-                        viewMode={viewMode}
-                        setViewMode={setViewMode}
-                        drives={drives}
-                    />
+                    <Suspense key={tab.id} fallback={<ComponentLoader message="Loading file explorer..." />}>
+                        <LazyComponentErrorBoundary>
+                            <LazyTabContent
+                                key={tab.id}
+                                tabId={tab.id}
+                                isActive={tab.id === activeTabId}
+                                viewMode={viewMode}
+                                setViewMode={setViewMode}
+                                drives={drives}
+                            />
+                        </LazyComponentErrorBoundary>
+                    </Suspense>
                 ))}
                 
                 {/* Modal Components */}

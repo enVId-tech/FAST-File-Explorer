@@ -72,7 +72,7 @@ app.whenReady().then(() => {
   initializeIpcHandlers(mainWindow);
 
   // Log application startup with version info
-  console.log(`🚀 Fast File Explorer ${getVersionDisplayString()} started successfully`);
+  console.log(`Fast File Explorer ${getVersionDisplayString()} started successfully`);
 
   // Security: Prevent navigation to external URLs
   mainWindow.webContents.on('will-navigate', (event, url) => {
