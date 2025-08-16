@@ -1,29 +1,29 @@
 {
   "name": "fast-file-explorer",
   "productName": "Fast File Explorer",
-  "version": "25.08.16.1-beta",
+  "version": "25.08.16-dev.3",
   "description": "Fast File Explorer is a powerful tool for quickly navigating and managing your file system.",
   "main": ".vite/build/main.js",
   "config": {
     "forge": "forge.config.cjs"
   },
   "scripts": {
-    "start": "electron-forge start",
-    "dev": "electron-forge start",
-    "package": "electron-forge package",
-    "make": "electron-forge make",
-    "publish": "electron-forge publish",
+    "start": "npm run dev",
+    "dev": "npm run version:dev && electron-forge start",
+    "package": "npm run version:beta && electron-forge package",
+    "make": "npm run version:beta && electron-forge make",
+    "publish": "npm run version:release && npm run package && electron-forge publish",
     "lint": "eslint --ext .ts,.tsx .",
-    "update-deps": "ncu -u && npm install",
+    "update-deps": "ncu -u && npm install --force",
     "version:release": "node scripts/generate-version.js release",
     "version:beta": "node scripts/generate-version.js beta",
-    "version:alpha": "node scripts/generate-version.js alpha",
+    "version:dev": "node scripts/generate-version.js dev",
     "version:show": "node -e \"console.log(require('./package.json').version)\""
   },
   "keywords": [],
   "author": {
     "name": "Erick Tran",
-    "email": "thelittlebotengineer@gmail.com"
+    "email": "erick.tran@etran.dev"
   },
   "license": "MIT",
   "dependencies": {
@@ -55,6 +55,6 @@
     "@rollup/rollup-win32-x64-msvc": "^4.46.2",
     "@types/electron-squirrel-startup": "^1.0.2",
     "@types/react-dom": "^19.1.7",
-    "electron": "37.2.6"
+    "electron": "37.3.0"
   }
 }

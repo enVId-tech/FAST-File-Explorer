@@ -117,8 +117,6 @@ export default function initializeDataHandlers() {
     const DRIVE_CACHE_TTL = 30000; // 30 seconds cache
     
     ipcMain.handle('data-get-drives', async () => {
-        console.log('Fetching available drives...');
-
         // Check if the drives are already cached
         if (driveCache.length > 0 && Date.now() - drivesCacheTime < DRIVE_CACHE_TTL) {
             return driveCache;

@@ -4,14 +4,14 @@ const { execSync } = require('child_process');
 
 /**
  * Generates a build version based on current date and commit count for today
- * Format: YY.MM.DD.Na/b/r (e.g., 25.08.10.1-alpha/beta/release)
+ * Format: YY.MM.DD.Na/b/r (e.g., 25.08.16.1-dev/beta/release)
  * - YY: Last two digits of year
  * - MM: Month (01-12)
  * - DD: Day (01-31)
  * - N: Number of commits today (1-based)
- * - a: Alpha release (e.g., 25.08.10.1-alpha)
- * - b: Beta release (e.g., 25.08.10.1-beta)
- * - r: Release version (e.g., 25.08.10.1-release)
+ * - d: Development version (e.g., 25.08.16.1-dev)
+ * - b: Beta release (e.g., 25.08.16.1-beta)
+ * - r: Release version (e.g., 25.08.16.1-release)
  */
 function generateBuildVersion(version) {
   try {
@@ -52,7 +52,7 @@ function generateBuildVersion(version) {
     }
 
     // Generate version string
-    const buildVersion = `${year}.${month}.${day}.${commitCount}-${version === 'beta' ? 'beta' : version === 'alpha' ? 'alpha' : 'release'}`;
+    const buildVersion = `${year}.${month}.${day}-${version === 'beta' ? 'beta' : version === 'release' ? 'release' : 'dev'}.${commitCount}`;
 
     return buildVersion;
   } catch (error) {
