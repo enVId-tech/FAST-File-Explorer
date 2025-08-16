@@ -365,10 +365,73 @@ const Main = React.memo(function Main(): React.JSX.Element {
         console.log('setTheme called successfully');
     }, [theme]);
 
+    // Refresh drives function for manual refresh
+    const refreshDrives = useCallback(async () => {
+        setDrivesLoading(true);
+        setDrivesError(null);
+        let retryCount = 0;
+        const maxRetries = 1; // Single retry for manual refresh
+        
+        while (retryCount <= maxRetries) {
+            try {
+                console.log('Manually refreshing drives...');
+                const timeoutPromise = new Promise((_, reject) => {
+                    setTimeout(() => reject(new Error('Drive loading timeout')), 5000);
+                });
+                
+                const drivePromise = window.electronAPI.data.getDrives();
+                const driveData = await Promise.race([drivePromise, timeoutPromise]);
+                
+                if (!Array.isArray(driveData)) {
+                    throw new Error('Invalid drive data format');
+                }
+                
+                const mappedDrives: Drive[] = driveData.map((drive: any) => ({
+                    driveName: drive.name || drive.driveName || 'Unknown Drive',
+                    drivePath: drive.path || drive.drivePath || '',
+                    available: drive.available || 0,
+                    total: drive.total || 0,
+                    used: drive.used || 0,
+                    busType: drive.busType,
+                    description: drive.description,
+                    flags: drive.flags,
+                    logicalBlockSize: drive.logicalBlockSize,
+                    partitionType: drive.partitionType,
+                    percentageUsed: drive.percentageUsed
+                }));
+                
+                setDrives(mappedDrives);
+                setDrivesLoading(false);
+                setDrivesError(null);
+                console.log(`Manually refreshed ${mappedDrives.length} drives`);
+                return;
+                
+            } catch (error) {
+                console.error(`Manual drive refresh failed (attempt ${retryCount + 1}):`, error);
+                retryCount++;
+                
+                if (retryCount > maxRetries) {
+                    setDrivesLoading(false);
+                    setDrivesError('Failed to refresh drives');
+                    return;
+                }
+                
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        }
+    }, []);
+
     // Memoized tab management handlers
     const handleTabSelect = useCallback(async (tabId: string) => {
         setActiveTabId(tabId);
         setTabs(prev => prev.map(tab => ({ ...tab, isActive: tab.id === tabId })));
+
+        // If switching to a "This PC" tab and drives are empty, trigger a refresh
+        const tab = tabs.find(t => t.id === tabId);
+        if (tab && tab.url === 'internal:home' && drives.length === 0 && !drivesLoading) {
+            console.log('Loading drives for This PC tab');
+            refreshDrives();
+        }
 
         // TODO: Re-enable when internal:home is implemented
         // try {
@@ -376,7 +439,7 @@ const Main = React.memo(function Main(): React.JSX.Element {
         // } catch (error) {
         //     console.error('Failed to switch tab:', error);
         // }
-    }, []);
+    }, [tabs, drives, drivesLoading, refreshDrives]);
 
     const handleTabClose = async (tabId: string) => {
         if (tabs.length <= 1) {
@@ -504,14 +567,14 @@ const Main = React.memo(function Main(): React.JSX.Element {
         };
     }, []);
 
-    // Robust drive loading with retries and fallbacks
+    // Load drives once at startup with retries
     useEffect(() => {
         let mounted = true;
         let retryCount = 0;
-        const maxRetries = 3;
-        const retryDelay = 1000; // 1 second
+        const maxRetries = 2; // Reduced to 2 retries instead of 3
+        const retryDelay = 1500; // 1.5 seconds
         
-        const loadDrivesWithRetry = async () => {
+        const loadDrivesWithRetry = async (isManualRefresh = false) => {
             if (mounted) {
                 setDrivesLoading(true);
                 setDrivesError(null);
@@ -519,7 +582,9 @@ const Main = React.memo(function Main(): React.JSX.Element {
             
             while (mounted && retryCount <= maxRetries) {
                 try {
-                    console.log(`Attempting to load drives (attempt ${retryCount + 1}/${maxRetries + 1})`);
+                    if (isManualRefresh || retryCount === 0) {
+                        console.log(`Loading drives (attempt ${retryCount + 1}/${maxRetries + 1})`);
+                    }
                     
                     // Add timeout to prevent hanging
                     const timeoutPromise = new Promise((_, reject) => {
@@ -528,8 +593,6 @@ const Main = React.memo(function Main(): React.JSX.Element {
                     
                     const drivePromise = window.electronAPI.data.getDrives();
                     const driveData = await Promise.race([drivePromise, timeoutPromise]);
-                    
-                    console.log('Drive data loaded:', driveData);
                     
                     // Validate that we got actual data
                     if (!Array.isArray(driveData)) {
@@ -555,7 +618,9 @@ const Main = React.memo(function Main(): React.JSX.Element {
                         setDrives(mappedDrives);
                         setDrivesLoading(false);
                         setDrivesError(null);
-                        console.log(`Successfully loaded ${mappedDrives.length} drives`);
+                        if (isManualRefresh || retryCount === 0) {
+                            console.log(`Successfully loaded ${mappedDrives.length} drives`);
+                        }
                     }
                     
                     return; // Success, exit the retry loop
@@ -565,7 +630,7 @@ const Main = React.memo(function Main(): React.JSX.Element {
                     retryCount++;
                     
                     if (retryCount > maxRetries) {
-                        console.warn('All retry attempts failed, setting empty drives array');
+                        console.warn('All drive loading attempts failed');
                         if (mounted) {
                             setDrives([]); // Set empty array so app still works
                             setDrivesLoading(false);
@@ -575,35 +640,18 @@ const Main = React.memo(function Main(): React.JSX.Element {
                     }
                     
                     // Wait before retrying
-                    await new Promise(resolve => setTimeout(resolve, retryDelay * retryCount));
+                    await new Promise(resolve => setTimeout(resolve, retryDelay));
                 }
             }
         };
         
-        // Start loading immediately
+        // Load drives only once at startup
         loadDrivesWithRetry();
-        
-        // Also set up a periodic check to ensure drives are loaded
-        const periodicCheck = setInterval(() => {
-            if (mounted) {
-                // Check if drives array is empty and not currently loading
-                setDrives(currentDrives => {
-                    if (currentDrives.length === 0 && !drivesLoading) {
-                        console.log('Drives array is empty, attempting reload...');
-                        // Reset retry count for periodic attempts
-                        retryCount = 0;
-                        loadDrivesWithRetry();
-                    }
-                    return currentDrives;
-                });
-            }
-        }, 10000); // Check every 10 seconds
         
         return () => {
             mounted = false;
-            clearInterval(periodicCheck);
         };
-    }, [drivesLoading]); // Include drivesLoading in dependencies
+    }, []); // Empty dependency array - only run once at startup
 
     // Check if setup should be shown on first load
     useEffect(() => {
@@ -640,43 +688,8 @@ const Main = React.memo(function Main(): React.JSX.Element {
     // Drive refresh handler
     const handleRefreshDrives = useCallback(async () => {
         console.log('Manual drive refresh triggered');
-        setDrivesLoading(true);
-        setDrivesError(null);
-        
-        try {
-            const driveData = await window.electronAPI.data.getDrives();
-            console.log('Drive refresh data loaded:', driveData);
-            
-            // Validate that we got actual data
-            if (!Array.isArray(driveData)) {
-                throw new Error('Invalid drive data format');
-            }
-            
-            // Map the drive data to match the Drive interface
-            const mappedDrives: Drive[] = driveData.map((drive: any) => ({
-                driveName: drive.name || drive.driveName || 'Unknown Drive',
-                drivePath: drive.path || drive.drivePath || '',
-                available: drive.available || 0,
-                total: drive.total || 0,
-                used: drive.used || 0,
-                busType: drive.busType,
-                description: drive.description,
-                flags: drive.flags,
-                logicalBlockSize: drive.logicalBlockSize,
-                partitionType: drive.partitionType,
-                percentageUsed: drive.percentageUsed
-            }));
-            
-            setDrives(mappedDrives);
-            setDrivesLoading(false);
-            setDrivesError(null);
-            console.log(`Manual refresh: Successfully loaded ${mappedDrives.length} drives`);
-        } catch (error) {
-            console.error('Manual drive refresh failed:', error);
-            setDrivesLoading(false);
-            setDrivesError(`Refresh failed: ${error}`);
-        }
-    }, []);
+        await refreshDrives();
+    }, [refreshDrives]);
 
     // UI is always ready immediately - drives load in background
     return (
