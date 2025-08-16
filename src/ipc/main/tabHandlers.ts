@@ -1,5 +1,5 @@
 import { ipcMain, BrowserWindow } from 'electron';
-import { TabManager } from './tabs';
+import { TabManager } from '../functions/tabs';
 
 let tabs: TabManager[] = [];
 let mainWindow: BrowserWindow | null = null;
