@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaHdd, FaDesktop, FaFolder, FaDownload, FaMusic, FaVideo, FaFileImage, FaSdCard, FaUsb, FaServer, FaCloud, FaNetworkWired, FaCog, FaBars, FaThLarge, FaExternalLinkAlt, FaGamepad, FaDatabase, FaTimes, FaChartBar, FaChartPie, FaArchive, FaHardHat } from 'react-icons/fa';
+import { FaHdd, FaDesktop, FaFolder, FaDownload, FaMusic, FaVideo, FaFileImage, FaSdCard, FaUsb, FaServer, FaCloud, FaNetworkWired, FaCog, FaBars, FaThLarge, FaExternalLinkAlt, FaGamepad, FaDatabase, FaTimes, FaChartBar, FaChartPie, FaArchive, FaHardHat, FaSync } from 'react-icons/fa';
 import { useSettings } from '../../contexts/SettingsContext';
 import { formatFileSize } from '../../../shared/fileSizeUtils';
 
@@ -50,6 +50,9 @@ interface ThisPCViewProps {
     viewMode: string;
     onDriveHover?: (drive: any) => void;
     drives?: any[]; // Actual drives data
+    drivesLoading?: boolean;
+    drivesError?: string | null;
+    onRefreshDrives?: () => Promise<void>;
     quickAccessItems?: QuickAccessItem[]; // Custom quick access items
     networkDevices?: NetworkDevice[]; // Network devices data
 }
@@ -58,6 +61,9 @@ export const ThisPCView: React.FC<ThisPCViewProps> = ({
     viewMode, 
     onDriveHover, 
     drives: propDrives, 
+    drivesLoading = false,
+    drivesError = null,
+    onRefreshDrives,
     quickAccessItems: propQuickAccess, 
     networkDevices: propNetworkDevices 
 }) => {
@@ -632,6 +638,37 @@ export const ThisPCView: React.FC<ThisPCViewProps> = ({
                     
                     {section.type === 'drives' && (
                         <div className={`drives-container drives-${driveViewMode} drives-scrollable`}>
+                            {drivesLoading && (section.items as DriveInfo[]).length === 0 && (
+                                <div className="drives-loading">
+                                    <FaHdd className="loading-icon" />
+                                    <span>Loading drives...</span>
+                                </div>
+                            )}
+                            
+                            {drivesError && (section.items as DriveInfo[]).length === 0 && !drivesLoading && (
+                                <div className="drives-error">
+                                    <FaTimes className="error-icon" />
+                                    <span>Failed to load drives</span>
+                                    <small>{drivesError}</small>
+                                    {onRefreshDrives && (
+                                        <button 
+                                            className="refresh-button"
+                                            onClick={onRefreshDrives}
+                                            title="Retry loading drives"
+                                        >
+                                            <FaSync /> Try Again
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                            
+                            {!drivesLoading && !drivesError && (section.items as DriveInfo[]).length === 0 && (
+                                <div className="drives-empty">
+                                    <FaHdd className="empty-icon" />
+                                    <span>No drives found</span>
+                                </div>
+                            )}
+                            
                             {(section.items as DriveInfo[]).map((drive: DriveInfo, index: number) => (
                                 <div 
                                     key={index} 

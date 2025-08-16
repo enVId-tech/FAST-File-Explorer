@@ -561,6 +561,8 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
                                         <p><strong>Build:</strong><span>{BUILD_VERSION}</span></p>
                                         <p><strong>Built:</strong><span>{getBuildDateString()}</span></p>
                                         <p><strong>Platform:</strong><span>Windows (Electron)</span></p>
+                                        <p><strong>Architecture:</strong><span>x64</span></p>
+                                        <p><strong>Developer:</strong><span>enVId Tech</span></p>
                                     </div>
                                     <div className="app-info">
                                         <h4>Technology Stack</h4>

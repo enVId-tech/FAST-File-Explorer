@@ -91,79 +91,10 @@ const Main = React.memo(function Main(): React.JSX.Element {
     ]);
     const [activeTabId, setActiveTabId] = useState('tab-1');
 
-    // Drive data with truly async, non-blocking loading
+    // Drive data
     const [drives, setDrives] = useState<Drive[]>([]);
-    const [drivesLoading, setDrivesLoading] = useState(false); // Start false - UI loads immediately
-    
-    // Completely async drive loading that doesn't block UI
-    useEffect(() => {
-        let mounted = true;
-        
-        const loadDrivesAsync = () => {
-            // Don't show loading initially - UI should be responsive
-            const loadInBackground = async () => {
-                try {
-                    // Small delay to let UI render first
-                    await new Promise(resolve => setTimeout(resolve, 50));
-                    
-                    if (!mounted) return;
-                    
-                    // Use multiple strategies for non-blocking execution
-                    const loadDriveData = async () => {
-                        try {
-                            // Add timeout to prevent infinite blocking
-                            const timeoutPromise = new Promise((_, reject) => {
-                                setTimeout(() => reject(new Error('Drive loading timeout')), 8000);
-                            });
-
-                            const drivePromise = window.electronAPI.data.getDrives();
-                            const rawDriveData = await Promise.race([drivePromise, timeoutPromise]) as any[];
-
-                            // Process in small chunks to avoid blocking
-                            const processedDrives: Drive[] = rawDriveData.map((drive: any) => ({
-                                name: drive.name || 'Unknown Drive',
-                                path: drive.path || '',
-                                driveName: drive.driveName || drive.name || 'Unknown Drive',
-                                drivePath: drive.drivePath || drive.path || '',
-                                available: drive.available || 0,
-                                total: drive.total || 0,
-                                used: drive.used || 0
-                            }));
-                            
-                            if (mounted) {
-                                setDrives(processedDrives);
-                            }
-                        } catch (error) {
-                            console.error('Failed to load drives:', error);
-                            if (mounted) {
-                                setDrives([]); // Empty drives array, app still works
-                            }
-                        }
-                    };
-                    
-                    // Use requestIdleCallback for background loading
-                    if ('requestIdleCallback' in window) {
-                        (window as any).requestIdleCallback(loadDriveData, { timeout: 100 });
-                    } else {
-                        // Fallback to non-blocking setTimeout
-                        setTimeout(loadDriveData, 10);
-                    }
-                } catch (error) {
-                    console.error('Failed to initialize drive loading:', error);
-                }
-            };
-            
-            // Start loading immediately but don't block UI
-            loadInBackground();
-        };
-        
-        // Schedule drive loading without blocking
-        loadDrivesAsync();
-        
-        return () => {
-            mounted = false;
-        };
-    }, []);
+    const [drivesLoading, setDrivesLoading] = useState(true);
+    const [drivesError, setDrivesError] = useState<string | null>(null);
     
     // UI state for modal components
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -573,13 +504,106 @@ const Main = React.memo(function Main(): React.JSX.Element {
         };
     }, []);
 
-    // Remove duplicate drive loading - already handled in async initialization
-    // useEffect(() => {
-    //     getDrives().then((drives: any) => {
-    //         console.log('Drive data:', drives);
-    //         setDrives(drives.driveDetails);
-    //     });
-    // }, []);
+    // Robust drive loading with retries and fallbacks
+    useEffect(() => {
+        let mounted = true;
+        let retryCount = 0;
+        const maxRetries = 3;
+        const retryDelay = 1000; // 1 second
+        
+        const loadDrivesWithRetry = async () => {
+            if (mounted) {
+                setDrivesLoading(true);
+                setDrivesError(null);
+            }
+            
+            while (mounted && retryCount <= maxRetries) {
+                try {
+                    console.log(`Attempting to load drives (attempt ${retryCount + 1}/${maxRetries + 1})`);
+                    
+                    // Add timeout to prevent hanging
+                    const timeoutPromise = new Promise((_, reject) => {
+                        setTimeout(() => reject(new Error('Drive loading timeout')), 5000);
+                    });
+                    
+                    const drivePromise = window.electronAPI.data.getDrives();
+                    const driveData = await Promise.race([drivePromise, timeoutPromise]);
+                    
+                    console.log('Drive data loaded:', driveData);
+                    
+                    // Validate that we got actual data
+                    if (!Array.isArray(driveData)) {
+                        throw new Error('Invalid drive data format');
+                    }
+                    
+                    // Map the drive data to match the Drive interface
+                    const mappedDrives: Drive[] = driveData.map((drive: any) => ({
+                        driveName: drive.name || drive.driveName || 'Unknown Drive',
+                        drivePath: drive.path || drive.drivePath || '',
+                        available: drive.available || 0,
+                        total: drive.total || 0,
+                        used: drive.used || 0,
+                        busType: drive.busType,
+                        description: drive.description,
+                        flags: drive.flags,
+                        logicalBlockSize: drive.logicalBlockSize,
+                        partitionType: drive.partitionType,
+                        percentageUsed: drive.percentageUsed
+                    }));
+                    
+                    if (mounted) {
+                        setDrives(mappedDrives);
+                        setDrivesLoading(false);
+                        setDrivesError(null);
+                        console.log(`Successfully loaded ${mappedDrives.length} drives`);
+                    }
+                    
+                    return; // Success, exit the retry loop
+                    
+                } catch (error) {
+                    console.error(`Failed to load drives (attempt ${retryCount + 1}):`, error);
+                    retryCount++;
+                    
+                    if (retryCount > maxRetries) {
+                        console.warn('All retry attempts failed, setting empty drives array');
+                        if (mounted) {
+                            setDrives([]); // Set empty array so app still works
+                            setDrivesLoading(false);
+                            setDrivesError(`Failed to load drives after ${maxRetries + 1} attempts`);
+                        }
+                        return;
+                    }
+                    
+                    // Wait before retrying
+                    await new Promise(resolve => setTimeout(resolve, retryDelay * retryCount));
+                }
+            }
+        };
+        
+        // Start loading immediately
+        loadDrivesWithRetry();
+        
+        // Also set up a periodic check to ensure drives are loaded
+        const periodicCheck = setInterval(() => {
+            if (mounted) {
+                // Check if drives array is empty and not currently loading
+                setDrives(currentDrives => {
+                    if (currentDrives.length === 0 && !drivesLoading) {
+                        console.log('Drives array is empty, attempting reload...');
+                        // Reset retry count for periodic attempts
+                        retryCount = 0;
+                        loadDrivesWithRetry();
+                    }
+                    return currentDrives;
+                });
+            }
+        }, 10000); // Check every 10 seconds
+        
+        return () => {
+            mounted = false;
+            clearInterval(periodicCheck);
+        };
+    }, [drivesLoading]); // Include drivesLoading in dependencies
 
     // Check if setup should be shown on first load
     useEffect(() => {
@@ -612,6 +636,47 @@ const Main = React.memo(function Main(): React.JSX.Element {
         setIsFileTransferOpen(true);
     }, []);
     const handleCloseFileTransfer = useCallback(() => setIsFileTransferOpen(false), []);
+
+    // Drive refresh handler
+    const handleRefreshDrives = useCallback(async () => {
+        console.log('Manual drive refresh triggered');
+        setDrivesLoading(true);
+        setDrivesError(null);
+        
+        try {
+            const driveData = await window.electronAPI.data.getDrives();
+            console.log('Drive refresh data loaded:', driveData);
+            
+            // Validate that we got actual data
+            if (!Array.isArray(driveData)) {
+                throw new Error('Invalid drive data format');
+            }
+            
+            // Map the drive data to match the Drive interface
+            const mappedDrives: Drive[] = driveData.map((drive: any) => ({
+                driveName: drive.name || drive.driveName || 'Unknown Drive',
+                drivePath: drive.path || drive.drivePath || '',
+                available: drive.available || 0,
+                total: drive.total || 0,
+                used: drive.used || 0,
+                busType: drive.busType,
+                description: drive.description,
+                flags: drive.flags,
+                logicalBlockSize: drive.logicalBlockSize,
+                partitionType: drive.partitionType,
+                percentageUsed: drive.percentageUsed
+            }));
+            
+            setDrives(mappedDrives);
+            setDrivesLoading(false);
+            setDrivesError(null);
+            console.log(`Manual refresh: Successfully loaded ${mappedDrives.length} drives`);
+        } catch (error) {
+            console.error('Manual drive refresh failed:', error);
+            setDrivesLoading(false);
+            setDrivesError(`Refresh failed: ${error}`);
+        }
+    }, []);
 
     // UI is always ready immediately - drives load in background
     return (
@@ -649,6 +714,9 @@ const Main = React.memo(function Main(): React.JSX.Element {
                                 viewMode={viewMode}
                                 setViewMode={setViewMode}
                                 drives={drives}
+                                drivesLoading={drivesLoading}
+                                drivesError={drivesError}
+                                onRefreshDrives={handleRefreshDrives}
                             />
                         </LazyComponentErrorBoundary>
                     </Suspense>
@@ -673,25 +741,6 @@ const Main = React.memo(function Main(): React.JSX.Element {
                     onClose={handleCloseFileTransfer}
                     fileSizeUnit={'decimal'}
                 />
-                
-                {/* Debug info - remove in production */}
-                {process.env.NODE_ENV === 'development' && (
-                    <div style={{ 
-                        position: 'fixed', 
-                        top: '10px', 
-                        right: '10px', 
-                        background: 'rgba(0,0,0,0.8)', 
-                        color: 'white', 
-                        padding: '8px', 
-                        fontSize: '12px',
-                        zIndex: 10000,
-                        borderRadius: '4px'
-                    }}>
-                        Setup: {isSetupOpen.toString()}<br/>
-                        Transfer: {isFileTransferOpen.toString()}<br/>
-                        Settings: {isSettingsOpen.toString()}
-                    </div>
-                )}
             </div>
         </SettingsProvider>
     );

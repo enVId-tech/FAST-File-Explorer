@@ -79,9 +79,12 @@ interface TabContentProps {
     viewMode: string;
     setViewMode: (mode: string) => void;
     drives: Drive[];
+    drivesLoading?: boolean;
+    drivesError?: string | null;
+    onRefreshDrives?: () => Promise<void>;
 }
 
-export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActive, viewMode, setViewMode, drives }) => {
+export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActive, viewMode, setViewMode, drives, drivesLoading = false, drivesError = null, onRefreshDrives }) => {
     const [selectedItem, setSelectedItem] = useState<FileItem | null>(null);
     const [hoveredDrive, setHoveredDrive] = useState<Drive | null>(null);
     const [showDetailsPanel, setShowDetailsPanel] = useState(true);
@@ -971,6 +974,9 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                                 viewMode={viewMode} 
                                 onDriveHover={handleDriveHover} 
                                 drives={drives}
+                                drivesLoading={drivesLoading}
+                                drivesError={drivesError}
+                                onRefreshDrives={onRefreshDrives}
                                 quickAccessItems={undefined}
                                 networkDevices={networkDevices}
                             />
