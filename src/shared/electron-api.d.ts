@@ -1,4 +1,4 @@
-import { DirectoryContents, DirectoryListOptions } from './shared/ipc-channels';
+import { DirectoryContents, DirectoryListOptions } from './ipc-channels';
 
 export {};
 declare global {

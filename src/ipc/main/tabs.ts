@@ -1,4 +1,4 @@
-import { app, WebContentsView, BrowserWindow, ipcMain } from 'electron';
+import { WebContentsView, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
 
 class TabManager {
