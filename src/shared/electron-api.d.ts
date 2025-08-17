@@ -55,6 +55,25 @@ declare global {
         openFile: (filePath: string) => Promise<boolean>;
         openFileFast: (filePath: string) => void; // Fire-and-forget for maximum speed
       },
+      // File operations
+      files: {
+        copy: (sources: string[], destination: string) => Promise<boolean>;
+        cut: (sources: string[], destination: string) => Promise<boolean>;
+        delete: (paths: string[]) => Promise<boolean>;
+        rename: (oldPath: string, newName: string) => Promise<boolean>;
+        createFolder: (parentPath: string, name: string) => Promise<string>;
+        showProperties: (path: string) => Promise<void>;
+        showInExplorer: (path: string) => Promise<void>;
+      },
+      // Clipboard operations
+      clipboard: {
+        copyFiles: (paths: string[]) => Promise<void>;
+        cutFiles: (paths: string[]) => Promise<void>;
+        pasteFiles: (destinationPath: string) => Promise<boolean>;
+        hasFiles: () => Promise<boolean>;
+        getState: () => Promise<{ operation: 'copy' | 'cut' | null; files: string[] }>;
+        clear: () => Promise<void>;
+      },
       // Settings management
       settings: {
         getAll: () => Promise<AppSettings>;

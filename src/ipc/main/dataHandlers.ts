@@ -1,5 +1,7 @@
-import { ipcMain, shell } from 'electron';
+import { ipcMain, shell, clipboard, nativeImage } from 'electron';
 import path from 'path';
+import fs from 'fs/promises';
+import fsStat from 'fs';
 import drivelist from 'drivelist';
 import os from 'os';
 import nodeDiskInfo from 'node-disk-info';
@@ -232,6 +234,202 @@ export default function initializeDataHandlers() {
         shell.openPath(filePath).catch(() => {
             // Silent error handling for maximum speed
         });
+    });
+
+    // File operation handlers with OS integration
+    
+    // Copy files
+    ipcMain.handle('file-copy', async (event, sources: string[], destination: string) => {
+        try {
+            for (const source of sources) {
+                const sourceName = path.basename(source);
+                const destPath = path.join(destination, sourceName);
+                await fs.copyFile(source, destPath);
+            }
+            return true;
+        } catch (error) {
+            console.error('Failed to copy files:', error);
+            return false;
+        }
+    });
+
+    // Cut (move) files
+    ipcMain.handle('file-cut', async (event, sources: string[], destination: string) => {
+        try {
+            for (const source of sources) {
+                const sourceName = path.basename(source);
+                const destPath = path.join(destination, sourceName);
+                await fs.rename(source, destPath);
+            }
+            return true;
+        } catch (error) {
+            console.error('Failed to cut files:', error);
+            return false;
+        }
+    });
+
+    // Delete files
+    ipcMain.handle('file-delete', async (event, paths: string[]) => {
+        try {
+            for (const filePath of paths) {
+                try {
+                    const stats = await fs.stat(filePath);
+                    if (stats.isDirectory()) {
+                        await fs.rmdir(filePath, { recursive: true });
+                    } else {
+                        await fs.unlink(filePath);
+                    }
+                } catch (error) {
+                    console.error(`Failed to delete ${filePath}:`, error);
+                }
+            }
+            return true;
+        } catch (error) {
+            console.error('Failed to delete files:', error);
+            return false;
+        }
+    });
+
+    // Rename file
+    ipcMain.handle('file-rename', async (event, oldPath: string, newName: string) => {
+        try {
+            const directory = path.dirname(oldPath);
+            const newPath = path.join(directory, newName);
+            await fs.rename(oldPath, newPath);
+            return true;
+        } catch (error) {
+            console.error('Failed to rename file:', error);
+            return false;
+        }
+    });
+
+    // Create new folder
+    ipcMain.handle('file-create-folder', async (event, parentPath: string, name: string) => {
+        try {
+            const folderPath = path.join(parentPath, name);
+            await fs.mkdir(folderPath);
+            return folderPath;
+        } catch (error) {
+            console.error('Failed to create folder:', error);
+            throw error;
+        }
+    });
+
+    // Show file properties (OS-specific)
+    ipcMain.handle('file-show-properties', async (event, filePath: string) => {
+        try {
+            if (process.platform === 'win32') {
+                // Windows: Show properties dialog
+                const { spawn } = require('child_process');
+                spawn('rundll32.exe', ['shell32.dll,OpenAs_RunDLL', filePath], { detached: true });
+            } else if (process.platform === 'darwin') {
+                // macOS: Get Info
+                const { spawn } = require('child_process');
+                spawn('open', ['-R', filePath], { detached: true });
+            } else {
+                // Linux: Show in file manager
+                await shell.showItemInFolder(filePath);
+            }
+        } catch (error) {
+            console.error('Failed to show properties:', error);
+        }
+    });
+
+    // Show in system file explorer
+    ipcMain.handle('file-show-in-explorer', async (event, filePath: string) => {
+        try {
+            await shell.showItemInFolder(filePath);
+        } catch (error) {
+            console.error('Failed to show in explorer:', error);
+        }
+    });
+
+    // Clipboard operations
+    let clipboardFiles: string[] = [];
+    let clipboardOperation: 'copy' | 'cut' = 'copy';
+
+    // Copy files to clipboard
+    ipcMain.handle('clipboard-copy', async (event, paths: string[]) => {
+        try {
+            clipboardFiles = [...paths];
+            clipboardOperation = 'copy';
+            
+            // For cross-platform compatibility, we'll store file paths
+            // Some platforms support native file clipboard integration
+            if (process.platform === 'win32') {
+                // Windows native clipboard support would go here
+                clipboard.writeText(paths.join('\n'));
+            } else {
+                clipboard.writeText(paths.join('\n'));
+            }
+        } catch (error) {
+            console.error('Failed to copy to clipboard:', error);
+        }
+    });
+
+    // Cut files to clipboard
+    ipcMain.handle('clipboard-cut', async (event, paths: string[]) => {
+        try {
+            clipboardFiles = [...paths];
+            clipboardOperation = 'cut';
+            clipboard.writeText(paths.join('\n'));
+        } catch (error) {
+            console.error('Failed to cut to clipboard:', error);
+        }
+    });
+
+    // Paste files from clipboard
+    ipcMain.handle('clipboard-paste', async (event, destinationPath: string) => {
+        try {
+            if (clipboardFiles.length === 0) return false;
+            
+            for (const source of clipboardFiles) {
+                const sourceName = path.basename(source);
+                const destPath = path.join(destinationPath, sourceName);
+                
+                if (clipboardOperation === 'copy') {
+                    // Check if source is directory or file
+                    const stats = await fs.stat(source);
+                    if (stats.isDirectory()) {
+                        // Copy directory recursively
+                        await fs.cp(source, destPath, { recursive: true });
+                    } else {
+                        await fs.copyFile(source, destPath);
+                    }
+                } else if (clipboardOperation === 'cut') {
+                    await fs.rename(source, destPath);
+                }
+            }
+            
+            // Clear clipboard if cut operation
+            if (clipboardOperation === 'cut') {
+                clipboardFiles = [];
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('Failed to paste files:', error);
+            return false;
+        }
+    });
+
+    // Check if clipboard has files
+    ipcMain.handle('clipboard-has-files', async () => {
+        return clipboardFiles.length > 0;
+    });
+
+    // Get clipboard state (operation and files)
+    ipcMain.handle('clipboard-get-state', async () => {
+        return {
+            operation: clipboardFiles.length > 0 ? clipboardOperation : null,
+            files: [...clipboardFiles]
+        };
+    });
+
+    // Clear clipboard
+    ipcMain.handle('clipboard-clear', async () => {
+        clipboardFiles = [];
+        clipboard.clear();
     });
 
     console.log('Folder handlers registered successfully');

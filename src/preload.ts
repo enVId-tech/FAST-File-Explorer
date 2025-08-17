@@ -58,6 +58,38 @@ contextBridge.exposeInMainWorld('electronAPI', {
         getFolderMetadata: (folderPath: string) => 
             ipcRenderer.invoke('fs-get-folder-metadata', folderPath),
     },
+    // File operations
+    files: {
+        copy: (sources: string[], destination: string) => 
+            ipcRenderer.invoke('file-copy', sources, destination),
+        cut: (sources: string[], destination: string) => 
+            ipcRenderer.invoke('file-cut', sources, destination),
+        delete: (paths: string[]) => 
+            ipcRenderer.invoke('file-delete', paths),
+        rename: (oldPath: string, newName: string) => 
+            ipcRenderer.invoke('file-rename', oldPath, newName),
+        createFolder: (parentPath: string, name: string) => 
+            ipcRenderer.invoke('file-create-folder', parentPath, name),
+        showProperties: (path: string) => 
+            ipcRenderer.invoke('file-show-properties', path),
+        showInExplorer: (path: string) => 
+            ipcRenderer.invoke('file-show-in-explorer', path),
+    },
+    // Clipboard operations
+    clipboard: {
+        copyFiles: (paths: string[]) => 
+            ipcRenderer.invoke('clipboard-copy', paths),
+        cutFiles: (paths: string[]) => 
+            ipcRenderer.invoke('clipboard-cut', paths),
+        pasteFiles: (destinationPath: string) => 
+            ipcRenderer.invoke('clipboard-paste', destinationPath),
+        hasFiles: () => 
+            ipcRenderer.invoke('clipboard-has-files'),
+        getState: () => 
+            ipcRenderer.invoke('clipboard-get-state'),
+        clear: () => 
+            ipcRenderer.invoke('clipboard-clear'),
+    },
     // Settings management
     settings: {
         getAll: () => ipcRenderer.invoke('settings-get-all'),

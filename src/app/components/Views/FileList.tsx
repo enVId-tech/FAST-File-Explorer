@@ -27,7 +27,7 @@ import {
 import { FileSystemItem, DirectoryContents, FolderMetadata } from '../../../shared/ipc-channels';
 import { formatFileSize } from '../../../shared/fileSizeUtils';
 import { useSettings } from '../../contexts/SettingsContext';
-import { CustomContextMenu } from '../CustomContextMenu/CustomContextMenu';
+import { EnhancedContextMenu } from './EnhancedContextMenu';
 import './FileList.scss';
 import { VirtualizedList } from '../VirtualizedList/VirtualizedList';
 
@@ -73,7 +73,13 @@ const FileItem = React.memo<{
     formatDate: (date: Date) => string;
     showFileExtensions: boolean;
     compactMode: boolean;
-}>(({ item, isSelected, onClick, onDoubleClick, onContextMenu, viewMode, getFileIcon, formatFileSize, formatDate, showFileExtensions, compactMode }) => {
+    clipboardState: { operation: 'copy' | 'cut' | null; files: string[] };
+}>(({ item, isSelected, onClick, onDoubleClick, onContextMenu, viewMode, getFileIcon, formatFileSize, formatDate, showFileExtensions, compactMode, clipboardState }) => {
+
+    // Check if this item is in clipboard for visual indicators
+    const isInClipboard = clipboardState.files.includes(item.path);
+    const isCut = isInClipboard && clipboardState.operation === 'cut';
+    const isCopied = isInClipboard && clipboardState.operation === 'copy';
 
     // Fast double-click handler with reduced delay detection
     const fastDoubleClickHandler = React.useCallback((e: React.MouseEvent) => {
@@ -100,7 +106,7 @@ const FileItem = React.memo<{
     if (viewMode === 'list') {
         return (
             <div
-                className={`file-list-item ${isSelected ? 'selected' : ''} ${compactMode ? 'compact' : ''}`}
+                className={`file-list-item ${isSelected ? 'selected' : ''} ${compactMode ? 'compact' : ''} ${isCut ? 'clipboard-cut' : ''} ${isCopied ? 'clipboard-copied' : ''}`}
                 onClick={(e) => onClick(item, e)}
                 onDoubleClick={fastDoubleClickHandler}
                 onContextMenu={(e) => onContextMenu(e, item)}
@@ -126,7 +132,7 @@ const FileItem = React.memo<{
 
     return (
         <div
-            className={`file-grid-item ${isSelected ? 'selected' : ''} ${compactMode ? 'compact' : ''}`}
+            className={`file-grid-item ${isSelected ? 'selected' : ''} ${compactMode ? 'compact' : ''} ${isCut ? 'clipboard-cut' : ''} ${isCopied ? 'clipboard-copied' : ''}`}
             onClick={(e) => onClick(item, e)}
             onDoubleClick={fastDoubleClickHandler}
             onContextMenu={(e) => onContextMenu(e, item)}
@@ -169,18 +175,24 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
         direction: 'asc' // Windows default
     });
 
-    // Context menu state
+    // Enhanced context menu state
     const [contextMenu, setContextMenu] = useState<{
         visible: boolean;
         x: number;
         y: number;
-        item: FileSystemItem | null;
+        selectedItems: FileSystemItem[];
     }>({
         visible: false,
         x: 0,
         y: 0,
-        item: null,
+        selectedItems: [],
     });
+
+    // Clipboard state for visual indicators
+    const [clipboardState, setClipboardState] = useState<{
+        operation: 'copy' | 'cut' | null;
+        files: string[];
+    }>({ operation: null, files: [] });
 
     // Sortable header component
     const SortableHeader = ({ field, children }: { field: SortField; children: React.ReactNode }) => {
@@ -511,26 +523,40 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
         }
     }, []);
 
-    // Context menu handlers
+    // Enhanced context menu handlers
     const handleContextMenu = useCallback((event: React.MouseEvent, item: FileSystemItem) => {
         event.preventDefault();
+        
+        // If the clicked item is not in the current selection, select only it
+        // Otherwise, keep the current selection for multi-item operations
+        const itemsForContextMenu = isItemSelected(item) 
+            ? selectedFiles.length > 0 ? selectedFiles : [item]
+            : [item];
+        
         setContextMenu({
             visible: true,
             x: event.clientX,
             y: event.clientY,
-            item: item,
+            selectedItems: itemsForContextMenu,
         });
+    }, [isItemSelected, selectedFiles]);
+
+    const handleBackgroundContextMenu = useCallback((event: React.MouseEvent) => {
+        // Only show context menu if clicking on empty area
+        if (event.target === event.currentTarget) {
+            event.preventDefault();
+            setContextMenu({
+                visible: true,
+                x: event.clientX,
+                y: event.clientY,
+                selectedItems: [], // No items selected for background menu
+            });
+        }
     }, []);
 
     const handleCloseContextMenu = useCallback(() => {
         setContextMenu(prev => ({ ...prev, visible: false }));
     }, []);
-
-    const handleContextMenuAction = useCallback((action: string, items: FileSystemItem[]) => {
-        console.log(`Context menu action: ${action} on items:`, items);
-        // Here you would implement the actual file operations
-        handleCloseContextMenu();
-    }, [handleCloseContextMenu]);
 
     // Close context menu when clicking elsewhere
     useEffect(() => {
@@ -543,6 +569,35 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
         document.addEventListener('click', handleClickOutside);
         return () => document.removeEventListener('click', handleClickOutside);
     }, [contextMenu.visible, handleCloseContextMenu]);
+
+    // Listen for clipboard changes and load initial clipboard state
+    useEffect(() => {
+        // Load initial clipboard state
+        const loadClipboardState = async () => {
+            try {
+                const state = await window.electronAPI.clipboard.getState();
+                setClipboardState(state);
+            } catch (error) {
+                console.error('Failed to load clipboard state:', error);
+            }
+        };
+
+        loadClipboardState();
+
+        // Listen for clipboard changes from context menu operations
+        const handleClipboardChange = (event: CustomEvent) => {
+            setClipboardState({
+                operation: event.detail.operation,
+                files: event.detail.files
+            });
+        };
+
+        window.addEventListener('clipboard-changed', handleClipboardChange as EventListener);
+        
+        return () => {
+            window.removeEventListener('clipboard-changed', handleClipboardChange as EventListener);
+        };
+    }, []);
 
     // Load directory contents
 const loadDirectory = useCallback(async (path: string) => {
@@ -824,7 +879,7 @@ const loadDirectory = useCallback(async (path: string) => {
 
         // Grid view empty state
         return (
-            <div className="file-grid-view" onClick={handleBackgroundClick}>
+            <div className="file-grid-view" onClick={handleBackgroundClick} onContextMenu={handleBackgroundContextMenu}>
                 <SearchBarWithFilters />
                 <div className="file-list-empty-content">
                     <FaFolder className="empty-icon" />
@@ -845,7 +900,7 @@ const loadDirectory = useCallback(async (path: string) => {
     if (viewMode === 'list') {
         const rowHeight = settings.compactMode ? 32 : 40; // adjust height based on compact mode
         return (
-            <div className="file-list-view" onClick={handleBackgroundClick}>
+            <div className="file-list-view" onClick={handleBackgroundClick} onContextMenu={handleBackgroundContextMenu}>
                 <SearchBarWithFilters />
                 <div className="file-list-header">
                     <SortableHeader field="name">Name</SortableHeader>
@@ -874,19 +929,21 @@ const loadDirectory = useCallback(async (path: string) => {
                                 formatDate={formatDate}
                                 showFileExtensions={settings.showFileExtensions}
                                 compactMode={settings.compactMode}
+                                clipboardState={clipboardState}
                             />
                         );
                     }}
                 />
 
                 {/* Context Menu */}
-                {contextMenu.visible && contextMenu.item && (
-                    <CustomContextMenu
-                        position={{ x: contextMenu.x, y: contextMenu.y }}
+                {contextMenu.visible && (
+                    <EnhancedContextMenu
                         isVisible={contextMenu.visible}
-                        selectedItems={[contextMenu.item]}
-                        onAction={handleContextMenuAction}
+                        position={{ x: contextMenu.x, y: contextMenu.y }}
+                        selectedItems={contextMenu.selectedItems}
+                        currentPath={currentPath}
                         onClose={handleCloseContextMenu}
+                        onNavigate={onNavigate}
                     />
                 )}
             </div>
@@ -895,7 +952,7 @@ const loadDirectory = useCallback(async (path: string) => {
 
     // Render file list in grid view
     return (
-        <div className="file-grid-view" onClick={handleBackgroundClick}>
+        <div className="file-grid-view" onClick={handleBackgroundClick} onContextMenu={handleBackgroundContextMenu}>
             <SearchBarWithFilters />
             <div className="file-grid-content">
                 {filteredItems.map((item) => (
@@ -912,18 +969,20 @@ const loadDirectory = useCallback(async (path: string) => {
                         formatDate={formatDate}
                         showFileExtensions={settings.showFileExtensions}
                         compactMode={settings.compactMode}
+                        clipboardState={clipboardState}
                     />
                 ))}
             </div>
 
             {/* Context Menu */}
-            {contextMenu.visible && contextMenu.item && (
-                <CustomContextMenu
-                    position={{ x: contextMenu.x, y: contextMenu.y }}
+            {contextMenu.visible && (
+                <EnhancedContextMenu
                     isVisible={contextMenu.visible}
-                    selectedItems={[contextMenu.item]}
-                    onAction={handleContextMenuAction}
+                    position={{ x: contextMenu.x, y: contextMenu.y }}
+                    selectedItems={contextMenu.selectedItems}
+                    currentPath={currentPath}
                     onClose={handleCloseContextMenu}
+                    onNavigate={onNavigate}
                 />
             )}
         </div>

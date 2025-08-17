@@ -63,6 +63,20 @@ export interface IpcRendererToMain {
     'fs-get-folder-metadata': (folderPath: string) => Promise<FolderMetadata>;
     'system-open-file': (filePath: string) => Promise<boolean>;
     'system-open-file-fast': (filePath: string) => void; // Fire-and-forget version
+    // File operations
+    'file-copy': (sources: string[], destination: string) => Promise<boolean>;
+    'file-cut': (sources: string[], destination: string) => Promise<boolean>;
+    'file-delete': (paths: string[]) => Promise<boolean>;
+    'file-rename': (oldPath: string, newName: string) => Promise<boolean>;
+    'file-create-folder': (parentPath: string, name: string) => Promise<string>;
+    'file-show-properties': (path: string) => Promise<void>;
+    'file-show-in-explorer': (path: string) => Promise<void>;
+    'clipboard-copy': (paths: string[]) => Promise<void>;
+    'clipboard-cut': (paths: string[]) => Promise<void>;
+    'clipboard-paste': (destinationPath: string) => Promise<boolean>;
+    'clipboard-has-files': () => Promise<boolean>;
+    'clipboard-get-state': () => Promise<{ operation: 'copy' | 'cut' | null; files: string[] }>;
+    'clipboard-clear': () => Promise<void>;
 }
 
 // Define Tab interface
