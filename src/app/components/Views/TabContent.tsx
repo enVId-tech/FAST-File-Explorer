@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { FaFolder, FaFileExcel, FaFilePowerpoint, FaFileWord, FaFileImage, FaFileCode, FaFile, FaCopy, FaCut, FaPaste, FaTrash, FaEdit, FaFolderPlus, FaCog, FaArrowLeft, FaArrowRight, FaArrowUp, FaSearch, FaThLarge, FaBars, FaHdd, FaDesktop, FaDownload, FaMusic, FaVideo, FaFilePdf, FaSortAlphaDown, FaSortAlphaUp, FaSortNumericDown, FaSortNumericUp, FaChevronDown, FaPalette, FaSun, FaMoon, FaWindows, FaClock, FaShare, FaEnvelope, FaPrint, FaFax, FaUsers, FaInfoCircle, FaEye } from 'react-icons/fa';
+import { FaFolder, FaFileExcel, FaFilePowerpoint, FaFileWord, FaFileImage, FaFileCode, FaFile, FaCopy, FaCut, FaPaste, FaTrash, FaEdit, FaFolderPlus, FaCog, FaArrowLeft, FaArrowRight, FaHome, FaSearch, FaThLarge, FaBars, FaHdd, FaDesktop, FaDownload, FaMusic, FaVideo, FaFilePdf, FaSortAlphaDown, FaSortAlphaUp, FaSortNumericDown, FaSortNumericUp, FaChevronDown, FaPalette, FaSun, FaMoon, FaWindows, FaClock, FaShare, FaEnvelope, FaPrint, FaFax, FaUsers, FaInfoCircle, FaEye, FaTimes, FaFilter, FaCalendarAlt, FaRulerHorizontal, FaFont } from 'react-icons/fa';
 import { DetailsPanel } from '../DetailsPanel';
 import { RecentsView } from './RecentsView';
 import { ThisPCView } from './ThisPCView';
@@ -102,6 +102,18 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
     const [navigationHistory, setNavigationHistory] = useState<string[]>([]);
     const [historyIndex, setHistoryIndex] = useState<number>(-1);
     
+    // Search and filter state
+    const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchScope, setSearchScope] = useState<'current' | 'global'>('current');
+    const [showFilters, setShowFilters] = useState(false);
+    const [filters, setFilters] = useState({
+        fileTypes: [] as string[],
+        dateRange: { start: '', end: '' },
+        sizeRange: { min: '', max: '' },
+        nameContains: ''
+    });
+    
     // Resizable panel states
     const [sidebarWidth, setSidebarWidth] = useState(280);
     const [detailsPanelWidth, setDetailsPanelWidth] = useState(320);
@@ -196,10 +208,10 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
 
     // Navigation functions
     const navigateToPath = (path: string) => {
-        // Add current path to history if it's different
-        if (currentPath && path !== currentPath) {
-            const newHistory = navigationHistory.slice(0, historyIndex + 1);
-            newHistory.push(currentPath);
+        // Only add to history if we're not currently navigating through history
+        if (path !== currentPath) {
+            // If we're not at the end of history, slice off the future entries
+            const newHistory = [...navigationHistory.slice(0, historyIndex + 1), path];
             setNavigationHistory(newHistory);
             setHistoryIndex(newHistory.length - 1);
         }
@@ -224,6 +236,16 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
             setCurrentPath(navigationHistory[newIndex]);
             setCurrentView('folder');
         }
+    };
+
+    const navigateHome = () => {
+        // Navigate to This PC view
+        setCurrentView('thispc');
+        setCurrentPath('');
+        // Add to history
+        const newHistory = [...navigationHistory.slice(0, historyIndex + 1), 'home'];
+        setNavigationHistory(newHistory);
+        setHistoryIndex(newHistory.length - 1);
     };
 
     const navigateUp = async () => {
@@ -570,7 +592,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                 <div className="toolbar">
                     <div className="toolbar-section">
                         <button 
-                            className="toolbar-button" 
+                            className={`toolbar-button ${historyIndex <= 0 ? 'disabled' : ''}`}
                             onClick={navigateBack}
                             disabled={historyIndex <= 0}
                             title="Back"
@@ -578,7 +600,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                             <FaArrowLeft />
                         </button>
                         <button 
-                            className="toolbar-button" 
+                            className={`toolbar-button ${historyIndex >= navigationHistory.length - 1 ? 'disabled' : ''}`}
                             onClick={navigateForward}
                             disabled={historyIndex >= navigationHistory.length - 1}
                             title="Forward"
@@ -587,11 +609,10 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                         </button>
                         <button 
                             className="toolbar-button" 
-                            onClick={navigateUp}
-                            disabled={!currentPath || currentView !== 'folder'}
-                            title="Up"
+                            onClick={navigateHome}
+                            title="Home"
                         >
-                            <FaArrowUp />
+                            <FaHome />
                         </button>
                     </div>
                     <div className="address-bar-container">
@@ -621,7 +642,191 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                         </div>
                     </div>
                     <div className="toolbar-section">
-                        <button className="toolbar-button"><FaSearch /></button>
+                        <div className="search-container">
+                            <button 
+                                className={`toolbar-button ${showAdvancedSearch ? 'active' : ''}`}
+                                onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
+                                title="Advanced Search"
+                            >
+                                <FaSearch />
+                            </button>
+                            
+                            {showAdvancedSearch && (
+                                <div className="advanced-search-overlay">
+                                    <div className="advanced-search-panel">
+                                        <div className="search-header">
+                                            <h3>Advanced Search</h3>
+                                            <button 
+                                                className="close-button"
+                                                onClick={() => setShowAdvancedSearch(false)}
+                                            >
+                                                <FaTimes />
+                                            </button>
+                                        </div>
+                                        
+                                        <div className="search-content">
+                                            <div className="search-input-group">
+                                                <label>Search for:</label>
+                                                <input 
+                                                    type="text"
+                                                    value={searchQuery}
+                                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                                    placeholder="Enter search terms..."
+                                                />
+                                            </div>
+                                            
+                                            <div className="search-scope-group">
+                                                <label>Search in:</label>
+                                                <div className="radio-group">
+                                                    <label className="radio-option">
+                                                        <input 
+                                                            type="radio"
+                                                            value="current"
+                                                            checked={searchScope === 'current'}
+                                                            onChange={(e) => setSearchScope(e.target.value as 'current' | 'global')}
+                                                        />
+                                                        Current directory and subdirectories
+                                                    </label>
+                                                    <label className="radio-option">
+                                                        <input 
+                                                            type="radio"
+                                                            value="global"
+                                                            checked={searchScope === 'global'}
+                                                            onChange={(e) => setSearchScope(e.target.value as 'current' | 'global')}
+                                                        />
+                                                        Entire drive ({currentPath ? currentPath.split(':')[0] + ':' : 'All drives'})
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="filter-section">
+                                                <div className="filter-header">
+                                                    <label>
+                                                        <FaFilter /> Filters
+                                                    </label>
+                                                    <button 
+                                                        className={`filter-toggle ${showFilters ? 'active' : ''}`}
+                                                        onClick={() => setShowFilters(!showFilters)}
+                                                    >
+                                                        {showFilters ? 'Hide' : 'Show'} Filters
+                                                    </button>
+                                                </div>
+                                                
+                                                {showFilters && (
+                                                    <div className="filter-options">
+                                                        <div className="filter-row">
+                                                            <label><FaFont /> Name contains:</label>
+                                                            <input 
+                                                                type="text"
+                                                                value={filters.nameContains}
+                                                                onChange={(e) => setFilters(prev => ({ ...prev, nameContains: e.target.value }))}
+                                                                placeholder="Text in filename..."
+                                                            />
+                                                        </div>
+                                                        
+                                                        <div className="filter-row">
+                                                            <label><FaCalendarAlt /> Date range:</label>
+                                                            <div className="date-range">
+                                                                <input 
+                                                                    type="date"
+                                                                    value={filters.dateRange.start}
+                                                                    onChange={(e) => setFilters(prev => ({ 
+                                                                        ...prev, 
+                                                                        dateRange: { ...prev.dateRange, start: e.target.value }
+                                                                    }))}
+                                                                />
+                                                                <span>to</span>
+                                                                <input 
+                                                                    type="date"
+                                                                    value={filters.dateRange.end}
+                                                                    onChange={(e) => setFilters(prev => ({ 
+                                                                        ...prev, 
+                                                                        dateRange: { ...prev.dateRange, end: e.target.value }
+                                                                    }))}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div className="filter-row">
+                                                            <label><FaRulerHorizontal /> Size range:</label>
+                                                            <div className="size-range">
+                                                                <input 
+                                                                    type="text"
+                                                                    value={filters.sizeRange.min}
+                                                                    onChange={(e) => setFilters(prev => ({ 
+                                                                        ...prev, 
+                                                                        sizeRange: { ...prev.sizeRange, min: e.target.value }
+                                                                    }))}
+                                                                    placeholder="Min size (e.g., 1MB)"
+                                                                />
+                                                                <span>to</span>
+                                                                <input 
+                                                                    type="text"
+                                                                    value={filters.sizeRange.max}
+                                                                    onChange={(e) => setFilters(prev => ({ 
+                                                                        ...prev, 
+                                                                        sizeRange: { ...prev.sizeRange, max: e.target.value }
+                                                                    }))}
+                                                                    placeholder="Max size (e.g., 100MB)"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div className="filter-row">
+                                                            <label>File types:</label>
+                                                            <div className="file-type-checkboxes">
+                                                                {['Images', 'Documents', 'Videos', 'Audio', 'Archives', 'Code'].map(type => (
+                                                                    <label key={type} className="checkbox-option">
+                                                                        <input 
+                                                                            type="checkbox"
+                                                                            checked={filters.fileTypes.includes(type)}
+                                                                            onChange={(e) => {
+                                                                                if (e.target.checked) {
+                                                                                    setFilters(prev => ({ 
+                                                                                        ...prev, 
+                                                                                        fileTypes: [...prev.fileTypes, type]
+                                                                                    }));
+                                                                                } else {
+                                                                                    setFilters(prev => ({ 
+                                                                                        ...prev, 
+                                                                                        fileTypes: prev.fileTypes.filter(t => t !== type)
+                                                                                    }));
+                                                                                }
+                                                                            }}
+                                                                        />
+                                                                        {type}
+                                                                    </label>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            
+                                            <div className="search-actions">
+                                                <button className="search-button primary">
+                                                    <FaSearch /> Search
+                                                </button>
+                                                <button 
+                                                    className="clear-button"
+                                                    onClick={() => {
+                                                        setSearchQuery('');
+                                                        setFilters({
+                                                            fileTypes: [],
+                                                            dateRange: { start: '', end: '' },
+                                                            sizeRange: { min: '', max: '' },
+                                                            nameContains: ''
+                                                        });
+                                                    }}
+                                                >
+                                                    Clear All
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                         
                         <button 
                             className="toolbar-button" 

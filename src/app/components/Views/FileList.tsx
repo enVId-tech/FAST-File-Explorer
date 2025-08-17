@@ -12,7 +12,12 @@ import {
     FaFileExcel,
     FaFilePowerpoint,
     FaSpinner,
-    FaExclamationTriangle
+    FaExclamationTriangle,
+    FaFilter,
+    FaCalendarAlt,
+    FaRulerHorizontal,
+    FaFont,
+    FaTimes
 } from 'react-icons/fa';
 import { FileSystemItem, DirectoryContents, FolderMetadata } from '../../../shared/ipc-channels';
 import { formatFileSize } from '../../../shared/fileSizeUtils';
@@ -118,6 +123,13 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState<string>('');
+    const [showFilters, setShowFilters] = useState<boolean>(false);
+    const [filters, setFilters] = useState({
+        fileTypes: [] as string[],
+        dateRange: { start: '', end: '' },
+        sizeRange: { min: '', max: '' },
+        nameContains: ''
+    });
 
     // Context menu state
     const [contextMenu, setContextMenu] = useState<{
@@ -131,6 +143,139 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
         y: 0,
         item: null,
     });
+
+    // Reusable search bar component
+    const SearchBarWithFilters = () => (
+        <div className="file-search-bar">
+            <div className="search-input-container">
+                <input
+                    type="text"
+                    placeholder="Search in current folder..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="search-input"
+                />
+                <button 
+                    className={`filter-button ${showFilters ? 'active' : ''}`}
+                    onClick={() => setShowFilters(!showFilters)}
+                    title="Show filters"
+                >
+                    <FaFilter />
+                </button>
+            </div>
+            
+            {showFilters && (
+                <div className="filter-panel">
+                    <div className="filter-row">
+                        <label><FaFont /> Name contains:</label>
+                        <input 
+                            type="text"
+                            value={filters.nameContains}
+                            onChange={(e) => setFilters(prev => ({ ...prev, nameContains: e.target.value }))}
+                            placeholder="Text in filename..."
+                            className="filter-input"
+                        />
+                    </div>
+                    
+                    <div className="filter-row">
+                        <label><FaCalendarAlt /> Date range:</label>
+                        <div className="date-range">
+                            <input 
+                                type="date"
+                                value={filters.dateRange.start}
+                                onChange={(e) => setFilters(prev => ({ 
+                                    ...prev, 
+                                    dateRange: { ...prev.dateRange, start: e.target.value }
+                                }))}
+                                className="filter-input date-input"
+                            />
+                            <span>to</span>
+                            <input 
+                                type="date"
+                                value={filters.dateRange.end}
+                                onChange={(e) => setFilters(prev => ({ 
+                                    ...prev, 
+                                    dateRange: { ...prev.dateRange, end: e.target.value }
+                                }))}
+                                className="filter-input date-input"
+                            />
+                        </div>
+                    </div>
+                    
+                    <div className="filter-row">
+                        <label><FaRulerHorizontal /> Size range:</label>
+                        <div className="size-range">
+                            <input 
+                                type="text"
+                                value={filters.sizeRange.min}
+                                onChange={(e) => setFilters(prev => ({ 
+                                    ...prev, 
+                                    sizeRange: { ...prev.sizeRange, min: e.target.value }
+                                }))}
+                                placeholder="Min (e.g., 1MB)"
+                                className="filter-input size-input"
+                            />
+                            <span>to</span>
+                            <input 
+                                type="text"
+                                value={filters.sizeRange.max}
+                                onChange={(e) => setFilters(prev => ({ 
+                                    ...prev, 
+                                    sizeRange: { ...prev.sizeRange, max: e.target.value }
+                                }))}
+                                placeholder="Max (e.g., 100MB)"
+                                className="filter-input size-input"
+                            />
+                        </div>
+                    </div>
+                    
+                    <div className="filter-row">
+                        <label>File types:</label>
+                        <div className="file-type-checkboxes">
+                            {['Images', 'Documents', 'Videos', 'Audio', 'Archives', 'Code'].map(type => (
+                                <label key={type} className="checkbox-option">
+                                    <input 
+                                        type="checkbox"
+                                        checked={filters.fileTypes.includes(type)}
+                                        onChange={(e) => {
+                                            if (e.target.checked) {
+                                                setFilters(prev => ({ 
+                                                    ...prev, 
+                                                    fileTypes: [...prev.fileTypes, type]
+                                                }));
+                                            } else {
+                                                setFilters(prev => ({ 
+                                                    ...prev, 
+                                                    fileTypes: prev.fileTypes.filter(t => t !== type)
+                                                }));
+                                            }
+                                        }}
+                                    />
+                                    {type}
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+                    
+                    <div className="filter-actions">
+                        <button 
+                            className="clear-filters-button"
+                            onClick={() => {
+                                setFilters({
+                                    fileTypes: [],
+                                    dateRange: { start: '', end: '' },
+                                    sizeRange: { min: '', max: '' },
+                                    nameContains: ''
+                                });
+                            }}
+                        >
+                            Clear Filters
+                        </button>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
 
     // Check if an item is selected
     const isItemSelected = useCallback((item: FileSystemItem) => {
@@ -357,19 +502,90 @@ const loadDirectory = useCallback(async (path: string) => {
     // Memoized directory items for performance
     const directoryItems = useMemo(() => directoryContents?.items || [], [directoryContents]);
 
-    // Filtered items based on search term
-
+    // Filtered items based on search term and filters
     const filteredItems = useMemo(() => {
-        if (!searchTerm.trim()) {
-            return directoryItems;
+        let items = directoryItems;
+
+        // Apply search term filter
+        if (searchTerm.trim()) {
+            const searchLower = searchTerm.toLowerCase().trim();
+            items = items.filter(item =>
+                item.name.toLowerCase().includes(searchLower) ||
+                (item.extension && item.extension.toLowerCase().includes(searchLower))
+            );
         }
 
-        const searchLower = searchTerm.toLowerCase().trim();
-        return directoryItems.filter(item =>
-            item.name.toLowerCase().includes(searchLower) ||
-            (item.extension && item.extension.toLowerCase().includes(searchLower))
-        );
-    }, [directoryItems, searchTerm]);
+        // Apply name contains filter
+        if (filters.nameContains.trim()) {
+            const nameFilter = filters.nameContains.toLowerCase().trim();
+            items = items.filter(item =>
+                item.name.toLowerCase().includes(nameFilter)
+            );
+        }
+
+        // Apply file type filters
+        if (filters.fileTypes.length > 0) {
+            items = items.filter(item => {
+                if (item.type === 'directory') return filters.fileTypes.includes('Folders');
+                
+                const ext = item.extension?.toLowerCase();
+                const isImage = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.tiff'].includes(ext || '');
+                const isDocument = ['.doc', '.docx', '.pdf', '.txt', '.rtf', '.odt'].includes(ext || '');
+                const isVideo = ['.mp4', '.avi', '.mkv', '.mov', '.wmv', '.flv', '.webm'].includes(ext || '');
+                const isAudio = ['.mp3', '.wav', '.flac', '.aac', '.ogg', '.wma'].includes(ext || '');
+                const isArchive = ['.zip', '.rar', '.7z', '.tar', '.gz', '.bz2'].includes(ext || '');
+                const isCode = ['.js', '.ts', '.jsx', '.tsx', '.html', '.css', '.scss', '.json', '.xml', '.sql'].includes(ext || '');
+
+                return (
+                    (filters.fileTypes.includes('Images') && isImage) ||
+                    (filters.fileTypes.includes('Documents') && isDocument) ||
+                    (filters.fileTypes.includes('Videos') && isVideo) ||
+                    (filters.fileTypes.includes('Audio') && isAudio) ||
+                    (filters.fileTypes.includes('Archives') && isArchive) ||
+                    (filters.fileTypes.includes('Code') && isCode)
+                );
+            });
+        }
+
+        // Apply date range filter
+        if (filters.dateRange.start || filters.dateRange.end) {
+            items = items.filter(item => {
+                const itemDate = new Date(item.modified);
+                const startDate = filters.dateRange.start ? new Date(filters.dateRange.start) : null;
+                const endDate = filters.dateRange.end ? new Date(filters.dateRange.end) : null;
+
+                if (startDate && itemDate < startDate) return false;
+                if (endDate && itemDate > endDate) return false;
+                return true;
+            });
+        }
+
+        // Apply size range filter
+        if (filters.sizeRange.min || filters.sizeRange.max) {
+            items = items.filter(item => {
+                if (item.type === 'directory') return true; // Don't filter directories by size
+
+                const parseSize = (sizeStr: string): number => {
+                    if (!sizeStr) return 0;
+                    const units = { KB: 1024, MB: 1024 * 1024, GB: 1024 * 1024 * 1024 };
+                    const match = sizeStr.match(/^(\d+(?:\.\d+)?)\s*(KB|MB|GB)?$/i);
+                    if (!match) return 0;
+                    const value = parseFloat(match[1]);
+                    const unit = match[2]?.toUpperCase() as keyof typeof units;
+                    return value * (units[unit] || 1);
+                };
+
+                const minSize = parseSize(filters.sizeRange.min);
+                const maxSize = parseSize(filters.sizeRange.max);
+
+                if (minSize && item.size < minSize) return false;
+                if (maxSize && item.size > maxSize) return false;
+                return true;
+            });
+        }
+
+        return items;
+    }, [directoryItems, searchTerm, filters]);
 
     // Clear selection when clicking on empty space
     const handleBackgroundClick = useCallback((event: React.MouseEvent) => {
@@ -434,17 +650,48 @@ const loadDirectory = useCallback(async (path: string) => {
         const isSearching = searchTerm.trim().length > 0;
         const hasItems = directoryContents?.items && directoryContents.items.length > 0;
 
+        // Always render the view with search bar, even when empty
+        if (viewMode === 'list') {
+            const rowHeight = settings.compactMode ? 32 : 40;
+            return (
+                <div className="file-list-view" onClick={handleBackgroundClick}>
+                    <SearchBarWithFilters />
+                    <div className="file-list-header">
+                        <div className="file-list-column name-column">Name</div>
+                        <div className="file-list-column date-column">Date modified</div>
+                        <div className="file-list-column type-column">Type</div>
+                        <div className="file-list-column size-column">Size</div>
+                    </div>
+                    <div className="file-list-empty-content">
+                        <FaFolder className="empty-icon" />
+                        {isSearching && hasItems ? (
+                            <>
+                                <span>No files found matching "{searchTerm}"</span>
+                                <small>Try a different search term</small>
+                            </>
+                        ) : (
+                            <span>This folder is empty</span>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        // Grid view empty state
         return (
-            <div className="file-list-empty">
-                <FaFolder className="empty-icon" />
-                {isSearching && hasItems ? (
-                    <>
-                        <span>No files found matching "{searchTerm}"</span>
-                        <small>Try a different search term</small>
-                    </>
-                ) : (
-                    <span>This folder is empty</span>
-                )}
+            <div className="file-grid-view" onClick={handleBackgroundClick}>
+                <SearchBarWithFilters />
+                <div className="file-list-empty-content">
+                    <FaFolder className="empty-icon" />
+                    {isSearching && hasItems ? (
+                        <>
+                            <span>No files found matching "{searchTerm}"</span>
+                            <small>Try a different search term</small>
+                        </>
+                    ) : (
+                        <span>This folder is empty</span>
+                    )}
+                </div>
             </div>
         );
     }
@@ -454,16 +701,7 @@ const loadDirectory = useCallback(async (path: string) => {
         const rowHeight = settings.compactMode ? 32 : 40; // adjust height based on compact mode
         return (
             <div className="file-list-view" onClick={handleBackgroundClick}>
-                {/* Search bar */}
-                <div className="file-search-bar">
-                    <input
-                        type="text"
-                        placeholder="Search in current folder..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="search-input"
-                    />
-                </div>
+                <SearchBarWithFilters />
                 <div className="file-list-header">
                     <div className="file-list-column name-column">Name</div>
                     <div className="file-list-column date-column">Date modified</div>
@@ -513,16 +751,7 @@ const loadDirectory = useCallback(async (path: string) => {
     // Render file list in grid view
     return (
         <div className="file-grid-view" onClick={handleBackgroundClick}>
-            {/* Search bar */}
-            <div className="file-search-bar">
-                <input
-                    type="text"
-                    placeholder="Search in current folder..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="search-input"
-                />
-            </div>
+            <SearchBarWithFilters />
             <div className="file-grid-content">
                 {filteredItems.map((item) => (
                     <FileItem
