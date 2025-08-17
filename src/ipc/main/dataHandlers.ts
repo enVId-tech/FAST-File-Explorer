@@ -219,10 +219,41 @@ export default function initializeDataHandlers() {
             // shell.openPath is non-blocking and returns immediately
             const result = await shell.openPath(filePath);
 
+            // If shell.openPath fails (returns error string), try fallback methods
+            if (result !== '') {
+                console.log(`shell.openPath failed for ${filePath}, error: ${result}`);
+                
+                // Try opening with "Open with" dialog for unsupported file types
+                const { spawn } = require('child_process');
+                
+                if (process.platform === 'win32') {
+                    // Use Windows "Open with" dialog for unsupported file types
+                    spawn('rundll32.exe', ['shell32.dll,OpenAs_RunDLL', filePath], {
+                        detached: true,
+                        stdio: 'ignore'
+                    }).unref();
+                    return true;
+                } else if (process.platform === 'darwin') {
+                    // macOS fallback
+                    spawn('open', ['-a', 'Finder', filePath], {
+                        detached: true,
+                        stdio: 'ignore'
+                    }).unref();
+                    return true;
+                } else {
+                    // Linux fallback
+                    spawn('xdg-open', [filePath], {
+                        detached: true,
+                        stdio: 'ignore'
+                    }).unref();
+                    return true;
+                }
+            }
+
             // Return success status immediately (empty string = success)
             return result === '';
         } catch (error) {
-            // Minimal error handling for speed
+            console.error('Failed to open file:', error);
             return false;
         }
     });

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { FaHdd, FaDesktop, FaFolder, FaDownload, FaMusic, FaVideo, FaFileImage, FaSdCard, FaUsb, FaServer, FaCloud, FaNetworkWired, FaCog, FaBars, FaThLarge, FaExternalLinkAlt, FaGamepad, FaDatabase, FaTimes, FaChartPie, FaArchive, FaHardHat, FaSync } from 'react-icons/fa';
 import { useSettings } from '../../contexts/SettingsContext';
 import { formatFileSize } from '../../../shared/fileSizeUtils';
@@ -68,6 +68,44 @@ export const ThisPCView = React.memo<ThisPCViewProps>(({
     networkDevices: propNetworkDevices
 }) => {
     const { settings } = useSettings();
+    const [selectedDrive, setSelectedDrive] = useState<string | null>(null);
+    const [knownFolderPaths, setKnownFolderPaths] = useState<{[key: string]: string}>({});
+    const [loadingKnownFolders, setLoadingKnownFolders] = useState(true);
+
+    // Load known folder paths from settings
+    useEffect(() => {
+        const loadKnownFolders = async () => {
+            try {
+                setLoadingKnownFolders(true);
+                const folders = {
+                    desktop: await window.electronAPI.fs.getKnownFolder('desktop'),
+                    documents: await window.electronAPI.fs.getKnownFolder('documents'),
+                    downloads: await window.electronAPI.fs.getKnownFolder('downloads'),
+                    pictures: await window.electronAPI.fs.getKnownFolder('pictures'),
+                    music: await window.electronAPI.fs.getKnownFolder('music'),
+                    videos: await window.electronAPI.fs.getKnownFolder('videos'),
+                    home: await window.electronAPI.fs.getKnownFolder('home')
+                };
+                setKnownFolderPaths(folders);
+            } catch (error) {
+                console.error('Failed to load known folders:', error);
+                // Fallback to hardcoded paths if known folders fail
+                setKnownFolderPaths({
+                    desktop: 'C:\\Users\\User\\Desktop',
+                    documents: 'C:\\Users\\User\\Documents',
+                    downloads: 'C:\\Users\\User\\Downloads',
+                    pictures: 'C:\\Users\\User\\Pictures',
+                    music: 'C:\\Users\\User\\Music',
+                    videos: 'C:\\Users\\User\\Videos',
+                    home: 'C:\\Users\\User'
+                });
+            } finally {
+                setLoadingKnownFolders(false);
+            }
+        };
+
+        loadKnownFolders();
+    }, [settings.knownFolders]); // Reload when known folders settings change
 
     // Convert actual drive data to DriveInfo format
     const convertActualDrives = (actualDrives: any[] = []): DriveInfo[] => {
@@ -151,44 +189,52 @@ export const ThisPCView = React.memo<ThisPCViewProps>(({
     // Use actual or default data
     const actualDrives = propDrives ? convertActualDrives(propDrives) : [];
     const networkDevices = propNetworkDevices || getDefaultNetworkDevices();
-    const dynamicQuickAccessItems = propQuickAccess || [
-        {
-            name: 'Desktop',
-            path: 'C:\\Users\\User\\Desktop',
-            icon: <FaDesktop style={{ color: '#0078D4' }} />,
-            description: 'Access your desktop files and shortcuts'
-        },
-        {
-            name: 'Documents',
-            path: 'C:\\Users\\User\\Documents',
-            icon: <FaFolder style={{ color: '#FDB900' }} />,
-            description: 'Your documents and important files'
-        },
-        {
-            name: 'Downloads',
-            path: 'C:\\Users\\User\\Downloads',
-            icon: <FaDownload style={{ color: '#107C10' }} />,
-            description: 'Files downloaded from the internet'
-        },
-        {
-            name: 'Pictures',
-            path: 'C:\\Users\\User\\Pictures',
-            icon: <FaFileImage style={{ color: '#E74856' }} />,
-            description: 'Photos and image files'
-        },
-        {
-            name: 'Music',
-            path: 'C:\\Users\\User\\Music',
-            icon: <FaMusic style={{ color: '#FF8C00' }} />,
-            description: 'Audio files and music library'
-        },
-        {
-            name: 'Videos',
-            path: 'C:\\Users\\User\\Videos',
-            icon: <FaVideo style={{ color: '#8B46C1' }} />,
-            description: 'Video files and movies'
+    const dynamicQuickAccessItems = useMemo(() => {
+        if (propQuickAccess) return propQuickAccess;
+        
+        if (loadingKnownFolders) {
+            return []; // Return empty array while loading
         }
-    ];
+
+        return [
+            {
+                name: 'Desktop',
+                path: knownFolderPaths.desktop || 'C:\\Users\\User\\Desktop',
+                icon: <FaDesktop style={{ color: '#0078D4' }} />,
+                description: 'Access your desktop files and shortcuts'
+            },
+            {
+                name: 'Documents',
+                path: knownFolderPaths.documents || 'C:\\Users\\User\\Documents',
+                icon: <FaFolder style={{ color: '#FDB900' }} />,
+                description: 'Your documents and important files'
+            },
+            {
+                name: 'Downloads',
+                path: knownFolderPaths.downloads || 'C:\\Users\\User\\Downloads',
+                icon: <FaDownload style={{ color: '#107C10' }} />,
+                description: 'Files downloaded from the internet'
+            },
+            {
+                name: 'Pictures',
+                path: knownFolderPaths.pictures || 'C:\\Users\\User\\Pictures',
+                icon: <FaFileImage style={{ color: '#E74856' }} />,
+                description: 'Photos and image files'
+            },
+            {
+                name: 'Music',
+                path: knownFolderPaths.music || 'C:\\Users\\User\\Music',
+                icon: <FaMusic style={{ color: '#FF8C00' }} />,
+                description: 'Audio files and music library'
+            },
+            {
+                name: 'Videos',
+                path: knownFolderPaths.videos || 'C:\\Users\\User\\Videos',
+                icon: <FaVideo style={{ color: '#8B46C1' }} />,
+                description: 'Video files and movies'
+            }
+        ];
+    }, [propQuickAccess, knownFolderPaths, loadingKnownFolders]);
     const [drives, setDrives] = useState<DriveInfo[]>([
         {
             name: 'Local Disk',
@@ -278,7 +324,6 @@ export const ThisPCView = React.memo<ThisPCViewProps>(({
     ]);
 
     const [visualizationMode, setVisualizationMode] = useState<'bar' | 'pie'>('bar');
-    const [selectedDrive, setSelectedDrive] = useState<DriveInfo | null>(null);
     const [driveViewMode, setDriveViewMode] = useState<'large' | 'medium' | 'small'>('large');
     const [showIconPicker, setShowIconPicker] = useState<{ driveIndex: number; show: boolean }>({ driveIndex: -1, show: false });
 
@@ -488,7 +533,7 @@ export const ThisPCView = React.memo<ThisPCViewProps>(({
                     height={radius * 2}
                     width={radius * 2}
                     className="pie-chart"
-                    onMouseEnter={() => setSelectedDrive(drive)}
+                    onMouseEnter={() => setSelectedDrive(drive.letter || drive.name)}
                     onMouseLeave={() => setSelectedDrive(null)}
                     viewBox={`0 0 ${radius * 2} ${radius * 2}`}
                 >
@@ -520,7 +565,7 @@ export const ThisPCView = React.memo<ThisPCViewProps>(({
                     <div className="pie-chart-percentage">{drive.usagePercentage}%</div>
                     <div className="pie-chart-label">Used</div>
                 </div>
-                {selectedDrive?.letter === drive.letter && (
+                {selectedDrive === (drive.letter || drive.name) && (
                     <div className="drive-stats-tooltip">
                         <div className="tooltip-row">
                             <span className="stat-label">Used:</span>

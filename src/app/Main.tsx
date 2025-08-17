@@ -665,15 +665,19 @@ const Main = React.memo(function Main(): React.JSX.Element {
     const handleCloseSettings = useCallback(() => setIsSettingsOpen(false), []);
 
     const handleShowSetup = useCallback(() => {
-        console.log('handleShowSetup called!');
         setIsSetupOpen(true);
     }, []);
     const handleCloseSetup = useCallback(() => setIsSetupOpen(false), []);
-    const handleCompleteSetup = useCallback(() => {
+    const handleCompleteSetup = useCallback((settings?: any) => {
+        console.log('Setup completed with settings:', settings);
         setIsSetupOpen(false);
         setHasCompletedSetup(true);
         try {
             localStorage.setItem('fast-file-explorer-setup-completed', 'true');
+            // Save settings if provided
+            if (settings) {
+                localStorage.setItem('fast-file-explorer-setup-settings', JSON.stringify(settings));
+            }
         } catch (error) {
             console.warn('Failed to save setup completion status:', error);
         }

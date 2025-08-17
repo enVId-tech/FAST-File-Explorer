@@ -403,6 +403,7 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
 
     // Format file size using user's preferred unit system
     const formatFileSizeWithSettings = useCallback((size: number) => {
+        if (size === -1) return 'Calculating...'; // Loading state
         if (size === 0) return '-';
         return formatFileSize(size, fileSizeUnit, 1);
     }, [fileSizeUnit]);
@@ -500,30 +501,67 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
         try {
             const contents = await window.electronAPI.fs.getDirectoryContents(path, listOptions);
 
-            // Process directory items and update folder sizes for directories
-            const itemsWithMetadata = await Promise.all(
-                contents.items.map(async (item: FileSystemItem) => {
-                    if (item.type === 'directory') {
-                        try {
-                            const folderMetadata = await window.electronAPI.fs.getFolderMetadata(item.path);
-                            if (folderMetadata && typeof folderMetadata.totalSize === 'number') {
-                                item.size = folderMetadata.totalSize;
-                            }
-                        } catch (error) {
-                            // Ignore metadata errors for individual folders
-                        }
-                    }
-                    return item;
-                })
-            );
+            // Show files immediately for better perceived performance
+            setDirectoryContents(contents);
+            setLoading(false);
 
-            setDirectoryContents({ ...contents, items: itemsWithMetadata });
+            // Load folder metadata asynchronously without blocking the UI
+            const folderItems = contents.items.filter(item => item.type === 'directory');
+            if (folderItems.length > 0) {
+                // Process folder metadata in batches to avoid overwhelming the system
+                const BATCH_SIZE = 5;
+                const batchPromises: Promise<unknown>[] = [];
+
+                for (let i = 0; i < folderItems.length; i += BATCH_SIZE) {
+                    const batch = folderItems.slice(i, i + BATCH_SIZE);
+                    
+                    const batchPromise = Promise.all(
+                        batch.map(async (item: FileSystemItem) => {
+                            try {
+                                const folderMetadata = await window.electronAPI.fs.getFolderMetadata(item.path);
+                                if (folderMetadata && typeof folderMetadata.totalSize === 'number') {
+                                    // Update the specific item with metadata
+                                    setDirectoryContents(prev => {
+                                        if (!prev) return prev;
+                                        const updatedItems = prev.items.map(prevItem => 
+                                            prevItem.path === item.path 
+                                                ? { ...prevItem, size: folderMetadata.totalSize }
+                                                : prevItem
+                                        );
+                                        return { ...prev, items: updatedItems };
+                                    });
+                                }
+                            } catch (error) {
+                                // Show placeholder size for folders that failed to load metadata
+                                setDirectoryContents(prev => {
+                                    if (!prev) return prev;
+                                    const updatedItems = prev.items.map(prevItem => 
+                                        prevItem.path === item.path 
+                                            ? { ...prevItem, size: -1 } // -1 indicates loading failed
+                                            : prevItem
+                                    );
+                                    return { ...prev, items: updatedItems };
+                                });
+                            }
+                        })
+                    ).then(() => {
+                        // Small delay between batches to prevent UI blocking
+                        return new Promise(resolve => setTimeout(resolve, 50));
+                    });
+
+                    batchPromises.push(batchPromise);
+                }
+
+                // Process all batches
+                Promise.all(batchPromises).catch(error => {
+                    console.warn('Some folder metadata could not be loaded:', error);
+                });
+            }
 
         } catch (err) {
             console.error('Failed to load directory:', err);
             setError(err instanceof Error ? err.message : 'Failed to load directory');
             setDirectoryContents(null);
-        } finally {
             setLoading(false);
         }
     }, [listOptions]);
