@@ -171,10 +171,10 @@
     padding: 8px 12px;
     border-bottom: 1px solid var(--border-color-light);
     cursor: pointer;
-    transition: background-color var(--transition-duration, 0.2s) ease;
+    transition: background-color 0.1s ease; /* Faster transition for responsiveness */
     font-size: 13px;
     height: 40px; /* fixed height to match virtualization rowHeight */
-    /* Performance optimizations */
+    /* Performance optimizations for fast interactions */
     contain: layout style;
     will-change: background-color;
     
@@ -197,6 +197,7 @@
 
 .file-list-item:hover {
     background: var(--background-hover);
+    transition: background-color 0.05s ease; /* Even faster on hover for immediate feedback */
 }
 
 .file-list-item.selected {
@@ -297,6 +298,7 @@
     border-color: var(--border-color);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.1s ease; /* Faster transition for grid items */
 }
 
 .file-grid-item.selected {

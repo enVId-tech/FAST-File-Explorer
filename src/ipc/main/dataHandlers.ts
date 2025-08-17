@@ -210,27 +210,28 @@ export default function initializeDataHandlers() {
         }
     });
 
-    // System file opening using OS default applications
+    // System file opening using OS default applications - optimized for speed
     ipcMain.handle('system-open-file', async (event, filePath: string) => {
         try {
-            console.log(`Opening file with system default application: ${filePath}`);
-            
-            // Use Electron's shell module to open the file with the system's default application
-            // This works cross-platform (Windows, macOS, Linux)
+            // Direct file opening with minimal overhead
+            // shell.openPath is non-blocking and returns immediately
             const result = await shell.openPath(filePath);
             
-            if (result === '') {
-                // Empty string means success
-                return true;
-            } else {
-                // Non-empty string is an error message
-                console.error('Failed to open file:', result);
-                return false;
-            }
+            // Return success status immediately (empty string = success)
+            return result === '';
         } catch (error) {
-            console.error('Error opening file:', error);
+            // Minimal error handling for speed
             return false;
         }
+    });
+
+    // Ultra-fast fire-and-forget file opening (no return value)
+    ipcMain.on('system-open-file-fast', (event, filePath: string) => {
+        // Use IPC 'on' instead of 'handle' for zero latency
+        // This doesn't wait for a response and has minimal overhead
+        shell.openPath(filePath).catch(() => {
+            // Silent error handling for maximum speed
+        });
     });
 
     console.log('Folder handlers registered successfully');

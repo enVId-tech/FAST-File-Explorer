@@ -79,6 +79,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     system: {
         platform: process.platform,
         pathSeparator: process.platform === 'win32' ? '\\' : '/',
-        openFile: (filePath: string) => ipcRenderer.invoke('system-open-file', filePath)
+        openFile: (filePath: string) => ipcRenderer.invoke('system-open-file', filePath),
+        openFileFast: (filePath: string) => ipcRenderer.send('system-open-file-fast', filePath)
     }
 });

@@ -53,6 +53,7 @@ declare global {
         platform: string;
         pathSeparator: string;
         openFile: (filePath: string) => Promise<boolean>;
+        openFileFast: (filePath: string) => void; // Fire-and-forget for maximum speed
       },
       // Settings management
       settings: {
