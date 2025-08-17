@@ -61,6 +61,7 @@ export interface IpcRendererToMain {
     'fs-get-parent-directory': (dirPath: string) => Promise<string | null>;
     'fs-get-known-folder': (folderType: string) => Promise<string>;
     'fs-get-folder-metadata': (folderPath: string) => Promise<FolderMetadata>;
+    'system-open-file': (filePath: string) => Promise<boolean>;
 }
 
 // Define Tab interface

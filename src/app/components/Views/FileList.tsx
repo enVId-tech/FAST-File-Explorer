@@ -381,12 +381,24 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
     }, [selectedFiles, isItemSelected, onSelectionChange, onFileSelect]);
 
     // Handle item navigation (double click)
-    const handleItemNavigation = useCallback((item: FileSystemItem) => {
+    const handleItemNavigation = useCallback(async (item: FileSystemItem) => {
         if (item.type === 'directory') {
             onNavigate?.(item.path);
         } else {
-            // For files, you might want to open them or do something else
-            console.log('Double-clicked file:', item.name);
+            // For files, open with system default application
+            try {
+                console.log('Opening file with system default application:', item.name);
+                const success = await window.electronAPI.system.openFile(item.path);
+                if (!success) {
+                    console.error('Failed to open file - no default application or access denied:', item.name);
+                    // In a production app, you might want to show a toast notification here
+                } else {
+                    console.log('Successfully opened file:', item.name);
+                }
+            } catch (error) {
+                console.error('Error opening file:', error);
+                // In a production app, you might want to show a toast notification here
+            }
         }
     }, [onNavigate]);
 
@@ -409,27 +421,27 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
             // Check if this is a drive root (e.g., C:\, D:\, etc.)
             const isDriveRoot = /^[A-Z]:\\?$/i.test(item.path);
             if (isDriveRoot) {
-                // Try to determine drive type based on common patterns
+                // Try to determine drive type based on common patterns and drive letter
                 const driveLetter = item.path.charAt(0).toLowerCase();
                 
                 // System drive (usually C:)
                 if (driveLetter === 'c') {
-                    return <FaHdd className="file-icon drive-icon system-drive" />;
+                    return <FaHdd className="file-icon drive-icon system-drive" title="System Drive" />;
                 }
                 
-                // Check if it's a removable drive or USB
-                // This is a simplified check - you might want to enhance this with actual drive info
-                const driveData = item as any; // Cast to access potential drive metadata
-                if (driveData.flags?.isUSB || driveData.flags?.isRemovable) {
-                    return <FaUsb className="file-icon drive-icon usb-drive" />;
+                // Common removable drive patterns (D:, E:, F:, etc. are often removable)
+                // This is a simplified heuristic - in a real implementation you might want to
+                // get actual drive information from the backend
+                if (['d', 'e', 'f', 'g', 'h'].includes(driveLetter)) {
+                    return <FaUsb className="file-icon drive-icon usb-drive" title="Removable Drive" />;
                 }
                 
-                // Default drive icon
-                return <FaHdd className="file-icon drive-icon" />;
+                // Default drive icon for other drives
+                return <FaHdd className="file-icon drive-icon" title="Local Drive" />;
             }
             
             // Regular folder
-            return <FaFolder className="file-icon directory-icon" />;
+            return <FaFolder className="file-icon directory-icon" title="Folder" />;
         }
         
         const ext = item.extension?.toLowerCase();
@@ -440,23 +452,23 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
             case '.gif':
             case '.webp':
             case '.svg':
-                return <FaFileImage className="file-icon image-icon" />;
+                return <FaFileImage className="file-icon image-icon" title="Image File" />;
             case '.mp4':
             case '.avi':
             case '.mkv':
             case '.mov':
             case '.wmv':
-                return <FaFileVideo className="file-icon video-icon" />;
+                return <FaFileVideo className="file-icon video-icon" title="Video File" />;
             case '.mp3':
             case '.wav':
             case '.flac':
             case '.aac':
-                return <FaFileAudio className="file-icon audio-icon" />;
+                return <FaFileAudio className="file-icon audio-icon" title="Audio File" />;
             case '.zip':
             case '.rar':
             case '.7z':
             case '.tar':
-                return <FaFileArchive className="file-icon archive-icon" />;
+                return <FaFileArchive className="file-icon archive-icon" title="Archive File" />;
             case '.js':
             case '.ts':
             case '.jsx':
@@ -465,20 +477,20 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
             case '.css':
             case '.scss':
             case '.json':
-                return <FaFileCode className="file-icon code-icon" />;
+                return <FaFileCode className="file-icon code-icon" title="Code File" />;
             case '.pdf':
-                return <FaFilePdf className="file-icon pdf-icon" />;
+                return <FaFilePdf className="file-icon pdf-icon" title="PDF Document" />;
             case '.doc':
             case '.docx':
-                return <FaFileWord className="file-icon word-icon" />;
+                return <FaFileWord className="file-icon word-icon" title="Word Document" />;
             case '.xls':
             case '.xlsx':
-                return <FaFileExcel className="file-icon excel-icon" />;
+                return <FaFileExcel className="file-icon excel-icon" title="Excel Spreadsheet" />;
             case '.ppt':
             case '.pptx':
-                return <FaFilePowerpoint className="file-icon powerpoint-icon" />;
+                return <FaFilePowerpoint className="file-icon powerpoint-icon" title="PowerPoint Presentation" />;
             default:
-                return <FaFile className="file-icon default-icon" />;
+                return <FaFile className="file-icon default-icon" title="File" />;
         }
     }, []);
 

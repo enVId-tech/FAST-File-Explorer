@@ -78,6 +78,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // System information
     system: {
         platform: process.platform,
-        pathSeparator: process.platform === 'win32' ? '\\' : '/'
+        pathSeparator: process.platform === 'win32' ? '\\' : '/',
+        openFile: (filePath: string) => ipcRenderer.invoke('system-open-file', filePath)
     }
 });

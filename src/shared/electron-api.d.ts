@@ -48,6 +48,12 @@ declare global {
         getKnownFolder: (folderType: string) => Promise<string>;
         getFolderMetadata: (folderPath: string) => Promise<FolderMetadata>;
       },
+      // System operations
+      system: {
+        platform: string;
+        pathSeparator: string;
+        openFile: (filePath: string) => Promise<boolean>;
+      },
       // Settings management
       settings: {
         getAll: () => Promise<AppSettings>;
@@ -59,11 +65,6 @@ declare global {
         validateFolder: (folderPath: string) => Promise<{valid: boolean, error?: string}>;
         update: (key: keyof AppSettings, value: any) => Promise<{success: boolean}>;
         getPath: () => Promise<string>;
-      },
-      // System information
-      system: {
-        platform: string;
-        pathSeparator: string;
       }
     };
   }

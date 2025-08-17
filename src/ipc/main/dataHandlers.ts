@@ -1,4 +1,4 @@
-import { ipcMain } from 'electron';
+import { ipcMain, shell } from 'electron';
 import path from 'path';
 import drivelist from 'drivelist';
 import os from 'os';
@@ -207,6 +207,29 @@ export default function initializeDataHandlers() {
             console.error('Failed to fetch drives:', error);
             // Return cached drives or empty array on error
             return { driveDetails: driveCache.length > 0 ? driveCache : [] };
+        }
+    });
+
+    // System file opening using OS default applications
+    ipcMain.handle('system-open-file', async (event, filePath: string) => {
+        try {
+            console.log(`Opening file with system default application: ${filePath}`);
+            
+            // Use Electron's shell module to open the file with the system's default application
+            // This works cross-platform (Windows, macOS, Linux)
+            const result = await shell.openPath(filePath);
+            
+            if (result === '') {
+                // Empty string means success
+                return true;
+            } else {
+                // Non-empty string is an error message
+                console.error('Failed to open file:', result);
+                return false;
+            }
+        } catch (error) {
+            console.error('Error opening file:', error);
+            return false;
         }
     });
 

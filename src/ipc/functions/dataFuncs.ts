@@ -189,9 +189,9 @@ export async function listDirectoryContents(dirPath: string, options: {
             items.push(...batchResults.filter((item): item is FileSystemItem => item !== null));
         }
 
-        // Sort items
+        // Windows-style sorting (matches Windows File Explorer default behavior)
         items.sort((a, b) => {
-            // Directories first
+            // Always sort directories before files (Windows default)
             if (a.type !== b.type) {
                 return a.type === 'directory' ? -1 : 1;
             }
@@ -199,12 +199,25 @@ export async function listDirectoryContents(dirPath: string, options: {
             let comparison = 0;
             switch (sortBy) {
                 case 'name':
-                    comparison = a.name.localeCompare(b.name, undefined, { numeric: true });
+                    // Windows uses natural sorting (alphanumeric) that handles numbers correctly
+                    comparison = a.name.localeCompare(b.name, undefined, { 
+                        numeric: true, 
+                        sensitivity: 'base' // Case-insensitive
+                    });
                     break;
                 case 'size':
-                    comparison = a.size - b.size;
+                    // For directories, fall back to name sorting since size isn't meaningful
+                    if (a.type === 'directory' && b.type === 'directory') {
+                        comparison = a.name.localeCompare(b.name, undefined, { 
+                            numeric: true, 
+                            sensitivity: 'base' 
+                        });
+                    } else {
+                        comparison = a.size - b.size;
+                    }
                     break;
                 case 'modified':
+                    // Sort by modification date
                     comparison = a.modified.getTime() - b.modified.getTime();
                     break;
             }
