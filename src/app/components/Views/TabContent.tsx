@@ -130,10 +130,17 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
 
     // Get items for details panel based on current selection
     const getDetailsPanelItems = (): FileSystemItem[] => {
+        // Always prioritize actual file/folder selections over drive hover
+        if (selectedFiles.length > 0) {
+            return selectedFiles;
+        }
+        
+        // Only show drive info if no files are selected and a drive is hovered
         if (hoveredDrive) {
             return [driveToFileSystemItem(hoveredDrive)];
         }
-        return selectedFiles;
+        
+        return [];
     };
 
     const handleDriveHover = (drive: Drive) => {
