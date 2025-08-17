@@ -96,7 +96,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
     
     // File browser state
     const [currentPath, setCurrentPath] = useState<string>('');
-    const [selectedFile, setSelectedFile] = useState<FileSystemItem | null>(null);
+    const [selectedFiles, setSelectedFiles] = useState<FileSystemItem[]>([]);
     
     // Navigation history
     const [navigationHistory, setNavigationHistory] = useState<string[]>([]);
@@ -108,50 +108,32 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
     const [isResizingSidebar, setIsResizingSidebar] = useState(false);
     const [isResizingDetails, setIsResizingDetails] = useState(false);
 
-    // Convert drive to FileItem for details panel
-    const driveToFileItem = (drive: Drive): FileItem => {
-        const formatBytes = (bytes: number): string => {
-            if (bytes === 0) return '0 B';
-            const k = 1024;
-            const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-        };
-
-        const driveType = drive.flags?.isRemovable 
-            ? (drive.flags?.isUSB ? 'USB Drive' : 'Removable Drive')
-            : drive.flags?.isSystem 
-            ? 'System Drive' 
-            : 'Local Disk';
-
-        const usagePercentage = drive.total > 0 ? ((drive.used / drive.total) * 100).toFixed(1) : '0';
-        const description = `${driveType} with ${formatBytes(drive.total)} total capacity. ${formatBytes(drive.available)} available space (${usagePercentage}% used).`;
-        
-        const tags = [];
-        if (drive.flags?.isSystem) tags.push('System');
-        if (drive.flags?.isRemovable) tags.push('Removable');
-        if (drive.flags?.isUSB) tags.push('USB');
-        if (drive.flags?.isReadOnly) tags.push('Read-Only');
-        if (drive.flags?.isSCSI) tags.push('SCSI');
-        
+    // Convert drive to FileSystemItem for details panel
+    const driveToFileSystemItem = (drive: Drive): FileSystemItem => {
         return {
             name: `${drive.driveName} (${drive.drivePath})`,
-            type: 'folder' as const,
-            size: formatBytes(drive.total),
-            dateModified: new Date().toLocaleString(),
-            dateCreated: 'System Drive',
-            owner: 'System',
-            permissions: drive.flags?.isReadOnly ? 'Read Only' : 'Full Control',
-            description,
-            tags: tags.length > 0 ? tags : ['Drive'],
-            icon: <FaHdd />,
-            // Add drive-specific data for details panel
-            driveData: {
-                available: formatBytes(drive.available),
-                used: formatBytes(drive.used),
-                usagePercentage
+            path: drive.drivePath,
+            type: 'directory' as const,
+            size: drive.total,
+            modified: new Date(),
+            created: new Date(),
+            extension: undefined,
+            isHidden: false,
+            isSystem: drive.flags?.isSystem || false,
+            permissions: {
+                read: true,
+                write: !drive.flags?.isReadOnly,
+                execute: true
             }
         };
+    };
+
+    // Get items for details panel based on current selection
+    const getDetailsPanelItems = (): FileSystemItem[] => {
+        if (hoveredDrive) {
+            return [driveToFileSystemItem(hoveredDrive)];
+        }
+        return selectedFiles;
     };
 
     const handleDriveHover = (drive: Drive) => {
@@ -280,9 +262,14 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
         navigateToPath(path);
     };
 
-    const handleFileSelect = (file: FileSystemItem) => {
-        setSelectedFile(file);
-        console.log('File selected:', file);
+    const handleFileSelect = (files: FileSystemItem | FileSystemItem[]) => {
+        const fileArray = Array.isArray(files) ? files : [files];
+        setSelectedFiles(fileArray);
+        console.log('Files selected:', fileArray);
+    };
+
+    const handleSelectionChange = (files: FileSystemItem[]) => {
+        setSelectedFiles(files);
     };
 
     const handleDirectorySelect = (directory: FileSystemItem) => {
@@ -293,10 +280,10 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
     const handleSidebarNavigation = async (view: string, itemName: string) => {
         if (view === 'thispc') {
             setCurrentView('thispc');
-            setSelectedFile(null);
+            setSelectedFiles([]);
         } else if (view === 'recents') {
             setCurrentView('recents');
-            setSelectedFile(null);
+            setSelectedFiles([]);
         } else {
             setCurrentView('folder');
             // Navigate to the selected folder
@@ -992,7 +979,8 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                                 viewMode={viewMode as 'list' | 'grid'}
                                 onNavigate={handleFileNavigation}
                                 onFileSelect={handleFileSelect}
-                                selectedFile={selectedFile}
+                                selectedFiles={selectedFiles}
+                                onSelectionChange={handleSelectionChange}
                             />
                         )}
                     </div>
@@ -1012,7 +1000,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                         style={{ width: showDetailsPanel ? `${detailsPanelWidth}px` : '0px', minWidth: showDetailsPanel ? '250px' : '0px', maxWidth: '600px' }}
                     >
                         <DetailsPanel 
-                            selectedItem={hoveredDrive ? driveToFileItem(hoveredDrive) : selectedItem} 
+                            selectedItems={getDetailsPanelItems()} 
                             isVisible={showDetailsPanel} 
                         />
                     </div>

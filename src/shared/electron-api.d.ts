@@ -1,4 +1,4 @@
-import { DirectoryContents, DirectoryListOptions } from './ipc-channels';
+import { DirectoryContents, DirectoryListOptions, FolderMetadata } from './ipc-channels';
 
 export {};
 declare global {
@@ -46,6 +46,7 @@ declare global {
         directoryExists: (dirPath: string) => Promise<boolean>;
         getParentDirectory: (dirPath: string) => Promise<string | null>;
         getKnownFolder: (folderType: string) => Promise<string>;
+        getFolderMetadata: (folderPath: string) => Promise<FolderMetadata>;
       },
       // Settings management
       settings: {

@@ -1,20 +1,20 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { 
-    FaFolder, 
-    FaFile, 
-    FaFileImage, 
-    FaFileVideo, 
-    FaFileAudio, 
-    FaFileArchive, 
-    FaFileCode, 
-    FaFilePdf, 
-    FaFileWord, 
-    FaFileExcel, 
+import {
+    FaFolder,
+    FaFile,
+    FaFileImage,
+    FaFileVideo,
+    FaFileAudio,
+    FaFileArchive,
+    FaFileCode,
+    FaFilePdf,
+    FaFileWord,
+    FaFileExcel,
     FaFilePowerpoint,
     FaSpinner,
     FaExclamationTriangle
 } from 'react-icons/fa';
-import { FileSystemItem, DirectoryContents } from '../../../shared/ipc-channels';
+import { FileSystemItem, DirectoryContents, FolderMetadata } from '../../../shared/ipc-channels';
 import { formatFileSize } from '../../../shared/fileSizeUtils';
 import { useSettings } from '../../contexts/SettingsContext';
 import { CustomContextMenu } from '../CustomContextMenu/CustomContextMenu';
@@ -25,15 +25,16 @@ interface FileListProps {
     currentPath: string;
     viewMode: 'list' | 'grid';
     onNavigate?: (path: string) => void;
-    onFileSelect?: (file: FileSystemItem) => void;
-    selectedFile?: FileSystemItem | null;
+    onFileSelect?: (file: FileSystemItem | FileSystemItem[]) => void;
+    selectedFiles?: FileSystemItem[];
+    onSelectionChange?: (files: FileSystemItem[]) => void;
 }
 
 // Memoized FileItem component for better performance
 const FileItem = React.memo<{
     item: FileSystemItem;
     isSelected: boolean;
-    onClick: (item: FileSystemItem) => void;
+    onClick: (item: FileSystemItem, event?: React.MouseEvent) => void;
     onDoubleClick: (item: FileSystemItem) => void;
     onContextMenu: (event: React.MouseEvent, item: FileSystemItem) => void;
     viewMode: 'list' | 'grid';
@@ -43,17 +44,17 @@ const FileItem = React.memo<{
     showFileExtensions: boolean;
     compactMode: boolean;
 }>(({ item, isSelected, onClick, onDoubleClick, onContextMenu, viewMode, getFileIcon, formatFileSize, formatDate, showFileExtensions, compactMode }) => {
-    
+
     // Format file name based on settings
     const displayName = React.useMemo(() => {
         if (item.type === 'directory') {
             return item.name; // Always show full name for directories
         }
-        
+
         if (showFileExtensions || !item.extension) {
             return item.name; // Show full name if extensions enabled or no extension
         }
-        
+
         // Hide extension: remove the last dot and everything after
         const lastDotIndex = item.name.lastIndexOf('.');
         return lastDotIndex > 0 ? item.name.substring(0, lastDotIndex) : item.name;
@@ -63,7 +64,7 @@ const FileItem = React.memo<{
         return (
             <div
                 className={`file-list-item ${isSelected ? 'selected' : ''} ${compactMode ? 'compact' : ''}`}
-                onClick={() => onClick(item)}
+                onClick={(e) => onClick(item, e)}
                 onDoubleClick={() => onDoubleClick(item)}
                 onContextMenu={(e) => onContextMenu(e, item)}
             >
@@ -80,7 +81,7 @@ const FileItem = React.memo<{
                     {item.type === 'directory' ? 'File folder' : item.extension || 'File'}
                 </div>
                 <div className="file-list-column size-column">
-                    {item.type === 'directory' ? '' : formatFileSize(item.size)}
+                    {item.size ? formatFileSize(item.size) : '0 B'}
                 </div>
             </div>
         );
@@ -89,7 +90,7 @@ const FileItem = React.memo<{
     return (
         <div
             className={`file-grid-item ${isSelected ? 'selected' : ''} ${compactMode ? 'compact' : ''}`}
-            onClick={() => onClick(item)}
+            onClick={(e) => onClick(item, e)}
             onDoubleClick={() => onDoubleClick(item)}
             onContextMenu={(e) => onContextMenu(e, item)}
         >
@@ -101,7 +102,7 @@ const FileItem = React.memo<{
             </div>
             <div className="file-grid-details">
                 <span className="file-grid-size">
-                    {item.type === 'directory' ? '' : formatFileSize(item.size)}
+                    {item.size ? formatFileSize(item.size) : '0 B'}
                 </span>
                 <span className="file-grid-date">
                     {formatDate(item.modified)}
@@ -111,13 +112,13 @@ const FileItem = React.memo<{
     );
 });
 
-export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNavigate, onFileSelect, selectedFile }) => {
+export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNavigate, onFileSelect, selectedFiles = [], onSelectionChange }) => {
     const { settings } = useSettings();
     const [directoryContents, setDirectoryContents] = useState<DirectoryContents | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState<string>('');
-    
+
     // Context menu state
     const [contextMenu, setContextMenu] = useState<{
         visible: boolean;
@@ -130,6 +131,61 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
         y: 0,
         item: null,
     });
+
+    // Check if an item is selected
+    const isItemSelected = useCallback((item: FileSystemItem) => {
+        return selectedFiles.some(selected => selected.path === item.path);
+    }, [selectedFiles]);
+
+    // Handle item selection (single click)
+    const handleItemSelection = useCallback((item: FileSystemItem, event?: React.MouseEvent) => {
+        if (!onSelectionChange) return;
+
+        let newSelection: FileSystemItem[];
+
+        if (event?.ctrlKey || event?.metaKey) {
+            // Ctrl/Cmd click - toggle selection
+            if (isItemSelected(item)) {
+                newSelection = selectedFiles.filter(selected => selected.path !== item.path);
+            } else {
+                newSelection = [...selectedFiles, item];
+            }
+        } else if (event?.shiftKey && selectedFiles.length > 0) {
+            // Shift click - range selection
+            const allItems = filteredItems;
+            const lastSelectedIndex = allItems.findIndex(i => i.path === selectedFiles[selectedFiles.length - 1].path);
+            const currentIndex = allItems.findIndex(i => i.path === item.path);
+
+            if (lastSelectedIndex !== -1 && currentIndex !== -1) {
+                const start = Math.min(lastSelectedIndex, currentIndex);
+                const end = Math.max(lastSelectedIndex, currentIndex);
+                const rangeItems = allItems.slice(start, end + 1);
+
+                // Combine existing selection with range
+                const existingPaths = new Set(selectedFiles.map(f => f.path));
+                const newItems = rangeItems.filter(i => !existingPaths.has(i.path));
+                newSelection = [...selectedFiles, ...newItems];
+            } else {
+                newSelection = [item];
+            }
+        } else {
+            // Single click - select only this item
+            newSelection = [item];
+        }
+
+        onSelectionChange(newSelection);
+        onFileSelect?.(newSelection);
+    }, [selectedFiles, isItemSelected, onSelectionChange, onFileSelect]);
+
+    // Handle item navigation (double click)
+    const handleItemNavigation = useCallback((item: FileSystemItem) => {
+        if (item.type === 'directory') {
+            onNavigate?.(item.path);
+        } else {
+            // For files, you might want to open them or do something else
+            console.log('Double-clicked file:', item.name);
+        }
+    }, [onNavigate]);
 
     // Get file size unit from settings context (no need for separate state)
     const fileSizeUnit = settings.fileSizeUnit;
@@ -249,13 +305,32 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
     }, [contextMenu.visible, handleCloseContextMenu]);
 
     // Load directory contents
-    const loadDirectory = useCallback(async (path: string) => {
+const loadDirectory = useCallback(async (path: string) => {
         if (!path) return;
         setLoading(true);
         setError(null);
         try {
             const contents = await window.electronAPI.fs.getDirectoryContents(path, listOptions);
-            setDirectoryContents(contents);
+
+            // Process directory items and update folder sizes for directories
+            const itemsWithMetadata = await Promise.all(
+                contents.items.map(async (item: FileSystemItem) => {
+                    if (item.type === 'directory') {
+                        try {
+                            const folderMetadata = await window.electronAPI.fs.getFolderMetadata(item.path);
+                            if (folderMetadata && typeof folderMetadata.totalSize === 'number') {
+                                item.size = folderMetadata.totalSize;
+                            }
+                        } catch (error) {
+                            // Ignore metadata errors for individual folders
+                        }
+                    }
+                    return item;
+                })
+            );
+
+            setDirectoryContents({ ...contents, items: itemsWithMetadata });
+
         } catch (err) {
             console.error('Failed to load directory:', err);
             setError(err instanceof Error ? err.message : 'Failed to load directory');
@@ -266,36 +341,62 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
     }, [listOptions]);
 
     // Handle file/folder clicks with memoization
-    const handleItemClick = useCallback((item: FileSystemItem) => {
-        if (item.type === 'directory') {
-            onNavigate?.(item.path);
-        } else {
-            onFileSelect?.(item);
-        }
-    }, [onNavigate, onFileSelect]);
+    // Only navigate on a double click
+    const handleItemClick = useCallback((item: FileSystemItem, event?: React.MouseEvent) => {
+        // Prevent right-click from triggering selection
+        if (event?.button === 2) return;
+
+        handleItemSelection(item, event);
+    }, [handleItemSelection]);
 
     // Handle double clicks with memoization
     const handleItemDoubleClick = useCallback((item: FileSystemItem) => {
-        if (item.type === 'directory') {
-            onNavigate?.(item.path);
-        }
-    }, [onNavigate]);
+        handleItemNavigation(item);
+    }, [handleItemNavigation]);
 
     // Memoized directory items for performance
     const directoryItems = useMemo(() => directoryContents?.items || [], [directoryContents]);
-    
+
     // Filtered items based on search term
+
     const filteredItems = useMemo(() => {
         if (!searchTerm.trim()) {
             return directoryItems;
         }
-        
+
         const searchLower = searchTerm.toLowerCase().trim();
-        return directoryItems.filter(item => 
+        return directoryItems.filter(item =>
             item.name.toLowerCase().includes(searchLower) ||
             (item.extension && item.extension.toLowerCase().includes(searchLower))
         );
     }, [directoryItems, searchTerm]);
+
+    // Clear selection when clicking on empty space
+    const handleBackgroundClick = useCallback((event: React.MouseEvent) => {
+        if (event.target === event.currentTarget) {
+            onSelectionChange?.([]);
+            onFileSelect?.([]);
+        }
+    }, [onSelectionChange, onFileSelect]);
+
+    // Handle keyboard navigation
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.ctrlKey && event.key === 'a') {
+                // Ctrl+A: Select all
+                event.preventDefault();
+                onSelectionChange?.(filteredItems);
+                onFileSelect?.(filteredItems);
+            } else if (event.key === 'Escape') {
+                // Escape: Clear selection
+                onSelectionChange?.([]);
+                onFileSelect?.([]);
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [filteredItems, onSelectionChange, onFileSelect]);
 
     // Load directory when path or list options change
     useEffect(() => {
@@ -332,7 +433,7 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
     if (!directoryContents || filteredItems.length === 0) {
         const isSearching = searchTerm.trim().length > 0;
         const hasItems = directoryContents?.items && directoryContents.items.length > 0;
-        
+
         return (
             <div className="file-list-empty">
                 <FaFolder className="empty-icon" />
@@ -352,7 +453,7 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
     if (viewMode === 'list') {
         const rowHeight = settings.compactMode ? 32 : 40; // adjust height based on compact mode
         return (
-            <div className="file-list-view">
+            <div className="file-list-view" onClick={handleBackgroundClick}>
                 {/* Search bar */}
                 <div className="file-search-bar">
                     <input
@@ -380,7 +481,7 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
                             <FileItem
                                 key={`${item.path}`}
                                 item={item}
-                                isSelected={selectedFile?.path === item.path}
+                                isSelected={isItemSelected(item)}
                                 onClick={handleItemClick}
                                 onDoubleClick={handleItemDoubleClick}
                                 onContextMenu={handleContextMenu}
@@ -394,7 +495,7 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
                         );
                     }}
                 />
-                
+
                 {/* Context Menu */}
                 {contextMenu.visible && contextMenu.item && (
                     <CustomContextMenu
@@ -411,7 +512,7 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
 
     // Render file list in grid view
     return (
-        <div className="file-grid-view">
+        <div className="file-grid-view" onClick={handleBackgroundClick}>
             {/* Search bar */}
             <div className="file-search-bar">
                 <input
@@ -424,23 +525,23 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
             </div>
             <div className="file-grid-content">
                 {filteredItems.map((item) => (
-                <FileItem
-                    key={item.path}
-                    item={item}
-                    isSelected={selectedFile?.path === item.path}
-                    onClick={handleItemClick}
-                    onDoubleClick={handleItemDoubleClick}
-                    onContextMenu={handleContextMenu}
-                    viewMode={viewMode}
-                    getFileIcon={getFileIcon}
-                    formatFileSize={formatFileSizeWithSettings}
-                    formatDate={formatDate}
-                    showFileExtensions={settings.showFileExtensions}
-                    compactMode={settings.compactMode}
-                />
-            ))}
+                    <FileItem
+                        key={item.path}
+                        item={item}
+                        isSelected={isItemSelected(item)}
+                        onClick={handleItemClick}
+                        onDoubleClick={handleItemDoubleClick}
+                        onContextMenu={handleContextMenu}
+                        viewMode={viewMode}
+                        getFileIcon={getFileIcon}
+                        formatFileSize={formatFileSizeWithSettings}
+                        formatDate={formatDate}
+                        showFileExtensions={settings.showFileExtensions}
+                        compactMode={settings.compactMode}
+                    />
+                ))}
             </div>
-            
+
             {/* Context Menu */}
             {contextMenu.visible && contextMenu.item && (
                 <CustomContextMenu

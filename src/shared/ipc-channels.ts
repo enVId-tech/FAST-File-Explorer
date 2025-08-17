@@ -16,12 +16,23 @@ export interface FileSystemItem {
     };
 }
 
+// Enhanced folder metadata interface
+export interface FolderMetadata {
+    totalSize: number;
+    totalFiles: number;
+    totalFolders: number;
+    fileTypes: Record<string, number>; // extension -> count
+    lastModified: Date;
+    created: Date;
+}
+
 export interface DirectoryContents {
     items: FileSystemItem[];
     totalItems: number;
     path: string;
     parent?: string;
     error?: string;
+    folderMetadata?: FolderMetadata;
 }
 
 export interface DirectoryListOptions {
@@ -29,6 +40,7 @@ export interface DirectoryListOptions {
     sortBy?: 'name' | 'size' | 'modified';
     sortDirection?: 'asc' | 'desc';
     maxItems?: number;
+    includeFolderAnalysis?: boolean; // For detailed folder metadata
 }
 
 // Define the shape of messages sent to the main process
@@ -48,6 +60,7 @@ export interface IpcRendererToMain {
     'fs-directory-exists': (dirPath: string) => Promise<boolean>;
     'fs-get-parent-directory': (dirPath: string) => Promise<string | null>;
     'fs-get-known-folder': (folderType: string) => Promise<string>;
+    'fs-get-folder-metadata': (folderPath: string) => Promise<FolderMetadata>;
 }
 
 // Define Tab interface

@@ -55,6 +55,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
             ipcRenderer.invoke('fs-get-parent-directory', dirPath),
         getKnownFolder: (folderType: string) => 
             ipcRenderer.invoke('fs-get-known-folder', folderType),
+        getFolderMetadata: (folderPath: string) => 
+            ipcRenderer.invoke('fs-get-folder-metadata', folderPath),
     },
     // Settings management
     settings: {
