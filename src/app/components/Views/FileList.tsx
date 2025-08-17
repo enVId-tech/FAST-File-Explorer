@@ -27,6 +27,7 @@ import {
 import { FileSystemItem, DirectoryContents, FolderMetadata } from '../../../shared/ipc-channels';
 import { formatFileSize } from '../../../shared/fileSizeUtils';
 import { useSettings } from '../../contexts/SettingsContext';
+import { useDebounce, useThrottle } from '../../hooks/usePerformance';
 import { EnhancedContextMenu } from './EnhancedContextMenu';
 import { FileItem } from './FileItem';
 import { windowsNaturalSort, SortField, SortDirection, SortState } from './fileUtils';
@@ -56,6 +57,10 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
         sizeRange: { min: '', max: '' },
         nameContains: ''
     });
+
+    // Debounced filter values for performance optimization
+    const debouncedSearchTerm = useDebounce(searchTerm, 300);
+    const debouncedFilters = useDebounce(filters, 300);
 
     // Sorting state - default to Windows File Explorer behavior (name, ascending)
     const [sortState, setSortState] = useState<SortState>({
@@ -544,27 +549,27 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
     const filteredItems = useMemo(() => {
         let items = directoryItems;
 
-        // Apply search term filter
-        if (searchTerm.trim()) {
-            const searchLower = searchTerm.toLowerCase().trim();
+        // Apply search term filter (using debounced value)
+        if (debouncedSearchTerm.trim()) {
+            const searchLower = debouncedSearchTerm.toLowerCase().trim();
             items = items.filter(item =>
                 item.name.toLowerCase().includes(searchLower) ||
                 (item.extension && item.extension.toLowerCase().includes(searchLower))
             );
         }
 
-        // Apply name contains filter
-        if (filters.nameContains.trim()) {
-            const nameFilter = filters.nameContains.toLowerCase().trim();
+        // Apply name contains filter (using debounced value)
+        if (debouncedFilters.nameContains.trim()) {
+            const nameFilter = debouncedFilters.nameContains.toLowerCase().trim();
             items = items.filter(item =>
                 item.name.toLowerCase().includes(nameFilter)
             );
         }
 
-        // Apply file type filters
-        if (filters.fileTypes.length > 0) {
+        // Apply file type filters (using debounced value)
+        if (debouncedFilters.fileTypes.length > 0) {
             items = items.filter(item => {
-                if (item.type === 'directory') return filters.fileTypes.includes('Folders');
+                if (item.type === 'directory') return debouncedFilters.fileTypes.includes('Folders');
 
                 const ext = item.extension?.toLowerCase();
                 const isImage = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.tiff'].includes(ext || '');
@@ -575,22 +580,22 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
                 const isCode = ['.js', '.ts', '.jsx', '.tsx', '.html', '.css', '.scss', '.json', '.xml', '.sql'].includes(ext || '');
 
                 return (
-                    (filters.fileTypes.includes('Images') && isImage) ||
-                    (filters.fileTypes.includes('Documents') && isDocument) ||
-                    (filters.fileTypes.includes('Videos') && isVideo) ||
-                    (filters.fileTypes.includes('Audio') && isAudio) ||
-                    (filters.fileTypes.includes('Archives') && isArchive) ||
-                    (filters.fileTypes.includes('Code') && isCode)
+                    (debouncedFilters.fileTypes.includes('Images') && isImage) ||
+                    (debouncedFilters.fileTypes.includes('Documents') && isDocument) ||
+                    (debouncedFilters.fileTypes.includes('Videos') && isVideo) ||
+                    (debouncedFilters.fileTypes.includes('Audio') && isAudio) ||
+                    (debouncedFilters.fileTypes.includes('Archives') && isArchive) ||
+                    (debouncedFilters.fileTypes.includes('Code') && isCode)
                 );
             });
         }
 
-        // Apply date range filter
-        if (filters.dateRange.start || filters.dateRange.end) {
+        // Apply date range filter (using debounced value)
+        if (debouncedFilters.dateRange.start || debouncedFilters.dateRange.end) {
             items = items.filter(item => {
                 const itemDate = new Date(item.modified);
-                const startDate = filters.dateRange.start ? new Date(filters.dateRange.start) : null;
-                const endDate = filters.dateRange.end ? new Date(filters.dateRange.end) : null;
+                const startDate = debouncedFilters.dateRange.start ? new Date(debouncedFilters.dateRange.start) : null;
+                const endDate = debouncedFilters.dateRange.end ? new Date(debouncedFilters.dateRange.end) : null;
 
                 if (startDate && itemDate < startDate) return false;
                 if (endDate && itemDate > endDate) return false;
@@ -598,8 +603,8 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
             });
         }
 
-        // Apply size range filter
-        if (filters.sizeRange.min || filters.sizeRange.max) {
+        // Apply size range filter (using debounced value)
+        if (debouncedFilters.sizeRange.min || debouncedFilters.sizeRange.max) {
             items = items.filter(item => {
                 if (item.type === 'directory') return true; // Don't filter directories by size
 
@@ -613,8 +618,8 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
                     return value * (units[unit] || 1);
                 };
 
-                const minSize = parseSize(filters.sizeRange.min);
-                const maxSize = parseSize(filters.sizeRange.max);
+                const minSize = parseSize(debouncedFilters.sizeRange.min);
+                const maxSize = parseSize(debouncedFilters.sizeRange.max);
 
                 if (minSize && item.size < minSize) return false;
                 if (maxSize && item.size > maxSize) return false;
@@ -673,7 +678,7 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
         });
 
         return items;
-    }, [directoryItems, searchTerm, filters, sortState]);
+    }, [directoryItems, debouncedSearchTerm, debouncedFilters, sortState]);
 
     // Keyboard shortcut action handlers
     const handleCopyFiles = useCallback(async () => {

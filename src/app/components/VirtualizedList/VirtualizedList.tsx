@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useThrottle } from '../../hooks/usePerformance';
 
 interface VirtualizedListProps {
     itemCount: number;
@@ -12,6 +13,7 @@ interface VirtualizedListProps {
 /**
  * Simple, dependency-free vertical list virtualization.
  * Assumes fixed item height for fast math and minimal layout thrash.
+ * Optimized with throttled scrolling for better performance.
  */
 export const VirtualizedList: React.FC<VirtualizedListProps> = ({
     itemCount,
@@ -25,11 +27,14 @@ export const VirtualizedList: React.FC<VirtualizedListProps> = ({
     const [scrollTop, setScrollTop] = useState(0);
     const [viewportHeight, setViewportHeight] = useState(0);
 
+    // Throttled scroll handler for better performance
+    const throttledSetScrollTop = useThrottle(setScrollTop, 16); // ~60fps
+
     const onScroll = useCallback(() => {
         const el = containerRef.current;
         if (!el) return;
-        setScrollTop(el.scrollTop);
-    }, []);
+        throttledSetScrollTop(el.scrollTop);
+    }, [throttledSetScrollTop]);
 
     // Track viewport size for proper range calculation
     useEffect(() => {

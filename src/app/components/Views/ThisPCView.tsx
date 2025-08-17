@@ -57,7 +57,7 @@ interface ThisPCViewProps {
     networkDevices?: NetworkDevice[]; // Network devices data
 }
 
-export const ThisPCView: React.FC<ThisPCViewProps> = ({
+export const ThisPCView = React.memo<ThisPCViewProps>(({
     viewMode,
     onDriveHover,
     drives: propDrives,
@@ -805,4 +805,4 @@ export const ThisPCView: React.FC<ThisPCViewProps> = ({
             </div>
         </div>
     );
-};
+});
