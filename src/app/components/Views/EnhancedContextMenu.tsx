@@ -5,19 +5,12 @@ import {
     FaPaste,
     FaTrash,
     FaEdit,
-    FaShare,
-    FaCompress,
     FaInfoCircle,
     FaEye,
     FaFolder,
     FaFolderPlus,
     FaExternalLinkAlt,
-    FaDownload,
-    FaClipboard,
-    FaUndo,
-    FaRedo,
-    FaSearch,
-    FaTimes
+    FaUndo
 } from 'react-icons/fa';
 import { FileSystemItem } from '../../../shared/ipc-channels';
 import './EnhancedContextMenu.scss';

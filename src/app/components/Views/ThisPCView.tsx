@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaHdd, FaDesktop, FaFolder, FaDownload, FaMusic, FaVideo, FaFileImage, FaSdCard, FaUsb, FaServer, FaCloud, FaNetworkWired, FaCog, FaBars, FaThLarge, FaExternalLinkAlt, FaGamepad, FaDatabase, FaTimes, FaChartBar, FaChartPie, FaArchive, FaHardHat, FaSync } from 'react-icons/fa';
+import { FaHdd, FaDesktop, FaFolder, FaDownload, FaMusic, FaVideo, FaFileImage, FaSdCard, FaUsb, FaServer, FaCloud, FaNetworkWired, FaCog, FaBars, FaThLarge, FaExternalLinkAlt, FaGamepad, FaDatabase, FaTimes, FaChartPie, FaArchive, FaHardHat, FaSync } from 'react-icons/fa';
 import { useSettings } from '../../contexts/SettingsContext';
 import { formatFileSize } from '../../../shared/fileSizeUtils';
 
