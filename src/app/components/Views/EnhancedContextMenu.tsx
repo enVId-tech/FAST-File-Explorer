@@ -78,23 +78,88 @@ export const EnhancedContextMenu: React.FC<EnhancedContextMenuProps> = ({
         }
     }, [isVisible]);
 
-    // Position menu to stay within viewport
+    // Position menu to stay within viewport with intelligent positioning
     const getAdjustedPosition = useCallback(() => {
-        // Get mouse position and adjust the menu to be next to the mouse
+        // Get mouse position and initial offset
         let { x, y } = position;
-        x -= 290;
-        y -= 200;
+        const initialOffsetX = -290;
+        const initialOffsetY = -200;
+        
+        // Apply initial offset
+        x += initialOffsetX;
+        y += initialOffsetY;
 
-        // Adjust position if menu goes out of bounds
-        if (x < 0) x = 0;
-        if (y < 0) y = 0;
+        // Get viewport dimensions with some padding for safety
+        const viewport = {
+            width: window.innerWidth - 20, // 20px padding
+            height: window.innerHeight - 20 // 20px padding
+        };
 
-        if (x + 290 > window.innerWidth) x = window.innerWidth - 290;
-        if (y + 200 > window.innerHeight) y = window.innerHeight - 200;
+        // Estimate menu dimensions based on content
+        const baseMenuWidth = 300;
+        const baseMenuHeight = 250;
+        
+        // Calculate dynamic height based on menu items
+        const selectedItemsCount = selectedItems.length;
+        const contextMenuItems = selectedItemsCount > 0 ? 12 : 8; // More items when files are selected
+        const estimatedHeight = Math.min(contextMenuItems * 35 + 60, 400); // Cap at 400px
+        
+        const menuDimensions = {
+            width: baseMenuWidth,
+            height: estimatedHeight
+        };
 
-        return { x, y };
+        // Smart positioning algorithm
+        let finalX = x;
+        let finalY = y;
 
-    }, [position]);
+        // Horizontal positioning logic
+        if (x + menuDimensions.width > viewport.width) {
+            // Menu would overflow right edge
+            // Try positioning to the left of cursor
+            const leftPosition = position.x - menuDimensions.width - Math.abs(initialOffsetX);
+            if (leftPosition >= 10) {
+                finalX = leftPosition;
+            } else {
+                // If neither side works well, stick to right edge with padding
+                finalX = viewport.width - menuDimensions.width;
+            }
+        }
+        
+        // Keep some minimum margin from left edge
+        if (finalX < 10) {
+            finalX = 10;
+        }
+
+        // Vertical positioning logic
+        if (y + menuDimensions.height > viewport.height) {
+            // Menu would overflow bottom edge
+            // Try positioning above cursor
+            const topPosition = position.y - menuDimensions.height - Math.abs(initialOffsetY);
+            if (topPosition >= 10) {
+                finalY = topPosition;
+            } else {
+                // If neither top nor bottom works well, stick to bottom edge with padding
+                finalY = viewport.height - menuDimensions.height;
+            }
+        }
+        
+        // Keep some minimum margin from top edge
+        if (finalY < 10) {
+            finalY = 10;
+        }
+
+        // Final safety checks to ensure menu stays within bounds
+        if (finalX + menuDimensions.width > viewport.width) {
+            finalX = Math.max(10, viewport.width - menuDimensions.width);
+        }
+        
+        if (finalY + menuDimensions.height > viewport.height) {
+            finalY = Math.max(10, viewport.height - menuDimensions.height);
+        }
+
+        return { x: finalX, y: finalY };
+    }, [position, selectedItems.length]);
 
     // Close handlers
     useEffect(() => {
@@ -491,7 +556,61 @@ export const EnhancedContextMenu: React.FC<EnhancedContextMenuProps> = ({
 
     if (!isVisible) return null;
 
-    const adjustedPosition = getAdjustedPosition();
+    const [adjustedPosition, setAdjustedPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+
+    // Initialize position
+    useEffect(() => {
+        setAdjustedPosition(getAdjustedPosition());
+    }, [getAdjustedPosition]);
+
+    // Refine position after menu renders with actual dimensions
+    useEffect(() => {
+        if (menuRef.current && isVisible) {
+            const rect = menuRef.current.getBoundingClientRect();
+            const actualWidth = rect.width;
+            const actualHeight = rect.height;
+
+            // Only recalculate if there's a significant difference from estimates
+            const estimatedWidth = 300;
+            const estimatedHeight = Math.min((selectedItems.length > 0 ? 12 : 8) * 35 + 60, 400);
+            
+            const widthDiff = Math.abs(actualWidth - estimatedWidth);
+            const heightDiff = Math.abs(actualHeight - estimatedHeight);
+            
+            // Only reposition if the actual size is significantly different from estimate
+            if (widthDiff > 50 || heightDiff > 50) {
+                let { x, y } = position;
+                x -= 290;
+                y -= 200;
+
+                const viewport = {
+                    width: window.innerWidth - 20,
+                    height: window.innerHeight - 20
+                };
+
+                // Re-calculate with actual dimensions
+                if (x + actualWidth > viewport.width) {
+                    x = position.x - actualWidth + 290;
+                }
+                if (x < 10) x = 10;
+
+                if (y + actualHeight > viewport.height) {
+                    y = position.y - actualHeight + 200;
+                }
+                if (y < 10) y = 10;
+
+                // Final bounds check
+                if (x + actualWidth > viewport.width) {
+                    x = viewport.width - actualWidth;
+                }
+                if (y + actualHeight > viewport.height) {
+                    y = viewport.height - actualHeight;
+                }
+
+                setAdjustedPosition({ x, y });
+            }
+        }
+    }, [position, selectedItems.length, isVisible]);
     const menuItems = getMenuItems();
 
     return (

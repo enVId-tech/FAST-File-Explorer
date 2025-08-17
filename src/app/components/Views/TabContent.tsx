@@ -98,6 +98,217 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
     const [currentPath, setCurrentPath] = useState<string>('');
     const [selectedFiles, setSelectedFiles] = useState<FileSystemItem[]>([]);
     
+    // Clipboard state management
+    const [clipboardState, setClipboardState] = useState<{
+        operation: 'copy' | 'cut' | null;
+        files: string[];
+    }>({ operation: null, files: [] });
+    
+    // File list refresh trigger
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
+    
+    // Helper function to trigger file list refresh
+    const triggerRefresh = useCallback(() => {
+        setRefreshTrigger(prev => prev + 1);
+    }, []);
+    
+    // Clipboard state computed values
+    const clipboardHasFiles = clipboardState.files.length > 0;
+
+    // Sync clipboard state with the system clipboard
+    useEffect(() => {
+        const syncClipboardState = async () => {
+            try {
+                const hasFiles = await window.electronAPI.clipboard.hasFiles();
+                const state = await window.electronAPI.clipboard.getState();
+                setClipboardState(state);
+            } catch (error) {
+                console.error('Failed to sync clipboard state:', error);
+            }
+        };
+
+        // Initial sync
+        syncClipboardState();
+
+        // Listen for clipboard state changes
+        const handleClipboardStateChange = (event: CustomEvent) => {
+            const { operation, files } = event.detail;
+            setClipboardState({ operation, files });
+        };
+
+        document.addEventListener('clipboard-state-changed', handleClipboardStateChange as EventListener);
+
+        return () => {
+            document.removeEventListener('clipboard-state-changed', handleClipboardStateChange as EventListener);
+        };
+    }, []);
+
+    // Action handlers for context bar
+    const handleCopyFiles = useCallback(async () => {
+        if (selectedFiles.length === 0) return;
+        
+        try {
+            const paths = selectedFiles.map(file => file.path);
+            await window.electronAPI.clipboard.copyFiles(paths);
+            setClipboardState({ operation: 'copy', files: paths });
+            
+            // Broadcast clipboard state change
+            document.dispatchEvent(new CustomEvent('clipboard-state-changed', {
+                detail: { operation: 'copy', files: paths }
+            }));
+            
+            console.log('Copied files:', paths);
+        } catch (error) {
+            console.error('Failed to copy files:', error);
+        }
+    }, [selectedFiles]);
+
+    const handleCutFiles = useCallback(async () => {
+        if (selectedFiles.length === 0) return;
+        
+        try {
+            const paths = selectedFiles.map(file => file.path);
+            await window.electronAPI.clipboard.cutFiles(paths);
+            setClipboardState({ operation: 'cut', files: paths });
+            
+            // Broadcast clipboard state change
+            document.dispatchEvent(new CustomEvent('clipboard-state-changed', {
+                detail: { operation: 'cut', files: paths }
+            }));
+            
+            console.log('Cut files:', paths);
+        } catch (error) {
+            console.error('Failed to cut files:', error);
+        }
+    }, [selectedFiles]);
+
+    const handlePasteFiles = useCallback(async () => {
+        if (!clipboardHasFiles || !currentPath) return;
+        
+        try {
+            await window.electronAPI.clipboard.pasteFiles(currentPath);
+            setClipboardState({ operation: null, files: [] });
+            
+            // Broadcast clipboard state change (cleared)
+            document.dispatchEvent(new CustomEvent('clipboard-state-changed', {
+                detail: { operation: null, files: [] }
+            }));
+            
+            // Trigger refresh after paste
+            triggerRefresh();
+            
+            console.log('Pasted files to:', currentPath);
+        } catch (error) {
+            console.error('Failed to paste files:', error);
+        }
+    }, [clipboardHasFiles, currentPath, triggerRefresh]);
+
+    const handleDeleteFiles = useCallback(async () => {
+        if (selectedFiles.length === 0) return;
+        
+        try {
+            const paths = selectedFiles.map(file => file.path);
+            await window.electronAPI.files.delete(paths);
+            setSelectedFiles([]);
+            
+            // Trigger refresh after delete
+            triggerRefresh();
+            
+            console.log('Deleted files:', paths);
+        } catch (error) {
+            console.error('Failed to delete files:', error);
+        }
+    }, [selectedFiles, triggerRefresh]);
+
+    const handleRenameFile = useCallback(async () => {
+        if (selectedFiles.length !== 1) return;
+        
+        const file = selectedFiles[0];
+        const newName = prompt('Enter new name:', file.name);
+        if (!newName || newName === file.name) return;
+        
+        try {
+            await window.electronAPI.files.rename(file.path, newName);
+            
+            // Trigger refresh after rename
+            triggerRefresh();
+            
+            console.log('Renamed file:', file.path, 'to', newName);
+        } catch (error) {
+            console.error('Failed to rename file:', error);
+        }
+    }, [selectedFiles, triggerRefresh]);
+
+    const handleNewFolder = useCallback(async () => {
+        if (!currentPath) return;
+        
+        const folderName = prompt('Enter folder name:', 'New Folder');
+        if (!folderName) return;
+        
+        try {
+            await window.electronAPI.files.createFolder(currentPath, folderName);
+            
+            // Trigger refresh after creating folder
+            triggerRefresh();
+            
+            console.log('Created folder:', folderName, 'in', currentPath);
+        } catch (error) {
+            console.error('Failed to create folder:', error);
+        }
+    }, [currentPath, triggerRefresh]);
+
+    // Select all files handler
+    const handleSelectAll = useCallback(() => {
+        // This would need to be implemented to select all files in the current directory
+        // For now, we'll just log it
+        console.log('Select all requested');
+        // TODO: Implement select all functionality
+    }, []);
+
+    // Keyboard shortcuts handler
+    const handleKeyDown = useCallback((event: KeyboardEvent) => {
+        if (event.ctrlKey && !event.shiftKey && !event.altKey) {
+            switch (event.key.toLowerCase()) {
+                case 'c':
+                    if (selectedFiles.length > 0) {
+                        event.preventDefault();
+                        handleCopyFiles();
+                    }
+                    break;
+                case 'x':
+                    if (selectedFiles.length > 0) {
+                        event.preventDefault();
+                        handleCutFiles();
+                    }
+                    break;
+                case 'v':
+                    if (clipboardState.files.length > 0) {
+                        event.preventDefault();
+                        handlePasteFiles();
+                    }
+                    break;
+                case 'a':
+                    event.preventDefault();
+                    handleSelectAll();
+                    break;
+            }
+        } else if (event.key === 'Delete' && selectedFiles.length > 0) {
+            event.preventDefault();
+            handleDeleteFiles();
+        } else if (event.key === 'F2' && selectedFiles.length === 1) {
+            event.preventDefault();
+            handleRenameFile();
+        }
+    }, [selectedFiles, clipboardState, handleCopyFiles, handleCutFiles, handlePasteFiles, handleDeleteFiles, handleRenameFile, handleSelectAll]);
+
+    // Add keyboard event listeners
+    useEffect(() => {
+        document.addEventListener('keydown', handleKeyDown);
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [handleKeyDown]);
+
     // Navigation history
     const [navigationHistory, setNavigationHistory] = useState<string[]>([]);
     const [historyIndex, setHistoryIndex] = useState<number>(-1);
@@ -894,33 +1105,62 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                             <>
                                 <div className="ribbon-group">
                                     <div className="ribbon-group-label">Clipboard</div>
-                                    <button className="ribbon-button">
+                                    <button 
+                                        className={`ribbon-button ${selectedFiles.length === 0 ? 'disabled' : ''}`}
+                                        disabled={selectedFiles.length === 0}
+                                        onClick={handleCopyFiles}
+                                        title="Copy selected files (Ctrl+C)"
+                                    >
                                         <div className="ribbon-icon"><FaCopy /></div>
                                         <span>Copy</span>
                                     </button>
-                                    <button className="ribbon-button">
+                                    <button 
+                                        className={`ribbon-button ${selectedFiles.length === 0 ? 'disabled' : ''}`}
+                                        disabled={selectedFiles.length === 0}
+                                        onClick={handleCutFiles}
+                                        title="Cut selected files (Ctrl+X)"
+                                    >
                                         <div className="ribbon-icon"><FaCut /></div>
                                         <span>Cut</span>
                                     </button>
-                                    <button className="ribbon-button">
+                                    <button 
+                                        className={`ribbon-button ${!clipboardHasFiles ? 'disabled' : ''}`}
+                                        disabled={!clipboardHasFiles}
+                                        onClick={handlePasteFiles}
+                                        title="Paste files (Ctrl+V)"
+                                    >
                                         <div className="ribbon-icon"><FaPaste /></div>
                                         <span>Paste</span>
                                     </button>
                                 </div>
                                 <div className="ribbon-group">
                                     <div className="ribbon-group-label">Organize</div>
-                                    <button className="ribbon-button">
+                                    <button 
+                                        className={`ribbon-button ${selectedFiles.length === 0 ? 'disabled' : ''}`}
+                                        disabled={selectedFiles.length === 0}
+                                        onClick={handleDeleteFiles}
+                                        title="Delete selected files (Delete)"
+                                    >
                                         <div className="ribbon-icon"><FaTrash /></div>
                                         <span>Delete</span>
                                     </button>
-                                    <button className="ribbon-button">
+                                    <button 
+                                        className={`ribbon-button ${selectedFiles.length !== 1 ? 'disabled' : ''}`}
+                                        disabled={selectedFiles.length !== 1}
+                                        onClick={handleRenameFile}
+                                        title="Rename selected file (F2)"
+                                    >
                                         <div className="ribbon-icon"><FaEdit /></div>
                                         <span>Rename</span>
                                     </button>
                                 </div>
                                 <div className="ribbon-group">
                                     <div className="ribbon-group-label">New</div>
-                                    <button className="ribbon-button">
+                                    <button 
+                                        className="ribbon-button"
+                                        onClick={handleNewFolder}
+                                        title="Create new folder (Ctrl+Shift+N)"
+                                    >
                                         <div className="ribbon-icon"><FaFolderPlus /></div>
                                         <span>New folder</span>
                                     </button>
@@ -1193,6 +1433,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                                 onFileSelect={handleFileSelect}
                                 selectedFiles={selectedFiles}
                                 onSelectionChange={handleSelectionChange}
+                                refreshTrigger={refreshTrigger}
                             />
                         )}
                     </div>

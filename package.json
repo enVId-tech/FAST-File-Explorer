@@ -1,7 +1,7 @@
 {
   "name": "fast-file-explorer",
   "productName": "Fast File Explorer",
-  "version": "25.08.16-dev.12",
+  "version": "25.08.16-dev.13",
   "description": "Fast File Explorer is a powerful tool for quickly navigating and managing your file system.",
   "main": ".vite/build/main.js",
   "config": {

@@ -547,13 +547,27 @@ body {
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       min-width: 64px;
       
-      &:hover {
+      &:hover:not(.disabled):not(:disabled) {
         background: var(--hover-bg);
         transform: translateY(-1px);
       }
       
-      &:active {
+      &:active:not(.disabled):not(:disabled) {
         transform: translateY(0);
+      }
+      
+      &.disabled,
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        
+        .ribbon-icon {
+          color: var(--text-tertiary);
+        }
+        
+        span {
+          color: var(--text-tertiary);
+        }
       }
       
       .ribbon-icon {

@@ -271,22 +271,32 @@ export default function initializeDataHandlers() {
     // Delete files
     ipcMain.handle('file-delete', async (event, paths: string[]) => {
         try {
+            const results = [];
             for (const filePath of paths) {
                 try {
+                    // Check if file exists before trying to delete
                     const stats = await fs.stat(filePath);
                     if (stats.isDirectory()) {
-                        await fs.rmdir(filePath, { recursive: true });
+                        await fs.rm(filePath, { recursive: true, force: true });
                     } else {
                         await fs.unlink(filePath);
                     }
-                } catch (error) {
-                    console.error(`Failed to delete ${filePath}:`, error);
+                    results.push({ path: filePath, success: true });
+                } catch (error: any) {
+                    if (error.code === 'ENOENT') {
+                        // File already doesn't exist, consider it a success
+                        console.warn(`File already deleted: ${filePath}`);
+                        results.push({ path: filePath, success: true });
+                    } else {
+                        console.error(`Failed to delete ${filePath}:`, error);
+                        results.push({ path: filePath, success: false, error: error.message });
+                    }
                 }
             }
-            return true;
-        } catch (error) {
+            return { success: true, results };
+        } catch (error: any) {
             console.error('Failed to delete files:', error);
-            return false;
+            return { success: false, error: error?.message || 'Unknown error' };
         }
     });
 
@@ -397,7 +407,29 @@ export default function initializeDataHandlers() {
                         await fs.copyFile(source, destPath);
                     }
                 } else if (clipboardOperation === 'cut') {
-                    await fs.rename(source, destPath);
+                    // Handle cross-device move operation
+                    try {
+                        // Try rename first (works for same device)
+                        await fs.rename(source, destPath);
+                    } catch (error: any) {
+                        // If rename fails with EXDEV (cross-device), use copy + delete
+                        if (error.code === 'EXDEV') {
+                            const stats = await fs.stat(source);
+                            if (stats.isDirectory()) {
+                                // Copy directory recursively
+                                await fs.cp(source, destPath, { recursive: true });
+                                // Remove source directory recursively
+                                await fs.rm(source, { recursive: true, force: true });
+                            } else {
+                                // Copy file then delete source
+                                await fs.copyFile(source, destPath);
+                                await fs.unlink(source);
+                            }
+                        } else {
+                            // Re-throw other errors
+                            throw error;
+                        }
+                    }
                 }
             }
             
