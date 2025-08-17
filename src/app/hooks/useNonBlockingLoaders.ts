@@ -11,7 +11,7 @@ export const useProgressiveLoader = () => {
         }
 
         setIsLoading(true);
-        
+
         return new Promise<void>((resolve) => {
             // Use multiple async strategies to prevent blocking
             const loadAsync = async () => {
@@ -19,7 +19,7 @@ export const useProgressiveLoader = () => {
                     // Load component in next tick to avoid blocking
                     await new Promise(r => setTimeout(r, 0));
                     await loader();
-                    
+
                     setLoadedComponents(prev => new Set(prev).add(componentName));
                     resolve();
                 } catch (error) {
@@ -141,8 +141,8 @@ export const useNonBlockingInit = (
                 } catch (error) {
                     console.error(`Critical init failed: ${name}`, error);
                     if (mounted) {
-                        setErrors(prev => ({ 
-                            ...prev, 
+                        setErrors(prev => ({
+                            ...prev,
                             [name]: error instanceof Error ? error.message : 'Init failed'
                         }));
                     }
@@ -164,8 +164,8 @@ export const useNonBlockingInit = (
                     } catch (error) {
                         console.error(`Non-critical init failed: ${name}`, error);
                         if (mounted) {
-                            setErrors(prev => ({ 
-                                ...prev, 
+                            setErrors(prev => ({
+                                ...prev,
                                 [name]: error instanceof Error ? error.message : 'Init failed'
                             }));
                         }

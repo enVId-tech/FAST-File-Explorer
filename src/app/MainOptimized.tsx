@@ -9,31 +9,31 @@ import { Theme } from './components/ThemeSelector/ThemeSelector';
 import { CustomStyleManager } from './components/CustomStyleManager';
 import { Drive } from 'shared/file-data';
 import { SettingsProvider, useSettings } from './contexts/SettingsContext';
-import { 
-  LazyTabContent, 
-  LazySettingsMenu, 
-  LazySetupWizard, 
-  LazyFileTransferUI, 
-  ComponentLoader, 
-  LazyComponentErrorBoundary 
+import {
+    LazyTabContent,
+    LazySettingsMenu,
+    LazySetupWizard,
+    LazyFileTransferUI,
+    ComponentLoader,
+    LazyComponentErrorBoundary
 } from './components/LazyComponents';
 
 // Component to handle animation control based on settings
 const AnimationController: React.FC = () => {
     const { settings } = useSettings();
-    
+
     useEffect(() => {
         // Set CSS custom property to control animations globally
         document.documentElement.style.setProperty(
-            '--animation-duration', 
+            '--animation-duration',
             settings.enableAnimations ? '0.2s' : '0s'
         );
         document.documentElement.style.setProperty(
-            '--transition-duration', 
+            '--transition-duration',
             settings.enableAnimations ? '0.2s' : '0s'
         );
     }, [settings.enableAnimations]);
-    
+
     return null; // This component only manages CSS properties
 };
 
@@ -49,20 +49,20 @@ const useAsyncInitialization = () => {
     const [initStage, setInitStage] = useState<'loading' | 'ready'>('loading');
     const [drives, setDrives] = useState<Drive[]>([]);
     const [isLoadingDrives, setIsLoadingDrives] = useState(true);
-    
+
     useEffect(() => {
         let mounted = true;
-        
+
         // Immediately set app as ready, load drives in background
         const initializeApp = () => {
             if (mounted) {
                 setInitStage('ready'); // App is usable immediately
-                
+
                 // Load drives in a completely separate background process
                 loadDrivesInBackground();
             }
         };
-        
+
         const loadDrivesInBackground = () => {
             // Use multiple strategies to avoid blocking
             const loadStrategies = [
@@ -89,7 +89,7 @@ const useAsyncInitialization = () => {
                     }, 0);
                 }
             ];
-            
+
             // Try strategies in order of preference
             try {
                 if ('requestIdleCallback' in window) {
@@ -104,14 +104,14 @@ const useAsyncInitialization = () => {
                 loadStrategies[2]();
             }
         };
-        
+
         const loadDrives = async () => {
             try {
                 if (!mounted) return;
-                
+
                 // Break the drive loading into smaller chunks to prevent blocking
                 const rawDriveData = await window.electronAPI.data.getDrives();
-                
+
                 // Process drives in small batches to avoid blocking UI
                 if (mounted) {
                     const processedDrives = await processDrivesAsync(rawDriveData);
@@ -126,7 +126,7 @@ const useAsyncInitialization = () => {
                 }
             }
         };
-        
+
         const processDrivesAsync = async (rawData: any[]): Promise<Drive[]> => {
             return new Promise((resolve) => {
                 const process = () => {
@@ -145,29 +145,29 @@ const useAsyncInitialization = () => {
                         resolve([]); // Return empty array on error
                     }
                 };
-                
+
                 // Process drives without blocking UI
                 setTimeout(process, 0);
             });
         };
-        
+
         // Start initialization immediately - no delays
         initializeApp();
-        
+
         return () => {
             mounted = false;
         };
     }, []);
-    
+
     return { initStage, drives, isLoadingDrives };
 };
 
 // Memoized component for better performance  
 const Main = React.memo(function Main(): React.JSX.Element {
-    
+
     // Lazy initialization with non-blocking loading
     const { initStage, drives, isLoadingDrives } = useAsyncInitialization();
-    
+
     // Initialize view mode from localStorage or default to list
     const [viewMode, setViewMode] = useState(() => {
         try {
@@ -178,9 +178,9 @@ const Main = React.memo(function Main(): React.JSX.Element {
             return 'list';
         }
     });
-    
+
     const [isMaximized, setIsMaximized] = useState(false);
-    
+
     // Initialize theme from localStorage or default to win11-light
     const [theme, setTheme] = useState<Theme>(() => {
         try {
@@ -191,9 +191,9 @@ const Main = React.memo(function Main(): React.JSX.Element {
             return 'win11-light';
         }
     });
-    
+
     const [isThemeSelectorOpen, setIsThemeSelectorOpen] = useState(false);
-    
+
     // Initialize zoom level from localStorage or default to 100%
     const [zoomLevel, setZoomLevel] = useState(() => {
         try {
@@ -204,7 +204,7 @@ const Main = React.memo(function Main(): React.JSX.Element {
             return 100;
         }
     });
-    
+
     const [tabs, setTabs] = useState<Tab[]>([
         { id: 'tab-1', title: 'This PC', url: 'home', isActive: true },
     ]);
@@ -277,26 +277,26 @@ const Main = React.memo(function Main(): React.JSX.Element {
     useEffect(() => {
         try {
             localStorage.setItem('fast-file-explorer-zoom-level', zoomLevel.toString());
-            
+
             // Apply zoom immediately for instant response
             const rootElement = document.documentElement;
             rootElement.style.zoom = `${zoomLevel}%`;
             rootElement.style.minHeight = '100vh';
             rootElement.style.height = 'auto';
-            
+
             document.body.style.minHeight = '100vh';
             document.body.style.height = 'auto';
-            
+
             // Debounced window resize to avoid excessive API calls
             const adjustWindowSize = async () => {
                 if (window.electronAPI?.window) {
                     try {
                         const bounds = await window.electronAPI.window.getBounds();
                         const zoomFactor = zoomLevel / 100;
-                        
+
                         let newWidth = bounds.width;
                         let newHeight = bounds.height;
-                        
+
                         if (zoomLevel < 100) {
                             const expansionFactor = 1 + (100 - zoomLevel) / 300;
                             newWidth = Math.min(Math.round(bounds.width * expansionFactor), 1400);
@@ -306,14 +306,14 @@ const Main = React.memo(function Main(): React.JSX.Element {
                             newWidth = Math.max(Math.round(bounds.width * contractionFactor), 900);
                             newHeight = Math.max(Math.round(bounds.height * contractionFactor), 700);
                         }
-                        
+
                         const widthDiff = Math.abs(bounds.width - newWidth);
                         const heightDiff = Math.abs(bounds.height - newHeight);
-                        
+
                         if (widthDiff > 30 || heightDiff > 30) {
                             const newX = bounds.x + Math.round((bounds.width - newWidth) / 2);
                             const newY = bounds.y + Math.round((bounds.height - newHeight) / 2);
-                            
+
                             await window.electronAPI.window.setBounds({
                                 x: newX,
                                 y: newY,
@@ -326,11 +326,11 @@ const Main = React.memo(function Main(): React.JSX.Element {
                     }
                 }
             };
-            
+
             // Debounce window resize
             const timeoutId = setTimeout(adjustWindowSize, 300);
             return () => clearTimeout(timeoutId);
-            
+
         } catch (error) {
             console.warn('Failed to save or apply zoom level:', error);
         }
@@ -419,8 +419,8 @@ const Main = React.memo(function Main(): React.JSX.Element {
         }, []),
     }), []);
 
-    const activeTab = useMemo(() => 
-        tabs.find(tab => tab.id === activeTabId), 
+    const activeTab = useMemo(() =>
+        tabs.find(tab => tab.id === activeTabId),
         [tabs, activeTabId]
     );
 
@@ -431,7 +431,7 @@ const Main = React.memo(function Main(): React.JSX.Element {
         <SettingsProvider>
             <div className="app performance-optimized">
                 <AnimationController />
-                
+
                 {/* Window controls */}
                 <div className="titlebar">
                     <div className="titlebar-title">Fast File Explorer</div>

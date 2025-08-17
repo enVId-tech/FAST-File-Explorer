@@ -118,7 +118,7 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     }, []);
 
     const updateSetting = useCallback(async <K extends keyof AppSettings>(
-        key: K, 
+        key: K,
         value: AppSettings[K]
     ): Promise<void> => {
         // Keep a snapshot for revert on failure
@@ -130,7 +130,7 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
 
             // Save to backend
             await window.electronAPI?.settings.update(key, value);
-            
+
             // Trigger any component-specific updates based on the setting
             handleSettingChange(key, value);
         } catch (error) {

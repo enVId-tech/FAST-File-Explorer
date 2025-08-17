@@ -100,8 +100,8 @@ export const RecentsView: React.FC<RecentsViewProps> = ({ viewMode }) => {
     ]);
 
     const toggleFavorite = (index: number) => {
-        setRecentFiles(prev => 
-            prev.map((file, i) => 
+        setRecentFiles(prev =>
+            prev.map((file, i) =>
                 i === index ? { ...file, isFavorite: !file.isFavorite } : file
             )
         );
@@ -119,46 +119,46 @@ export const RecentsView: React.FC<RecentsViewProps> = ({ viewMode }) => {
                         </div>
                     </div>
                 </div>
-                
+
                 <div className="recents-content">
-                
-                <div className="recents-grid">
-                    {recentFiles.map((file, index) => (
-                        <div key={index} className="recent-item-card">
-                            <div className="item-header">
-                                <div className="item-icon">
-                                    {file.icon}
-                                </div>
-                                <button 
-                                    className={`favorite-btn ${file.isFavorite ? 'active' : ''}`}
-                                    onClick={() => toggleFavorite(index)}
-                                >
-                                    <FaStar />
-                                </button>
-                            </div>
-                            
-                            <div className="item-content">
-                                <h3 className="item-name" title={file.name}>
-                                    {file.name}
-                                </h3>
-                                <div className="item-details">
-                                    <div className="detail-row">
-                                        <FaClock className="detail-icon" />
-                                        <span>{file.lastOpened}</span>
+
+                    <div className="recents-grid">
+                        {recentFiles.map((file, index) => (
+                            <div key={index} className="recent-item-card">
+                                <div className="item-header">
+                                    <div className="item-icon">
+                                        {file.icon}
                                     </div>
-                                    {file.size && (
-                                        <div className="detail-row">
-                                            <span className="file-size">{file.size}</span>
-                                        </div>
-                                    )}
+                                    <button
+                                        className={`favorite-btn ${file.isFavorite ? 'active' : ''}`}
+                                        onClick={() => toggleFavorite(index)}
+                                    >
+                                        <FaStar />
+                                    </button>
                                 </div>
-                                <div className="item-path" title={file.path}>
-                                    {file.path}
+
+                                <div className="item-content">
+                                    <h3 className="item-name" title={file.name}>
+                                        {file.name}
+                                    </h3>
+                                    <div className="item-details">
+                                        <div className="detail-row">
+                                            <FaClock className="detail-icon" />
+                                            <span>{file.lastOpened}</span>
+                                        </div>
+                                        {file.size && (
+                                            <div className="detail-row">
+                                                <span className="file-size">{file.size}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="item-path" title={file.path}>
+                                        {file.path}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
                 </div>
             </div>
         );
@@ -182,34 +182,34 @@ export const RecentsView: React.FC<RecentsViewProps> = ({ viewMode }) => {
                     <div className="list-header">
                         <div className="column-header name">Name</div>
                         <div className="column-header last-opened">Last Opened</div>
-                    <div className="column-header size">Size</div>
-                    <div className="column-header modified">Date Modified</div>
-                    <div className="column-header path">Location</div>
-                </div>
-                
-                {recentFiles.map((file, index) => (
-                    <div key={index} className="recent-item-row">
-                        <div className="item-name-column">
-                            <div className="item-icon">
-                                {file.icon}
-                            </div>
-                            <span className="item-name">{file.name}</span>
-                            <button 
-                                className={`favorite-btn ${file.isFavorite ? 'active' : ''}`}
-                                onClick={() => toggleFavorite(index)}
-                            >
-                                <FaStar />
-                            </button>
-                        </div>
-                        <div className="item-last-opened">
-                            <FaClock className="time-icon" />
-                            {file.lastOpened}
-                        </div>
-                        <div className="item-size">{file.size || '—'}</div>
-                        <div className="item-modified">{file.dateModified}</div>
-                        <div className="item-path" title={file.path}>{file.path}</div>
+                        <div className="column-header size">Size</div>
+                        <div className="column-header modified">Date Modified</div>
+                        <div className="column-header path">Location</div>
                     </div>
-                ))}
+
+                    {recentFiles.map((file, index) => (
+                        <div key={index} className="recent-item-row">
+                            <div className="item-name-column">
+                                <div className="item-icon">
+                                    {file.icon}
+                                </div>
+                                <span className="item-name">{file.name}</span>
+                                <button
+                                    className={`favorite-btn ${file.isFavorite ? 'active' : ''}`}
+                                    onClick={() => toggleFavorite(index)}
+                                >
+                                    <FaStar />
+                                </button>
+                            </div>
+                            <div className="item-last-opened">
+                                <FaClock className="time-icon" />
+                                {file.lastOpened}
+                            </div>
+                            <div className="item-size">{file.size || '—'}</div>
+                            <div className="item-modified">{file.dateModified}</div>
+                            <div className="item-path" title={file.path}>{file.path}</div>
+                        </div>
+                    ))}
                 </div>
             </div>
         </div>

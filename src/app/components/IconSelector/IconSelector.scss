@@ -16,24 +16,24 @@
   color: var(--text-primary);
   cursor: pointer;
   transition: all 0.2s ease;
-  
+
   &:hover {
     border-color: var(--border-hover);
     background: var(--hover-bg);
   }
-  
+
   &:focus {
     outline: none;
     border-color: var(--accent-color);
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
   }
-  
+
   svg {
     width: 20px;
     height: 20px;
     color: var(--accent-color);
   }
-  
+
   span {
     flex: 1;
     text-align: left;
@@ -60,7 +60,7 @@
 .icon-search {
   padding: 16px;
   border-bottom: 1px solid var(--border-color);
-  
+
   .icon-search-input {
     width: 100%;
     padding: 12px;
@@ -68,13 +68,13 @@
     border-radius: 8px;
     background: var(--surface-bg);
     color: var(--text-primary);
-    
+
     &:focus {
       outline: none;
       border-color: var(--accent-color);
       box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     }
-    
+
     &::placeholder {
       color: var(--text-tertiary);
     }
@@ -88,19 +88,19 @@
   gap: 8px;
   max-height: 300px;
   overflow-y: auto;
-  
+
   &::-webkit-scrollbar {
     width: 6px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: var(--border-color);
     border-radius: 3px;
-    
+
     &:hover {
       background: var(--border-hover);
     }
@@ -118,25 +118,25 @@
   cursor: pointer;
   transition: all 0.2s ease;
   color: var(--text-primary);
-  
+
   &:hover {
     background: var(--hover-bg);
     border-color: var(--border-color);
   }
-  
+
   &.selected {
     background: var(--selection-bg);
     border-color: var(--accent-color);
     color: var(--accent-color);
   }
-  
+
   svg {
     width: 24px;
     height: 24px;
     margin-bottom: 6px;
     color: inherit;
   }
-  
+
   .icon-name {
     font-size: 10px;
     font-weight: 500;
@@ -145,7 +145,7 @@
     color: var(--text-tertiary);
     max-width: 100%;
     word-break: break-word;
-    
+
     .selected & {
       color: var(--accent-color);
     }

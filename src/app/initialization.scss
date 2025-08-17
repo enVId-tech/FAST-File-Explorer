@@ -11,7 +11,8 @@
   align-items: center;
   justify-content: center;
   z-index: 9999;
-  pointer-events: none; /* Allow interaction with UI behind */
+  pointer-events: none;
+  /* Allow interaction with UI behind */
   transition: opacity 0.3s ease;
 }
 
@@ -60,6 +61,7 @@
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -74,19 +76,21 @@
 
 /* Ensure UI remains responsive during loading */
 .file-explorer {
-  transform: translateZ(0); /* Force hardware acceleration */
+  transform: translateZ(0);
+  /* Force hardware acceleration */
   backface-visibility: hidden;
 }
 
 /* Reduce motion for accessibility */
 @media (prefers-reduced-motion: reduce) {
+
   .initialization-overlay,
   .loading-state,
   .content-fade-in {
     transition: none;
     animation: none;
   }
-  
+
   .loading-placeholder::before {
     animation: none;
     border-top-color: var(--accent-color);

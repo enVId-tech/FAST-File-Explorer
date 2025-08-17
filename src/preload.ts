@@ -6,18 +6,18 @@ import { contextBridge, ipcRenderer } from 'electron';
 // the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld('electronAPI', {
     // Generic IPC invoke method for flexibility
-    invoke: <T = any>(channel: string, ...args: any[]): Promise<T> => 
+    invoke: <T = any>(channel: string, ...args: any[]): Promise<T> =>
         ipcRenderer.invoke(channel, ...args),
-        
+
     testAPI: () => ipcRenderer.invoke('test-api'),
-    
+
     window: {
         minimize: () => ipcRenderer.invoke('window-minimize'),
         maximize: () => ipcRenderer.invoke('window-maximize'),
         unmaximize: () => ipcRenderer.invoke('window-unmaximize'),
         close: () => ipcRenderer.invoke('window-close'),
         getBounds: () => ipcRenderer.invoke('window-get-bounds'),
-        setBounds: (bounds: {x?: number, y?: number, width?: number, height?: number}) => 
+        setBounds: (bounds: { x?: number, y?: number, width?: number, height?: number }) =>
             ipcRenderer.invoke('window-set-bounds', bounds),
         addMaximizeListener: () => ipcRenderer.invoke('window-add-maximize-listener'),
         removeMaximizeListener: () => ipcRenderer.invoke('window-remove-maximize-listener'),
@@ -47,47 +47,47 @@ contextBridge.exposeInMainWorld('electronAPI', {
     },
     // Enhanced file system methods
     fs: {
-        getDirectoryContents: (dirPath: string, options?: any) => 
+        getDirectoryContents: (dirPath: string, options?: any) =>
             ipcRenderer.invoke('fs-get-directory-contents', dirPath, options),
-        directoryExists: (dirPath: string) => 
+        directoryExists: (dirPath: string) =>
             ipcRenderer.invoke('fs-directory-exists', dirPath),
-        getParentDirectory: (dirPath: string) => 
+        getParentDirectory: (dirPath: string) =>
             ipcRenderer.invoke('fs-get-parent-directory', dirPath),
-        getKnownFolder: (folderType: string) => 
+        getKnownFolder: (folderType: string) =>
             ipcRenderer.invoke('fs-get-known-folder', folderType),
-        getFolderMetadata: (folderPath: string) => 
+        getFolderMetadata: (folderPath: string) =>
             ipcRenderer.invoke('fs-get-folder-metadata', folderPath),
     },
     // File operations
     files: {
-        copy: (sources: string[], destination: string) => 
+        copy: (sources: string[], destination: string) =>
             ipcRenderer.invoke('file-copy', sources, destination),
-        cut: (sources: string[], destination: string) => 
+        cut: (sources: string[], destination: string) =>
             ipcRenderer.invoke('file-cut', sources, destination),
-        delete: (paths: string[]) => 
+        delete: (paths: string[]) =>
             ipcRenderer.invoke('file-delete', paths),
-        rename: (oldPath: string, newName: string) => 
+        rename: (oldPath: string, newName: string) =>
             ipcRenderer.invoke('file-rename', oldPath, newName),
-        createFolder: (parentPath: string, name: string) => 
+        createFolder: (parentPath: string, name: string) =>
             ipcRenderer.invoke('file-create-folder', parentPath, name),
-        showProperties: (path: string) => 
+        showProperties: (path: string) =>
             ipcRenderer.invoke('file-show-properties', path),
-        showInExplorer: (path: string) => 
+        showInExplorer: (path: string) =>
             ipcRenderer.invoke('file-show-in-explorer', path),
     },
     // Clipboard operations
     clipboard: {
-        copyFiles: (paths: string[]) => 
+        copyFiles: (paths: string[]) =>
             ipcRenderer.invoke('clipboard-copy', paths),
-        cutFiles: (paths: string[]) => 
+        cutFiles: (paths: string[]) =>
             ipcRenderer.invoke('clipboard-cut', paths),
-        pasteFiles: (destinationPath: string) => 
+        pasteFiles: (destinationPath: string) =>
             ipcRenderer.invoke('clipboard-paste', destinationPath),
-        hasFiles: () => 
+        hasFiles: () =>
             ipcRenderer.invoke('clipboard-has-files'),
-        getState: () => 
+        getState: () =>
             ipcRenderer.invoke('clipboard-get-state'),
-        clear: () => 
+        clear: () =>
             ipcRenderer.invoke('clipboard-clear'),
     },
     // Settings management
@@ -95,18 +95,18 @@ contextBridge.exposeInMainWorld('electronAPI', {
         getAll: () => ipcRenderer.invoke('settings-get-all'),
         getKnownFolders: () => ipcRenderer.invoke('settings-get-known-folders'),
         getKnownFolder: (folderType: string) => ipcRenderer.invoke('settings-get-known-folder', folderType),
-        updateKnownFolder: (folderType: string, newPath: string) => 
+        updateKnownFolder: (folderType: string, newPath: string) =>
             ipcRenderer.invoke('settings-update-known-folder', folderType, newPath),
-        updateKnownFolders: (folders: any) => 
+        updateKnownFolders: (folders: any) =>
             ipcRenderer.invoke('settings-update-known-folders', folders),
         resetKnownFolders: () => ipcRenderer.invoke('settings-reset-known-folders'),
-        validateFolder: (folderPath: string) => 
+        validateFolder: (folderPath: string) =>
             ipcRenderer.invoke('settings-validate-folder', folderPath),
-        update: (key: string, value: any) => 
+        update: (key: string, value: any) =>
             ipcRenderer.invoke('settings-update', key, value),
         getPath: () => ipcRenderer.invoke('settings-get-path'),
     },
-    
+
     // System information
     system: {
         platform: process.platform,

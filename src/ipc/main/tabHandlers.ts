@@ -6,7 +6,7 @@ let mainWindow: BrowserWindow | null = null;
 
 export const initializeTabHandlers = (window: BrowserWindow) => {
     mainWindow = window;
-    
+
     // TODO: Re-enable when internal:home is implemented
     // Create initial home tab
     // TabManager.addTab(tabs, mainWindow, 'internal:home');
@@ -15,7 +15,7 @@ export const initializeTabHandlers = (window: BrowserWindow) => {
 // Tab management IPC handlers
 ipcMain.handle('tab-add', async (event, url: string) => {
     if (!mainWindow) return null;
-    
+
     const newTab = TabManager.addTab(tabs, mainWindow, url);
     return {
         id: newTab.id,
@@ -26,7 +26,7 @@ ipcMain.handle('tab-add', async (event, url: string) => {
 
 ipcMain.handle('tab-switch', async (event, tabId: string) => {
     if (!mainWindow) return null;
-    
+
     const tab = TabManager.switchToTab(tabs, tabId, mainWindow);
     return tab ? {
         id: tab.id,
@@ -37,11 +37,11 @@ ipcMain.handle('tab-switch', async (event, tabId: string) => {
 
 ipcMain.handle('tab-close', async (event, tabId: string) => {
     if (!mainWindow) return [];
-    
+
     const updatedTabs = TabManager.closeTab(tabs, tabId, mainWindow);
     tabs.length = 0;
     tabs.push(...updatedTabs);
-    
+
     return updatedTabs.map(tab => ({
         id: tab.id,
         title: tab.title,

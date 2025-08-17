@@ -57,18 +57,18 @@ interface ThisPCViewProps {
     networkDevices?: NetworkDevice[]; // Network devices data
 }
 
-export const ThisPCView: React.FC<ThisPCViewProps> = ({ 
-    viewMode, 
-    onDriveHover, 
-    drives: propDrives, 
+export const ThisPCView: React.FC<ThisPCViewProps> = ({
+    viewMode,
+    onDriveHover,
+    drives: propDrives,
     drivesLoading = false,
     drivesError = null,
     onRefreshDrives,
-    quickAccessItems: propQuickAccess, 
-    networkDevices: propNetworkDevices 
+    quickAccessItems: propQuickAccess,
+    networkDevices: propNetworkDevices
 }) => {
     const { settings } = useSettings();
-    
+
     // Convert actual drive data to DriveInfo format
     const convertActualDrives = (actualDrives: any[] = []): DriveInfo[] => {
         return actualDrives.map(drive => {
@@ -79,7 +79,7 @@ export const ThisPCView: React.FC<ThisPCViewProps> = ({
 
             const usagePercentage = drive.total > 0 ? Math.round((drive.used / drive.total) * 100) : 0;
             const isNetworkDrive = drive.flags?.isVirtual || drive.drivePath.includes('\\\\') || drive.drivePath.startsWith('Z:');
-            
+
             // Determine drive type and icon
             let driveType: 'local' | 'removable' | 'network' | 'cd' = 'local';
             let icon = <FaHdd style={{ color: '#0078D4' }} />;
@@ -374,7 +374,7 @@ export const ThisPCView: React.FC<ThisPCViewProps> = ({
     // Separate local drives, network drives
     const localDrives: DriveInfo[] = actualDrives.filter(drive => drive.type !== 'network');
     const networkDrives: DriveInfo[] = actualDrives.filter(drive => drive.type === 'network');
-    
+
     // Create dynamic sections
     const [sections, setSections] = useState<Section[]>([
         {
@@ -543,12 +543,12 @@ export const ThisPCView: React.FC<ThisPCViewProps> = ({
     return (
         <div className="thispc-view">
             {showIconPicker.show && (
-                <IconPicker 
-                    driveIndex={showIconPicker.driveIndex} 
-                    onClose={() => setShowIconPicker({ driveIndex: -1, show: false })} 
+                <IconPicker
+                    driveIndex={showIconPicker.driveIndex}
+                    onClose={() => setShowIconPicker({ driveIndex: -1, show: false })}
                 />
             )}
-            
+
             <div className="thispc-header">
                 <div className="header-content">
                     <FaDesktop className="header-icon" />
@@ -557,7 +557,7 @@ export const ThisPCView: React.FC<ThisPCViewProps> = ({
                         <p>Access your drives, folders, and devices</p>
                     </div>
                 </div>
-                
+
                 <div className="thispc-controls">
                     <div className="view-size-controls">
                         <button
@@ -582,16 +582,16 @@ export const ThisPCView: React.FC<ThisPCViewProps> = ({
                             <FaCog />
                         </button>
                     </div>
-                    
+
                     <div className="header-controls">
-                        <button 
+                        <button
                             className={`view-toggle-btn ${visualizationMode === 'bar' ? 'active' : ''}`}
                             onClick={() => setVisualizationMode('bar')}
                             title="Bar visualization"
                         >
                             <FaBars />
                         </button>
-                        <button 
+                        <button
                             className={`view-toggle-btn ${visualizationMode === 'pie' ? 'active' : ''}`}
                             onClick={() => setVisualizationMode('pie')}
                             title="Pie chart visualization"
@@ -604,204 +604,204 @@ export const ThisPCView: React.FC<ThisPCViewProps> = ({
 
             <div className="thispc-content">
 
-            {/* Quick Access Section */}
-            <div className="quick-access-section">
-                <h3 className="section-title">
-                    <FaFolder className="section-icon" />
-                    Folders
-                </h3>
-                <div className={`quick-access-${viewMode}`}>
-                    {dynamicQuickAccessItems.map((item: QuickAccessItem, index: number) => (
-                        <div key={index} className="quick-access-item" onClick={() => handleQuickAccessClick(item)}>
-                            <div className="item-icon-container">
-                                {item.icon}
-                            </div>
-                            <div className="item-content">
-                                <h4 className="item-name">{item.name}</h4>
-                                {viewMode === 'grid' && (
-                                    <p className="item-description">{item.description}</p>
-                                )}
-                                <div className="item-path">{item.path}</div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* Dynamic Sections */}
-            {sections.filter(section => section.visible).map((section: Section) => (
-                <div key={section.id} className={section.type === 'drives' ? 'drives-section' : 'section'}>
+                {/* Quick Access Section */}
+                <div className="quick-access-section">
                     <h3 className="section-title">
-                        {section.icon}
-                        {section.title}
+                        <FaFolder className="section-icon" />
+                        Folders
                     </h3>
-                    
-                    {section.type === 'drives' && (
-                        <div className={`drives-container drives-${driveViewMode} drives-scrollable`}>
-                            {drivesLoading && (section.items as DriveInfo[]).length === 0 && (
-                                <div className="drives-loading">
-                                    <FaHdd className="loading-icon" />
-                                    <span>Loading drives...</span>
+                    <div className={`quick-access-${viewMode}`}>
+                        {dynamicQuickAccessItems.map((item: QuickAccessItem, index: number) => (
+                            <div key={index} className="quick-access-item" onClick={() => handleQuickAccessClick(item)}>
+                                <div className="item-icon-container">
+                                    {item.icon}
                                 </div>
-                            )}
-                            
-                            {drivesError && (section.items as DriveInfo[]).length === 0 && !drivesLoading && (
-                                <div className="drives-error">
-                                    <FaTimes className="error-icon" />
-                                    <span>Failed to load drives</span>
-                                    <small>{drivesError}</small>
-                                    {onRefreshDrives && (
-                                        <button 
-                                            className="refresh-button"
-                                            onClick={onRefreshDrives}
-                                            title="Retry loading drives"
-                                        >
-                                            <FaSync /> Try Again
-                                        </button>
+                                <div className="item-content">
+                                    <h4 className="item-name">{item.name}</h4>
+                                    {viewMode === 'grid' && (
+                                        <p className="item-description">{item.description}</p>
                                     )}
+                                    <div className="item-path">{item.path}</div>
                                 </div>
-                            )}
-                            
-                            {!drivesLoading && !drivesError && (section.items as DriveInfo[]).length === 0 && (
-                                <div className="drives-empty">
-                                    <FaHdd className="empty-icon" />
-                                    <span>No drives found</span>
-                                </div>
-                            )}
-                            
-                            {(section.items as DriveInfo[]).map((drive: DriveInfo, index: number) => (
-                                <div 
-                                    key={index} 
-                                    className={`drive-card ${drive.type} ${drive.status}`}
-                                    onClick={() => handleDriveClick(drive)}
-                                    onMouseEnter={() => handleDriveHover(drive)}
-                                >
-                                    <div className="drive-header">
-                                        <div className="drive-icon-large">
-                                            {drive.customIcon || drive.icon}
-                                            <div className={`status-dot ${drive.status}`}></div>
-                                            <button 
-                                                className="icon-edit-btn"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setShowIconPicker({ driveIndex: index, show: true });
-                                                }}
-                                                title="Change drive icon"
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Dynamic Sections */}
+                {sections.filter(section => section.visible).map((section: Section) => (
+                    <div key={section.id} className={section.type === 'drives' ? 'drives-section' : 'section'}>
+                        <h3 className="section-title">
+                            {section.icon}
+                            {section.title}
+                        </h3>
+
+                        {section.type === 'drives' && (
+                            <div className={`drives-container drives-${driveViewMode} drives-scrollable`}>
+                                {drivesLoading && (section.items as DriveInfo[]).length === 0 && (
+                                    <div className="drives-loading">
+                                        <FaHdd className="loading-icon" />
+                                        <span>Loading drives...</span>
+                                    </div>
+                                )}
+
+                                {drivesError && (section.items as DriveInfo[]).length === 0 && !drivesLoading && (
+                                    <div className="drives-error">
+                                        <FaTimes className="error-icon" />
+                                        <span>Failed to load drives</span>
+                                        <small>{drivesError}</small>
+                                        {onRefreshDrives && (
+                                            <button
+                                                className="refresh-button"
+                                                onClick={onRefreshDrives}
+                                                title="Retry loading drives"
                                             >
-                                                <FaCog />
+                                                <FaSync /> Try Again
                                             </button>
+                                        )}
+                                    </div>
+                                )}
+
+                                {!drivesLoading && !drivesError && (section.items as DriveInfo[]).length === 0 && (
+                                    <div className="drives-empty">
+                                        <FaHdd className="empty-icon" />
+                                        <span>No drives found</span>
+                                    </div>
+                                )}
+
+                                {(section.items as DriveInfo[]).map((drive: DriveInfo, index: number) => (
+                                    <div
+                                        key={index}
+                                        className={`drive-card ${drive.type} ${drive.status}`}
+                                        onClick={() => handleDriveClick(drive)}
+                                        onMouseEnter={() => handleDriveHover(drive)}
+                                    >
+                                        <div className="drive-header">
+                                            <div className="drive-icon-large">
+                                                {drive.customIcon || drive.icon}
+                                                <div className={`status-dot ${drive.status}`}></div>
+                                                <button
+                                                    className="icon-edit-btn"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setShowIconPicker({ driveIndex: index, show: true });
+                                                    }}
+                                                    title="Change drive icon"
+                                                >
+                                                    <FaCog />
+                                                </button>
+                                            </div>
+
+                                            <div className="drive-info">
+                                                <div className="drive-title">
+                                                    <h4 className="drive-name">{drive.name}</h4>
+                                                    <span className="drive-letter">({drive.letter})</span>
+                                                </div>
+                                                <div className="drive-type-badge">
+                                                    {drive.type === 'local' && 'Local Disk'}
+                                                    {drive.type === 'removable' && 'Removable Disk'}
+                                                    {drive.type === 'network' && 'Network Drive'}
+                                                    {drive.type === 'cd' && 'CD/DVD Drive'}
+                                                </div>
+                                                {drive.description && (
+                                                    <p className="drive-description">{drive.description}</p>
+                                                )}
+                                            </div>
+
+                                            <div className="drive-actions">
+                                                <button className="action-btn" title="Properties">
+                                                    <FaCog />
+                                                </button>
+                                                <button className="action-btn" title="Open in new window">
+                                                    <FaExternalLinkAlt />
+                                                </button>
+                                            </div>
                                         </div>
-                                        
-                                        <div className="drive-info">
-                                            <div className="drive-title">
-                                                <h4 className="drive-name">{drive.name}</h4>
-                                                <span className="drive-letter">({drive.letter})</span>
-                                            </div>
-                                            <div className="drive-type-badge">
-                                                {drive.type === 'local' && 'Local Disk'}
-                                                {drive.type === 'removable' && 'Removable Disk'}
-                                                {drive.type === 'network' && 'Network Drive'}
-                                                {drive.type === 'cd' && 'CD/DVD Drive'}
-                                            </div>
-                                            {drive.description && (
-                                                <p className="drive-description">{drive.description}</p>
+
+                                        <div className="drive-storage">
+                                            {visualizationMode === 'bar' ? (
+                                                <>
+                                                    <div className="storage-bar-container">
+                                                        <div className="storage-bar">
+                                                            <div
+                                                                className={`storage-fill ${formatBytes(drive.usagePercentage)}`}
+                                                                style={{
+                                                                    width: `${drive.usagePercentage}%`,
+                                                                    background: `linear-gradient(90deg, ${drive.color}, ${drive.color}aa)`
+                                                                }}
+                                                            ></div>
+                                                        </div>
+                                                        <div className="storage-labels">
+                                                            <span className="storage-used">Used: {drive.usedSpace}</span>
+                                                            <span className="storage-free">Free: {drive.freeSpace}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="storage-summary">
+                                                        <div className="storage-total">
+                                                            <strong>{drive.totalSpace}</strong> total
+                                                        </div>
+                                                        <div className={`storage-percentage ${formatBytes(drive.usagePercentage)}`}>
+                                                            {drive.usagePercentage}% used
+                                                        </div>
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <div className="pie-visualization">
+                                                    <PieChart drive={drive} />
+                                                    <div className="storage-details">
+                                                        <div className="detail-item">
+                                                            <div className="detail-color-indicator" style={{ backgroundColor: drive.color }}></div>
+                                                            <span className="detail-label">Used</span>
+                                                            <span className="detail-value">{drive.usedSpace}</span>
+                                                        </div>
+                                                        <div className="detail-item">
+                                                            <div className="detail-color-indicator" style={{ backgroundColor: 'var(--border-primary)' }}></div>
+                                                            <span className="detail-label">Free</span>
+                                                            <span className="detail-value">{drive.freeSpace}</span>
+                                                        </div>
+                                                        <div className="total-space">
+                                                            Total: <strong>{drive.totalSpace}</strong>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             )}
                                         </div>
 
-                                        <div className="drive-actions">
-                                            <button className="action-btn" title="Properties">
-                                                <FaCog />
-                                            </button>
-                                            <button className="action-btn" title="Open in new window">
-                                                <FaExternalLinkAlt />
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <div className="drive-storage">
-                                        {visualizationMode === 'bar' ? (
-                                            <>
-                                                <div className="storage-bar-container">
-                                                    <div className="storage-bar">
-                                                        <div 
-                                                            className={`storage-fill ${formatBytes(drive.usagePercentage)}`}
-                                                            style={{ 
-                                                                width: `${drive.usagePercentage}%`,
-                                                                background: `linear-gradient(90deg, ${drive.color}, ${drive.color}aa)`
-                                                            }}
-                                                        ></div>
-                                                    </div>
-                                                    <div className="storage-labels">
-                                                        <span className="storage-used">Used: {drive.usedSpace}</span>
-                                                        <span className="storage-free">Free: {drive.freeSpace}</span>
-                                                    </div>
-                                                </div>
-                                                <div className="storage-summary">
-                                                    <div className="storage-total">
-                                                        <strong>{drive.totalSpace}</strong> total
-                                                    </div>
-                                                    <div className={`storage-percentage ${formatBytes(drive.usagePercentage)}`}>
-                                                        {drive.usagePercentage}% used
-                                                    </div>
-                                                </div>
-                                            </>
-                                        ) : (
-                                            <div className="pie-visualization">
-                                                <PieChart drive={drive} />
-                                                <div className="storage-details">
-                                                    <div className="detail-item">
-                                                        <div className="detail-color-indicator" style={{ backgroundColor: drive.color }}></div>
-                                                        <span className="detail-label">Used</span>
-                                                        <span className="detail-value">{drive.usedSpace}</span>
-                                                    </div>
-                                                    <div className="detail-item">
-                                                        <div className="detail-color-indicator" style={{ backgroundColor: 'var(--border-primary)' }}></div>
-                                                        <span className="detail-label">Free</span>
-                                                        <span className="detail-value">{drive.freeSpace}</span>
-                                                    </div>
-                                                    <div className="total-space">
-                                                        Total: <strong>{drive.totalSpace}</strong>
-                                                    </div>
-                                                </div>
+                                        {drive.type === 'network' && (
+                                            <div className="network-indicator">
+                                                <FaCloud className="cloud-icon" />
+                                                <span>Connected to network</span>
                                             </div>
                                         )}
                                     </div>
+                                ))}
+                            </div>
+                        )}
 
-                                    {drive.type === 'network' && (
-                                        <div className="network-indicator">
-                                            <FaCloud className="cloud-icon" />
-                                            <span>Connected to network</span>
+                        {section.type === 'network' && (
+                            <div className="network-devices-container">
+                                {(section.items as NetworkDevice[]).map((device: NetworkDevice, index: number) => (
+                                    <div
+                                        key={index}
+                                        className="network-device-card"
+                                        onClick={() => console.log('Network device clicked:', device)}
+                                    >
+                                        <div className="device-icon-container">
+                                            {device.icon}
+                                            <div className={`device-status-dot ${device.status}`}></div>
                                         </div>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    )}
-
-                    {section.type === 'network' && (
-                        <div className="network-devices-container">
-                            {(section.items as NetworkDevice[]).map((device: NetworkDevice, index: number) => (
-                                <div 
-                                    key={index} 
-                                    className="network-device-card"
-                                    onClick={() => console.log('Network device clicked:', device)}
-                                >
-                                    <div className="device-icon-container">
-                                        {device.icon}
-                                        <div className={`device-status-dot ${device.status}`}></div>
+                                        <div className="device-info">
+                                            <h4 className="device-name">{device.name}</h4>
+                                            <p className="device-type">{device.type}</p>
+                                            <p className="device-address">{device.address}</p>
+                                            <span className={`device-status ${device.status}`}>{device.status}</span>
+                                        </div>
                                     </div>
-                                    <div className="device-info">
-                                        <h4 className="device-name">{device.name}</h4>
-                                        <p className="device-type">{device.type}</p>
-                                        <p className="device-address">{device.address}</p>
-                                        <span className={`device-status ${device.status}`}>{device.status}</span>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            ))}
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                ))}
             </div>
         </div>
     );

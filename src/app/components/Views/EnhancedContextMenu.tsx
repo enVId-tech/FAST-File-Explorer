@@ -66,7 +66,7 @@ export const EnhancedContextMenu: React.FC<EnhancedContextMenuProps> = ({
         if (isVisible) {
             // Check if clipboard has files
             window.electronAPI.clipboard.hasFiles().then(setClipboardHasFiles).catch(() => setClipboardHasFiles(false));
-            
+
             // Get current clipboard state to track cut/copied files
             window.electronAPI.clipboard.getState()
                 .then((state: { operation: 'copy' | 'cut' | null; files: string[] }) => {
@@ -84,7 +84,7 @@ export const EnhancedContextMenu: React.FC<EnhancedContextMenuProps> = ({
         let { x, y } = position;
         const initialOffsetX = -290;
         const initialOffsetY = -200;
-        
+
         // Apply initial offset
         x += initialOffsetX;
         y += initialOffsetY;
@@ -98,12 +98,12 @@ export const EnhancedContextMenu: React.FC<EnhancedContextMenuProps> = ({
         // Estimate menu dimensions based on content
         const baseMenuWidth = 300;
         const baseMenuHeight = 250;
-        
+
         // Calculate dynamic height based on menu items
         const selectedItemsCount = selectedItems.length;
         const contextMenuItems = selectedItemsCount > 0 ? 12 : 8; // More items when files are selected
         const estimatedHeight = Math.min(contextMenuItems * 35 + 60, 400); // Cap at 400px
-        
+
         const menuDimensions = {
             width: baseMenuWidth,
             height: estimatedHeight
@@ -125,7 +125,7 @@ export const EnhancedContextMenu: React.FC<EnhancedContextMenuProps> = ({
                 finalX = viewport.width - menuDimensions.width;
             }
         }
-        
+
         // Keep some minimum margin from left edge
         if (finalX < 10) {
             finalX = 10;
@@ -143,7 +143,7 @@ export const EnhancedContextMenu: React.FC<EnhancedContextMenuProps> = ({
                 finalY = viewport.height - menuDimensions.height;
             }
         }
-        
+
         // Keep some minimum margin from top edge
         if (finalY < 10) {
             finalY = 10;
@@ -153,7 +153,7 @@ export const EnhancedContextMenu: React.FC<EnhancedContextMenuProps> = ({
         if (finalX + menuDimensions.width > viewport.width) {
             finalX = Math.max(10, viewport.width - menuDimensions.width);
         }
-        
+
         if (finalY + menuDimensions.height > viewport.height) {
             finalY = Math.max(10, viewport.height - menuDimensions.height);
         }
@@ -197,16 +197,16 @@ export const EnhancedContextMenu: React.FC<EnhancedContextMenuProps> = ({
         try {
             const paths = selectedItems.map(item => item.path);
             await window.electronAPI.clipboard.copyFiles(paths);
-            
+
             // Update local clipboard state for immediate UI feedback
             setClipboardState({ operation: 'copy', files: paths });
             setClipboardHasFiles(true);
-            
+
             // Broadcast clipboard change to refresh file list visuals
-            window.dispatchEvent(new CustomEvent('clipboard-changed', { 
-                detail: { operation: 'copy', files: paths } 
+            window.dispatchEvent(new CustomEvent('clipboard-changed', {
+                detail: { operation: 'copy', files: paths }
             }));
-            
+
             onClose();
         } catch (error) {
             console.error('Failed to copy files:', error);
@@ -217,16 +217,16 @@ export const EnhancedContextMenu: React.FC<EnhancedContextMenuProps> = ({
         try {
             const paths = selectedItems.map(item => item.path);
             await window.electronAPI.clipboard.cutFiles(paths);
-            
+
             // Update local clipboard state for immediate UI feedback
             setClipboardState({ operation: 'cut', files: paths });
             setClipboardHasFiles(true);
-            
+
             // Broadcast clipboard change to refresh file list visuals
-            window.dispatchEvent(new CustomEvent('clipboard-changed', { 
-                detail: { operation: 'cut', files: paths } 
+            window.dispatchEvent(new CustomEvent('clipboard-changed', {
+                detail: { operation: 'cut', files: paths }
             }));
-            
+
             onClose();
         } catch (error) {
             console.error('Failed to cut files:', error);
@@ -241,13 +241,13 @@ export const EnhancedContextMenu: React.FC<EnhancedContextMenuProps> = ({
                 if (clipboardState.operation === 'cut') {
                     setClipboardState({ operation: null, files: [] });
                     setClipboardHasFiles(false);
-                    
+
                     // Broadcast clipboard cleared to refresh file list visuals
-                    window.dispatchEvent(new CustomEvent('clipboard-changed', { 
-                        detail: { operation: null, files: [] } 
+                    window.dispatchEvent(new CustomEvent('clipboard-changed', {
+                        detail: { operation: null, files: [] }
                     }));
                 }
-                
+
                 onRefresh?.();
             }
             onClose();
@@ -260,29 +260,29 @@ export const EnhancedContextMenu: React.FC<EnhancedContextMenuProps> = ({
         try {
             const paths = selectedItems.map(item => item.path);
             const itemNames = selectedItems.map(item => item.name);
-            
+
             let confirmMessage: string;
             if (paths.length === 1) {
                 confirmMessage = `Are you sure you want to permanently delete "${itemNames[0]}"?\n\nThis action cannot be undone.`;
             } else {
                 confirmMessage = `Are you sure you want to permanently delete these ${paths.length} items?\n\n${itemNames.slice(0, 3).join('\n')}${paths.length > 3 ? `\n... and ${paths.length - 3} more` : ''}\n\nThis action cannot be undone.`;
             }
-            
+
             const confirmed = window.confirm(confirmMessage);
             if (confirmed) {
                 await window.electronAPI.files.delete(paths);
-                
+
                 // Clear clipboard if deleted files were in clipboard
                 if (clipboardState.files.some(file => paths.includes(file))) {
                     await window.electronAPI.clipboard.clear();
                     setClipboardState({ operation: null, files: [] });
-                    
+
                     // Broadcast clipboard cleared
-                    window.dispatchEvent(new CustomEvent('clipboard-changed', { 
-                        detail: { operation: null, files: [] } 
+                    window.dispatchEvent(new CustomEvent('clipboard-changed', {
+                        detail: { operation: null, files: [] }
                     }));
                 }
-                
+
                 onRefresh?.();
             }
             onClose();
@@ -298,46 +298,46 @@ export const EnhancedContextMenu: React.FC<EnhancedContextMenuProps> = ({
         try {
             const item = selectedItems[0];
             const isDirectory = item.type === 'directory';
-            
+
             // For files, pre-select the name without extension for easier renaming
             let defaultName = item.name;
             if (!isDirectory && item.name.includes('.')) {
                 const lastDotIndex = item.name.lastIndexOf('.');
                 defaultName = item.name.substring(0, lastDotIndex);
             }
-            
+
             const newName = window.prompt(
-                `Rename ${isDirectory ? 'folder' : 'file'}:`, 
+                `Rename ${isDirectory ? 'folder' : 'file'}:`,
                 defaultName
             );
-            
+
             if (newName && newName.trim() !== '') {
                 const trimmedName = newName.trim();
-                
+
                 // For files, add back the extension if not provided
                 let finalName = trimmedName;
                 if (!isDirectory && !trimmedName.includes('.') && item.name.includes('.')) {
                     const extension = item.name.substring(item.name.lastIndexOf('.'));
                     finalName = trimmedName + extension;
                 }
-                
+
                 if (finalName !== item.name) {
                     await window.electronAPI.files.rename(item.path, finalName);
-                    
+
                     // Update clipboard state if renamed file was in clipboard
                     if (clipboardState.files.includes(item.path)) {
                         const newPath = item.path.replace(item.name, finalName);
-                        const updatedFiles = clipboardState.files.map(file => 
+                        const updatedFiles = clipboardState.files.map(file =>
                             file === item.path ? newPath : file
                         );
                         setClipboardState({ ...clipboardState, files: updatedFiles });
-                        
+
                         // Broadcast clipboard update
-                        window.dispatchEvent(new CustomEvent('clipboard-changed', { 
-                            detail: { operation: clipboardState.operation, files: updatedFiles } 
+                        window.dispatchEvent(new CustomEvent('clipboard-changed', {
+                            detail: { operation: clipboardState.operation, files: updatedFiles }
                         }));
                     }
-                    
+
                     onRefresh?.();
                 }
             }
@@ -573,10 +573,10 @@ export const EnhancedContextMenu: React.FC<EnhancedContextMenuProps> = ({
             // Only recalculate if there's a significant difference from estimates
             const estimatedWidth = 300;
             const estimatedHeight = Math.min((selectedItems.length > 0 ? 12 : 8) * 35 + 60, 400);
-            
+
             const widthDiff = Math.abs(actualWidth - estimatedWidth);
             const heightDiff = Math.abs(actualHeight - estimatedHeight);
-            
+
             // Only reposition if the actual size is significantly different from estimate
             if (widthDiff > 50 || heightDiff > 50) {
                 let { x, y } = position;
@@ -629,20 +629,20 @@ export const EnhancedContextMenu: React.FC<EnhancedContextMenuProps> = ({
             {selectedItems.length > 0 && (
                 <div className="context-menu-header">
                     <div className="selection-count">
-                        {selectedItems.length === 1 
-                            ? `1 item selected: ${selectedItems[0].name}` 
+                        {selectedItems.length === 1
+                            ? `1 item selected: ${selectedItems[0].name}`
                             : `${selectedItems.length} items selected`}
                     </div>
-                    {clipboardState.operation && clipboardState.files.some(file => 
+                    {clipboardState.operation && clipboardState.files.some(file =>
                         selectedItems.some(item => item.path === file)
                     ) && (
-                        <div className={`clipboard-indicator ${clipboardState.operation}`}>
-                            {clipboardState.operation === 'cut' ? '✂️ Cut' : '📋 Copied'}
-                        </div>
-                    )}
+                            <div className={`clipboard-indicator ${clipboardState.operation}`}>
+                                {clipboardState.operation === 'cut' ? '✂️ Cut' : '📋 Copied'}
+                            </div>
+                        )}
                 </div>
             )}
-            
+
             {menuItems.map((item, index) => {
                 if (item.separator) {
                     return <div key={item.id} className="context-menu-separator" />;

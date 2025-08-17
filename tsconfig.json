@@ -15,7 +15,9 @@
     "noEmit": true, // Set to true if you want to use tsc for type checking only
     "resolveJsonModule": true, // If you need to import JSON files
     "paths": {
-      "*": ["./*"] // Allows imports relative to the src folder
+      "*": [
+        "./*"
+      ] // Allows imports relative to the src folder
     }
   },
   "include": [

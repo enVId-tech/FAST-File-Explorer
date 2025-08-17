@@ -5,7 +5,7 @@
     padding: 8px 12px;
     background: var(--background-secondary);
     border-bottom: 1px solid var(--border-color);
-    
+
     .search-input {
         width: 100%;
         padding: 8px 12px;
@@ -15,13 +15,13 @@
         color: var(--text-primary);
         font-size: 14px;
         transition: border-color var(--transition-duration, 0.2s) ease, box-shadow var(--transition-duration, 0.2s) ease;
-        
+
         &:focus {
             outline: none;
             border-color: var(--accent-color);
             box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.1);
         }
-        
+
         &::placeholder {
             color: var(--text-secondary);
         }
@@ -48,8 +48,13 @@
 }
 
 @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .error-icon,
@@ -96,34 +101,34 @@
     border-radius: 4px;
     padding: 4px 8px;
     margin: -4px 0;
-    
+
     &:hover {
         background: var(--background-tertiary, rgba(255, 255, 255, 0.05));
         color: var(--text-primary);
     }
-    
+
     &.active {
         color: var(--accent-color);
         font-weight: 600;
-        
+
         .sort-indicator {
             opacity: 1;
             color: var(--accent-color);
         }
     }
-    
+
     .header-text {
         flex: 1;
         margin-right: 8px;
     }
-    
+
     .sort-indicator {
         opacity: 0.4;
         font-size: 10px;
         transition: opacity var(--transition-duration, 0.2s) ease;
         min-width: 12px;
         text-align: center;
-        
+
         .sortable-header:hover & {
             opacity: 0.7;
         }
@@ -171,22 +176,24 @@
     padding: 8px 12px;
     border-bottom: 1px solid var(--border-color-light);
     cursor: pointer;
-    transition: background-color 0.1s ease; /* Faster transition for responsiveness */
+    transition: background-color 0.1s ease;
+    /* Faster transition for responsiveness */
     font-size: 13px;
-    height: 40px; /* fixed height to match virtualization rowHeight */
+    height: 40px;
+    /* fixed height to match virtualization rowHeight */
     /* Performance optimizations for fast interactions */
     contain: layout style;
     will-change: background-color;
-    
+
     &.compact {
         padding: 4px 12px;
         height: 32px;
         font-size: 12px;
-        
+
         .file-name-container {
             gap: 6px;
         }
-        
+
         .file-icon {
             width: 14px;
             height: 14px;
@@ -197,7 +204,8 @@
 
 .file-list-item:hover {
     background: var(--background-hover);
-    transition: background-color 0.05s ease; /* Even faster on hover for immediate feedback */
+    transition: background-color 0.05s ease;
+    /* Even faster on hover for immediate feedback */
 }
 
 .file-list-item.selected {
@@ -211,7 +219,7 @@
     background: rgba(255, 255, 0, 0.1) !important;
     border-left: 3px solid #fbbf24;
     position: relative;
-    
+
     &::after {
         content: "✂️";
         position: absolute;
@@ -224,7 +232,7 @@
         color: #000;
         line-height: 1;
     }
-    
+
     &:hover {
         opacity: 0.7;
     }
@@ -234,7 +242,7 @@
     background: rgba(34, 197, 94, 0.1) !important;
     border-left: 3px solid #22c55e;
     position: relative;
-    
+
     &::after {
         content: "📋";
         position: absolute;
@@ -261,28 +269,61 @@
     flex-shrink: 0;
 }
 
-.directory-icon { color: #fbbf24; }
-.drive-icon { 
-    color: #4A90E2; 
-    
+.directory-icon {
+    color: #fbbf24;
+}
+
+.drive-icon {
+    color: #4A90E2;
+
     &.system-drive {
         color: #E74C3C;
     }
-    
+
     &.usb-drive {
         color: #27AE60;
     }
 }
-.image-icon { color: #10b981; }
-.video-icon { color: #8b5cf6; }
-.audio-icon { color: #06b6d4; }
-.archive-icon { color: #f59e0b; }
-.code-icon { color: #3b82f6; }
-.pdf-icon { color: #dc2626; }
-.word-icon { color: #2563eb; }
-.excel-icon { color: #059669; }
-.powerpoint-icon { color: #d97706; }
-.default-icon { color: var(--text-secondary); }
+
+.image-icon {
+    color: #10b981;
+}
+
+.video-icon {
+    color: #8b5cf6;
+}
+
+.audio-icon {
+    color: #06b6d4;
+}
+
+.archive-icon {
+    color: #f59e0b;
+}
+
+.code-icon {
+    color: #3b82f6;
+}
+
+.pdf-icon {
+    color: #dc2626;
+}
+
+.word-icon {
+    color: #2563eb;
+}
+
+.excel-icon {
+    color: #059669;
+}
+
+.powerpoint-icon {
+    color: #d97706;
+}
+
+.default-icon {
+    color: var(--text-secondary);
+}
 
 .file-name {
     white-space: nowrap;
@@ -312,25 +353,25 @@
     text-align: center;
     background: var(--background-primary);
     border: 1px solid transparent;
-    
+
     &.compact {
         padding: 8px;
-        
+
         .file-grid-icon {
             margin-bottom: 4px;
-            
+
             .file-icon {
                 font-size: 24px;
             }
         }
-        
+
         .file-grid-name {
             font-size: 11px;
             margin-bottom: 2px;
             -webkit-line-clamp: 1;
             line-clamp: 1;
         }
-        
+
         .file-grid-details {
             font-size: 10px;
         }
@@ -342,7 +383,8 @@
     border-color: var(--border-color);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transition: all 0.1s ease; /* Faster transition for grid items */
+    transition: all 0.1s ease;
+    /* Faster transition for grid items */
 }
 
 .file-grid-item.selected {
@@ -357,7 +399,7 @@
     background: rgba(255, 255, 0, 0.1) !important;
     border: 2px solid #fbbf24 !important;
     position: relative;
-    
+
     &::after {
         content: "✂️";
         position: absolute;
@@ -371,7 +413,7 @@
         line-height: 1;
         z-index: 1;
     }
-    
+
     &:hover {
         opacity: 0.7;
         transform: translateY(-1px);
@@ -382,7 +424,7 @@
     background: rgba(34, 197, 94, 0.1) !important;
     border: 2px solid #22c55e !important;
     position: relative;
-    
+
     &::after {
         content: "📋";
         position: absolute;
@@ -442,11 +484,11 @@
         gap: 12px;
         padding: 12px;
     }
-    
+
     .file-grid-item {
         padding: 8px;
     }
-    
+
     .file-grid-icon .file-icon {
         font-size: 24px;
     }
@@ -456,11 +498,11 @@
     .date-column {
         width: 140px;
     }
-    
+
     .type-column {
         width: 100px;
     }
-    
+
     .size-column {
         width: 80px;
     }
@@ -472,11 +514,11 @@
         display: flex;
         align-items: center;
         gap: 8px;
-        
+
         .search-input {
             flex: 1;
         }
-        
+
         .filter-button {
             background: none;
             border: 1px solid var(--border-color);
@@ -485,12 +527,12 @@
             color: var(--text-secondary);
             cursor: pointer;
             transition: all 0.2s ease;
-            
+
             &:hover {
                 border-color: var(--accent-color);
                 color: var(--text-primary);
             }
-            
+
             &.active {
                 background: var(--accent-color);
                 border-color: var(--accent-color);
@@ -498,21 +540,21 @@
             }
         }
     }
-    
+
     .filter-panel {
         margin-top: 12px;
         padding: 16px;
         background: var(--surface-bg);
         border: 1px solid var(--border-color);
         border-radius: 8px;
-        
+
         .filter-row {
             margin-bottom: 16px;
-            
+
             &:last-child {
                 margin-bottom: 0;
             }
-            
+
             label {
                 display: flex;
                 align-items: center;
@@ -522,7 +564,7 @@
                 color: var(--text-primary);
                 font-size: 13px;
             }
-            
+
             .filter-input {
                 width: 100%;
                 padding: 6px 10px;
@@ -531,37 +573,38 @@
                 background: var(--background-primary);
                 color: var(--text-primary);
                 font-size: 13px;
-                
+
                 &:focus {
                     outline: none;
                     border-color: var(--accent-color);
                 }
-                
+
                 &::placeholder {
                     color: var(--text-secondary);
                 }
             }
-            
-            .date-range, .size-range {
+
+            .date-range,
+            .size-range {
                 display: flex;
                 align-items: center;
                 gap: 10px;
-                
+
                 input {
                     flex: 1;
                 }
-                
+
                 span {
                     color: var(--text-secondary);
                     font-size: 12px;
                 }
             }
-            
+
             .file-type-checkboxes {
                 display: grid;
                 grid-template-columns: repeat(2, 1fr);
                 gap: 8px;
-                
+
                 .checkbox-option {
                     display: flex;
                     align-items: center;
@@ -570,23 +613,23 @@
                     color: var(--text-secondary);
                     font-size: 13px;
                     cursor: pointer;
-                    
+
                     input[type="checkbox"] {
                         accent-color: var(--accent-color);
                     }
-                    
+
                     &:hover {
                         color: var(--text-primary);
                     }
                 }
             }
         }
-        
+
         .filter-actions {
             border-top: 1px solid var(--border-color);
             padding-top: 12px;
             margin-top: 16px;
-            
+
             .clear-filters-button {
                 background: none;
                 border: 1px solid var(--border-color);
@@ -596,7 +639,7 @@
                 cursor: pointer;
                 font-size: 13px;
                 transition: all 0.2s ease;
-                
+
                 &:hover {
                     border-color: var(--accent-color);
                     color: var(--text-primary);
@@ -616,17 +659,17 @@
     gap: 12px;
     color: var(--text-secondary);
     font-size: 14px;
-    
+
     .empty-icon {
         font-size: 48px;
         color: var(--text-tertiary);
         opacity: 0.6;
     }
-    
+
     span {
         font-weight: 500;
     }
-    
+
     small {
         font-size: 12px;
         opacity: 0.8;

@@ -45,7 +45,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose }) =
 
             // Update the folder
             await window.electronAPI?.settings?.updateKnownFolder(folderType, editValue);
-            
+
             setEditingFolder(null);
             setEditValue('');
         } catch (error: any) {
@@ -96,34 +96,34 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose }) =
             name: 'General',
             icon: <FaCog />,
             settings: [
-                { 
-                    id: 'defaultSortBy', 
-                    name: 'Default sort by', 
-                    type: 'dropdown', 
-                    value: settings.defaultSortBy || 'name', 
+                {
+                    id: 'defaultSortBy',
+                    name: 'Default sort by',
+                    type: 'dropdown',
+                    value: settings.defaultSortBy || 'name',
                     options: ['name', 'size', 'modified', 'type'],
                     key: 'defaultSortBy'
                 },
-                { 
-                    id: 'defaultSortOrder', 
-                    name: 'Default sort order', 
-                    type: 'dropdown', 
-                    value: settings.defaultSortOrder || 'asc', 
+                {
+                    id: 'defaultSortOrder',
+                    name: 'Default sort order',
+                    type: 'dropdown',
+                    value: settings.defaultSortOrder || 'asc',
                     options: ['asc', 'desc'],
                     optionLabels: ['Ascending', 'Descending'],
                     key: 'defaultSortOrder'
                 },
-                { 
-                    id: 'doubleClickToOpen', 
-                    name: 'Double-click to open', 
-                    type: 'toggle', 
+                {
+                    id: 'doubleClickToOpen',
+                    name: 'Double-click to open',
+                    type: 'toggle',
                     value: settings.doubleClickToOpen ?? true,
                     key: 'doubleClickToOpen'
                 },
-                { 
-                    id: 'enableQuickSearch', 
-                    name: 'Enable quick search', 
-                    type: 'toggle', 
+                {
+                    id: 'enableQuickSearch',
+                    name: 'Enable quick search',
+                    type: 'toggle',
                     value: settings.enableQuickSearch ?? true,
                     key: 'enableQuickSearch'
                 }
@@ -134,48 +134,48 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose }) =
             name: 'Display',
             icon: <FaDesktop />,
             settings: [
-                { 
-                    id: 'fileSizeUnit', 
-                    name: 'File size units', 
-                    type: 'dropdown', 
-                    value: settings.fileSizeUnit || 'decimal', 
+                {
+                    id: 'fileSizeUnit',
+                    name: 'File size units',
+                    type: 'dropdown',
+                    value: settings.fileSizeUnit || 'decimal',
                     options: ['decimal', 'binary'],
                     optionLabels: ['Decimal (GB, MB, TB)', 'Binary (GiB, MiB, TiB)'],
                     key: 'fileSizeUnit'
                 },
-                { 
-                    id: 'showHiddenFiles', 
-                    name: 'Show hidden files', 
-                    type: 'toggle', 
+                {
+                    id: 'showHiddenFiles',
+                    name: 'Show hidden files',
+                    type: 'toggle',
                     value: settings.showHiddenFiles ?? false,
                     key: 'showHiddenFiles'
                 },
-                { 
-                    id: 'showFileExtensions', 
-                    name: 'Show file extensions', 
-                    type: 'toggle', 
+                {
+                    id: 'showFileExtensions',
+                    name: 'Show file extensions',
+                    type: 'toggle',
                     value: settings.showFileExtensions ?? true,
                     key: 'showFileExtensions'
                 },
-                { 
-                    id: 'showThumbnails', 
-                    name: 'Show thumbnails', 
-                    type: 'toggle', 
+                {
+                    id: 'showThumbnails',
+                    name: 'Show thumbnails',
+                    type: 'toggle',
                     value: settings.showThumbnails ?? true,
                     key: 'showThumbnails'
                 },
-                { 
-                    id: 'thumbnailSize', 
-                    name: 'Thumbnail size', 
-                    type: 'dropdown', 
-                    value: settings.thumbnailSize || 'medium', 
+                {
+                    id: 'thumbnailSize',
+                    name: 'Thumbnail size',
+                    type: 'dropdown',
+                    value: settings.thumbnailSize || 'medium',
                     options: ['small', 'medium', 'large'],
                     key: 'thumbnailSize'
                 },
-                { 
-                    id: 'compactMode', 
-                    name: 'Compact mode', 
-                    type: 'toggle', 
+                {
+                    id: 'compactMode',
+                    name: 'Compact mode',
+                    type: 'toggle',
                     value: settings.compactMode ?? false,
                     key: 'compactMode'
                 }
@@ -186,24 +186,24 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose }) =
             name: 'Performance',
             icon: <FaSync />,
             settings: [
-                { 
-                    id: 'enableAnimations', 
-                    name: 'Enable animations', 
-                    type: 'toggle', 
+                {
+                    id: 'enableAnimations',
+                    name: 'Enable animations',
+                    type: 'toggle',
                     value: settings.enableAnimations ?? true,
                     key: 'enableAnimations'
                 },
-                { 
-                    id: 'enableFilePreview', 
-                    name: 'Enable file preview', 
-                    type: 'toggle', 
+                {
+                    id: 'enableFilePreview',
+                    name: 'Enable file preview',
+                    type: 'toggle',
                     value: settings.enableFilePreview ?? true,
                     key: 'enableFilePreview'
                 },
-                { 
-                    id: 'maxPreviewFileSize', 
-                    name: 'Max preview file size (MB)', 
-                    type: 'number', 
+                {
+                    id: 'maxPreviewFileSize',
+                    name: 'Max preview file size (MB)',
+                    type: 'number',
                     value: settings.maxPreviewFileSize || 10,
                     key: 'maxPreviewFileSize'
                 }
@@ -306,15 +306,15 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose }) =
                                     {settingsCategories
                                         .find(cat => cat.id === activeCategory)
                                         ?.settings.map((setting) => (
-                                        <div key={setting.id} className="setting-item">
-                                            <div className="setting-info">
-                                                <label>{setting.name}</label>
+                                            <div key={setting.id} className="setting-item">
+                                                <div className="setting-info">
+                                                    <label>{setting.name}</label>
+                                                </div>
+                                                <div className="setting-control">
+                                                    {renderSetting(setting)}
+                                                </div>
                                             </div>
-                                            <div className="setting-control">
-                                                {renderSetting(setting)}
-                                            </div>
-                                        </div>
-                                    ))}
+                                        ))}
                                 </div>
                             </div>
                         )}

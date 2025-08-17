@@ -17,6 +17,7 @@
         opacity: 0;
         transform: scale(0.95) translateY(-10px);
     }
+
     to {
         opacity: 1;
         transform: scale(1) translateY(0);
@@ -107,6 +108,7 @@
         opacity: 0;
         transform: scale(0.95) translateX(-10px);
     }
+
     to {
         opacity: 1;
         transform: scale(1) translateX(0);
@@ -185,18 +187,18 @@
         min-width: 180px;
         max-width: calc(100vw - 20px);
     }
-    
+
     .menu-item {
         padding: 10px 12px;
         font-size: 14px;
     }
-    
+
     .menu-icon {
         width: 18px;
         height: 18px;
         font-size: 14px;
     }
-    
+
     .submenu {
         min-width: 160px;
     }
@@ -207,12 +209,12 @@
     .custom-context-menu {
         border-width: 2px;
     }
-    
+
     .menu-item:hover:not(.disabled) {
         background: var(--accent-color);
         color: var(--background-primary);
     }
-    
+
     .menu-separator {
         height: 2px;
     }
@@ -223,11 +225,11 @@
     .custom-context-menu {
         animation: none;
     }
-    
+
     .submenu {
         animation: none;
     }
-    
+
     .menu-item {
         transition: none;
     }

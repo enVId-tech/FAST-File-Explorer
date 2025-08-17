@@ -12,7 +12,7 @@ class SettingsManager {
         // Store settings in app data directory
         const appDataPath = app.getPath('userData');
         this.settingsPath = path.join(appDataPath, 'settings.json');
-        
+
         // Default known folder paths
         this.defaultSettings = {
             knownFolders: {
@@ -54,7 +54,7 @@ class SettingsManager {
         try {
             const settingsData = await fs.readFile(this.settingsPath, 'utf8');
             const settings = JSON.parse(settingsData) as AppSettings;
-            
+
             // Merge with defaults to ensure all properties exist
             return {
                 ...this.defaultSettings,
@@ -82,7 +82,7 @@ class SettingsManager {
         try {
             // Ensure the app data directory exists
             await fs.mkdir(path.dirname(this.settingsPath), { recursive: true });
-            
+
             // Save settings with pretty formatting
             await fs.writeFile(this.settingsPath, JSON.stringify(settings, null, 2), 'utf8');
         } catch (error) {
@@ -97,11 +97,11 @@ class SettingsManager {
     async getKnownFolder(folderType: string): Promise<string> {
         const settings = await this.loadSettings();
         const folderPath = settings.knownFolders[folderType];
-        
+
         if (!folderPath) {
             throw new Error(`Unknown folder type: ${folderType}`);
         }
-        
+
         return folderPath;
     }
 
@@ -119,14 +119,14 @@ class SettingsManager {
      */
     async updateKnownFolders(folders: Partial<KnownFolderSettings>): Promise<void> {
         const settings = await this.loadSettings();
-        
+
         // Filter out undefined values to satisfy TypeScript
         Object.entries(folders).forEach(([key, value]) => {
             if (value !== undefined) {
                 settings.knownFolders[key] = value;
             }
         });
-        
+
         await this.saveSettings(settings);
     }
 

@@ -6,14 +6,17 @@
     justify-content: space-between;
     align-items: flex-end;
     background: var(--gradient-surface);
-    height: 44px; /* Increased height for better touch targets */
+    height: 44px;
+    /* Increased height for better touch targets */
     -webkit-app-region: drag;
     user-select: none;
     box-shadow: var(--shadow-small);
     backdrop-filter: blur(10px);
     position: relative;
-    z-index: 100; /* Ensure tab bar has proper stacking */
-    overflow: visible; /* Allow dropdowns to be visible */
+    z-index: 100;
+    /* Ensure tab bar has proper stacking */
+    overflow: visible;
+    /* Allow dropdowns to be visible */
 }
 
 .tabs-container {
@@ -40,19 +43,22 @@
     flex: 1 1 240px;
     min-width: 56px;
     max-width: 240px;
-    height: 36px; /* Increased height */
+    height: 36px;
+    /* Increased height */
     padding: 0 12px;
     margin-right: 2px;
     background: var(--secondary-bg);
     border: 1px solid transparent;
-    border-radius: 8px 8px 0 0; /* More rounded corners */
+    border-radius: 8px 8px 0 0;
+    /* More rounded corners */
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Smoother transition */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Smoother transition */
     -webkit-app-region: no-drag;
     position: relative;
     box-sizing: border-box;
     box-shadow: var(--shadow-small);
-    
+
     &::before {
         content: '';
         position: absolute;
@@ -70,7 +76,7 @@
     background: var(--hover-bg);
     transform: translateY(-1px);
     box-shadow: var(--shadow-medium);
-    
+
     &::before {
         background: var(--accent-hover);
     }
@@ -81,7 +87,7 @@
     border-color: var(--accent-color);
     z-index: 1;
     box-shadow: var(--shadow-medium);
-    
+
     &::before {
         background: var(--gradient-accent);
     }
@@ -110,78 +116,82 @@
     &.medium {
         flex: 1 1 120px;
         max-width: 180px;
-        
+
         .tab-title {
             font-size: 12px;
         }
     }
-    
+
     &.small {
         flex: 1 1 80px;
         max-width: 120px;
-        
+
         .tab-title {
             display: none;
         }
-        
+
         .tab-close-button {
             margin-right: 0;
-            opacity: 1; /* Always show close button on small tabs */
+            opacity: 1;
+            /* Always show close button on small tabs */
             position: relative;
             z-index: 1;
         }
-        
+
         .tab-icon {
             margin-right: 6px;
             font-size: 16px;
         }
-        
+
         justify-content: space-between;
         padding: 0 8px;
     }
-    
+
     &.very-small {
         flex: 1 1 56px;
         max-width: 80px;
         padding: 0 4px;
-        
+
         .tab-title {
             display: none;
         }
-        
+
         .tab-close-button {
-            opacity: 1; /* Always show close button */
+            opacity: 1;
+            /* Always show close button */
             margin-left: 4px;
         }
-        
+
         .tab-icon {
             margin-right: 0;
             font-size: 14px;
         }
-        
+
         justify-content: space-between;
     }
-    
+
     &.overflow {
-        flex: 0 0 56px; /* Fixed width when overflowing */
+        flex: 0 0 56px;
+        /* Fixed width when overflowing */
         min-width: 56px;
         max-width: 56px;
         padding: 0 4px;
-        
+
         .tab-title {
             display: none;
         }
-        
+
         .tab-close-button {
-            opacity: 1; /* Always show close button */
+            opacity: 1;
+            /* Always show close button */
             margin-left: 4px;
         }
-        
+
         .tab-icon {
             margin-right: 0;
             font-size: 12px;
         }
-        
+
         justify-content: space-between;
     }
 }
@@ -190,7 +200,7 @@
 .tabs-container.overflowing {
     overflow-x: auto;
     scroll-behavior: smooth;
-    
+
     .tab.overflow {
         flex-shrink: 0;
     }
@@ -198,24 +208,27 @@
     /* subtle gradient fades at edges for better UX */
     mask-image: linear-gradient(to right, transparent 0, black 20px, black calc(100% - 20px), transparent 100%);
     -webkit-mask-image: linear-gradient(to right, transparent 0, black 20px, black calc(100% - 20px), transparent 100%);
-    padding-left: 32px;  /* room for left scroll button */
-    padding-right: 32px; /* room for right scroll button */
-    
+    padding-left: 32px;
+    /* room for left scroll button */
+    padding-right: 32px;
+    /* room for right scroll button */
+
     /* Hide scrollbar but keep scrolling functionality */
     scrollbar-width: none;
     -ms-overflow-style: none;
-    
+
     &::-webkit-scrollbar {
         display: none;
     }
-    
+
     /* Smooth scrolling on all platforms */
     scroll-behavior: smooth;
-    
+
     /* Ensure tabs don't shrink when overflowing */
     .tab {
         flex-shrink: 0;
-        min-width: 56px; /* Ensure minimum clickable area */
+        min-width: 56px;
+        /* Ensure minimum clickable area */
     }
 }
 
@@ -226,7 +239,8 @@
     width: 20px;
     height: 20px;
     border: none;
-    background: transparent; /* quieter by default */
+    background: transparent;
+    /* quieter by default */
     border-radius: 50%;
     cursor: pointer;
     color: var(--text-secondary);
@@ -234,22 +248,25 @@
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     opacity: 1;
     flex-shrink: 0;
-    
+
     svg {
-        color: var(--text-secondary); /* Ensure SVG inherits proper color */
+        color: var(--text-secondary);
+        /* Ensure SVG inherits proper color */
     }
-    
+
     &:hover {
         background: #ef4444;
-        color: var(--text-primary); /* light gray, not pure white */
+        color: var(--text-primary);
+        /* light gray, not pure white */
         transform: scale(1.1);
         box-shadow: var(--shadow-small);
-        
+
         svg {
-            color: #ffffff; /* Only white on hover for close button */
+            color: #ffffff;
+            /* Only white on hover for close button */
         }
     }
-    
+
     &:active {
         transform: scale(0.95);
     }
@@ -288,22 +305,25 @@
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     -webkit-app-region: no-drag;
     box-shadow: var(--shadow-small);
-    
-    svg { 
-        color: var(--text-secondary); /* Ensure SVG inherits proper color */
+
+    svg {
+        color: var(--text-secondary);
+        /* Ensure SVG inherits proper color */
     }
-    
+
     &:hover {
         background: var(--hover-bg);
-        color: var(--accent-color); /* accent, not white */
+        color: var(--accent-color);
+        /* accent, not white */
         transform: translateY(-1px);
         box-shadow: var(--shadow-medium);
-        
+
         svg {
-            color: var(--accent-color); /* accent color on hover */
+            color: var(--accent-color);
+            /* accent color on hover */
         }
     }
-    
+
     &:active {
         transform: translateY(0);
     }
@@ -315,8 +335,10 @@
     -webkit-app-region: no-drag;
     gap: 2px;
     padding-right: 8px;
-    position: relative; /* Ensure theme dropdown positions relative to this */
-    z-index: 1000; /* Ensure window controls are above other content */
+    position: relative;
+    /* Ensure theme dropdown positions relative to this */
+    z-index: 1000;
+    /* Ensure window controls are above other content */
 }
 
 .zoom-controls {
@@ -328,15 +350,16 @@
     border-radius: 6px;
     padding: 2px;
     border: 1px solid var(--border-color);
-    
+
     @media (max-width: 800px) {
         margin-right: 4px;
     }
-    
+
     @media (max-width: 600px) {
         .zoom-button.zoom-reset .zoom-level {
             display: none;
         }
+
         .zoom-button.zoom-reset::after {
             content: '⌘';
             font-size: 12px;
@@ -358,31 +381,32 @@
     /* Instant feedback - no transition delay for zoom controls */
     transition: background-color 0.1s ease, color 0.1s ease;
     border-radius: 4px;
-    
+
     &:hover:not(:disabled) {
         background: var(--hover-bg);
         color: var(--accent-color);
     }
-    
+
     &:active:not(:disabled) {
         /* Instant visual feedback on click */
         background: var(--accent-color-light);
         transform: scale(0.95);
-        transition: none; /* No transition during active state for instant response */
+        transition: none;
+        /* No transition during active state for instant response */
     }
-    
+
     &:disabled {
         opacity: 0.5;
         cursor: not-allowed;
     }
-    
+
     &.zoom-reset {
         width: auto;
         min-width: 40px;
         padding: 0 6px;
         font-size: 10px;
         font-weight: 600;
-        
+
         .zoom-level {
             white-space: nowrap;
         }
@@ -402,29 +426,34 @@
     font-size: 12px;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     border-radius: 6px;
-    
+
     svg {
-        color: var(--text-secondary); /* Ensure SVG inherits proper color */
+        color: var(--text-secondary);
+        /* Ensure SVG inherits proper color */
     }
-    
+
     &:hover {
         background: var(--hover-bg);
-        color: var(--accent-color); /* accent not white */
-        
+        color: var(--accent-color);
+        /* accent not white */
+
         svg {
-            color: var(--accent-color); /* accent color on hover */
+            color: var(--accent-color);
+            /* accent color on hover */
         }
     }
-    
+
     &.close:hover {
         background: #e74c3c;
-        color: var(--text-primary); /* light gray, not pure white */
-        
+        color: var(--text-primary);
+        /* light gray, not pure white */
+
         svg {
-            color: #ffffff; /* Only white on close button hover */
+            color: #ffffff;
+            /* Only white on close button hover */
         }
     }
-    
+
     &:active {
         transform: scale(0.95);
     }
@@ -461,7 +490,7 @@
         transform: translateY(-1px);
         box-shadow: var(--shadow-medium);
         border-color: var(--accent-color);
-        
+
         svg {
             color: var(--accent-color);
         }
@@ -472,21 +501,23 @@
         box-shadow: var(--shadow-small);
     }
 
-    &.left { 
-        left: 2px; 
+    &.left {
+        left: 2px;
     }
-    
-    &.right { 
-        right: 2px; 
+
+    &.right {
+        right: 2px;
     }
-    
+
     /* Ensure scroll buttons are always visible and accessible */
     opacity: 1;
     visibility: visible;
 }
 
 /* Ensure icons in dark modes never appear pure white unless intended */
-[data-theme="win11-dark"], [data-theme="win10-dark"] {
+[data-theme="win11-dark"],
+[data-theme="win10-dark"] {
+
     .tab-close-button,
     .new-tab-button,
     .control-button {
@@ -494,34 +525,34 @@
             color: var(--text-secondary);
             filter: none;
         }
-        
+
         &:hover svg {
             color: var(--accent-color);
         }
     }
-    
+
     /* Exception: Close buttons should be white when hovered */
     .tab-close-button:hover svg,
     .control-button.close:hover svg {
         color: #ffffff !important;
     }
-    
+
     /* Scroll buttons follow same pattern */
     .tabs-scroll-button {
         svg {
             color: var(--text-secondary);
         }
-        
+
         &:hover svg {
             color: var(--accent-color);
         }
     }
-    
+
     /* Tab icons should also follow the theme */
     .tab-icon {
         color: var(--text-secondary);
     }
-    
+
     .tab.active .tab-icon {
         color: var(--accent-color);
     }
@@ -533,7 +564,7 @@
         min-width: 120px;
         max-width: 160px;
     }
-    
+
     .tab-title {
         font-size: 12px;
     }

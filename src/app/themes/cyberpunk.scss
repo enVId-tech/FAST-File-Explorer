@@ -1,35 +1,35 @@
 // Cyberpunk Theme - Neon-inspired futuristic dark theme
 [data-theme="cyberpunk"] {
   // Base surfaces (dark with neon accents)
-  --primary-bg: #0a0a0f;     // deep dark background
-  --secondary-bg: #121218;   // panels with slight purple tint
-  --surface-bg: #1a1a28;     // elevated surfaces
+  --primary-bg: #0a0a0f; // deep dark background
+  --secondary-bg: #121218; // panels with slight purple tint
+  --surface-bg: #1a1a28; // elevated surfaces
 
   // Semantic aliases
   --bg-primary: var(--primary-bg);
   --bg-secondary: var(--secondary-bg);
   --bg-tertiary: var(--surface-bg);
-  --bg-hover: #262640;       // purple-tinted hover
+  --bg-hover: #262640; // purple-tinted hover
   --hover-bg: var(--bg-hover); // Alias for consistency
 
   // Accent (neon cyan/purple)
-  --accent-color: #00ffff;    // bright cyan
+  --accent-color: #00ffff; // bright cyan
   --accent-primary: #00ffff;
-  --accent-hover: #66ffff;    // lighter cyan
-  --accent-active: #00cccc;   // darker cyan
+  --accent-hover: #66ffff; // lighter cyan
+  --accent-active: #00cccc; // darker cyan
   --accent-secondary: #ff00ff; // neon magenta for variety
 
   // Text (bright, high contrast)
-  --text-primary: #ffffff;    // pure white
-  --text-secondary: #ccccff;  // light purple tint
-  --text-tertiary: #9999cc;   // muted purple
+  --text-primary: #ffffff; // pure white
+  --text-secondary: #ccccff; // light purple tint
+  --text-tertiary: #9999cc; // muted purple
 
   // Borders (neon glow effect)
-  --border-color: #333366;    // dark purple
+  --border-color: #333366; // dark purple
   --border-primary: #333366;
   --border-secondary: #444488;
-  --border-hover: #5555aa;    // brighter on hover
-  --border-accent: #00ffff;   // cyan for active elements
+  --border-hover: #5555aa; // brighter on hover
+  --border-accent: #00ffff; // cyan for active elements
 
   // Selection & shadows (glowing effects)
   --selection-bg: rgba(0, 255, 255, 0.2);
@@ -49,6 +49,7 @@
   --status-bg: rgba(10, 10, 15, 0.9);
   --status-border: rgba(0, 255, 255, 0.3);
   --status-text: #ccccff;
+
   .status-bar {
     display: flex;
     background: var(--status-bg);
@@ -58,7 +59,7 @@
     -webkit-backdrop-filter: blur(15px);
     box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
 
-    .status-item { 
+    .status-item {
       color: var(--status-text);
       text-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
     }
@@ -82,23 +83,23 @@
     width: 8px;
     height: 8px;
   }
-  
+
   ::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   ::-webkit-scrollbar-thumb {
     background: linear-gradient(45deg, rgba(0, 255, 255, 0.6), rgba(255, 0, 255, 0.6));
     border-radius: 4px;
     box-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
     transition: all 0.3s ease;
   }
-  
+
   ::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(45deg, #00ffff, #ff00ff);
     box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
   }
-  
+
   ::-webkit-scrollbar-corner {
     background: transparent;
   }

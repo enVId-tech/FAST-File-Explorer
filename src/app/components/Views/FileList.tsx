@@ -205,7 +205,7 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
         };
 
         return (
-            <div 
+            <div
                 className={`file-list-column sortable-header ${field}-column ${isActive ? 'active' : ''}`}
                 onClick={handleSort}
                 title={`Sort by ${field} (${isActive ? (sortState.direction === 'asc' ? 'ascending' : 'descending') : 'click to sort'})`}
@@ -233,7 +233,7 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="search-input"
                 />
-                <button 
+                <button
                     className={`filter-button ${showFilters ? 'active' : ''}`}
                     onClick={() => setShowFilters(!showFilters)}
                     title="Show filters"
@@ -241,12 +241,12 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
                     <FaFilter />
                 </button>
             </div>
-            
+
             {showFilters && (
                 <div className="filter-panel">
                     <div className="filter-row">
                         <label><FaFont /> Name contains:</label>
-                        <input 
+                        <input
                             type="text"
                             value={filters.nameContains}
                             onChange={(e) => setFilters(prev => ({ ...prev, nameContains: e.target.value }))}
@@ -254,51 +254,51 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
                             className="filter-input"
                         />
                     </div>
-                    
+
                     <div className="filter-row">
                         <label><FaCalendarAlt /> Date range:</label>
                         <div className="date-range">
-                            <input 
+                            <input
                                 type="date"
                                 value={filters.dateRange.start}
-                                onChange={(e) => setFilters(prev => ({ 
-                                    ...prev, 
+                                onChange={(e) => setFilters(prev => ({
+                                    ...prev,
                                     dateRange: { ...prev.dateRange, start: e.target.value }
                                 }))}
                                 className="filter-input date-input"
                             />
                             <span>to</span>
-                            <input 
+                            <input
                                 type="date"
                                 value={filters.dateRange.end}
-                                onChange={(e) => setFilters(prev => ({ 
-                                    ...prev, 
+                                onChange={(e) => setFilters(prev => ({
+                                    ...prev,
                                     dateRange: { ...prev.dateRange, end: e.target.value }
                                 }))}
                                 className="filter-input date-input"
                             />
                         </div>
                     </div>
-                    
+
                     <div className="filter-row">
                         <label><FaRulerHorizontal /> Size range:</label>
                         <div className="size-range">
-                            <input 
+                            <input
                                 type="text"
                                 value={filters.sizeRange.min}
-                                onChange={(e) => setFilters(prev => ({ 
-                                    ...prev, 
+                                onChange={(e) => setFilters(prev => ({
+                                    ...prev,
                                     sizeRange: { ...prev.sizeRange, min: e.target.value }
                                 }))}
                                 placeholder="Min (e.g., 1MB)"
                                 className="filter-input size-input"
                             />
                             <span>to</span>
-                            <input 
+                            <input
                                 type="text"
                                 value={filters.sizeRange.max}
-                                onChange={(e) => setFilters(prev => ({ 
-                                    ...prev, 
+                                onChange={(e) => setFilters(prev => ({
+                                    ...prev,
                                     sizeRange: { ...prev.sizeRange, max: e.target.value }
                                 }))}
                                 placeholder="Max (e.g., 100MB)"
@@ -306,24 +306,24 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
                             />
                         </div>
                     </div>
-                    
+
                     <div className="filter-row">
                         <label>File types:</label>
                         <div className="file-type-checkboxes">
                             {['Images', 'Documents', 'Videos', 'Audio', 'Archives', 'Code'].map(type => (
                                 <label key={type} className="checkbox-option">
-                                    <input 
+                                    <input
                                         type="checkbox"
                                         checked={filters.fileTypes.includes(type)}
                                         onChange={(e) => {
                                             if (e.target.checked) {
-                                                setFilters(prev => ({ 
-                                                    ...prev, 
+                                                setFilters(prev => ({
+                                                    ...prev,
                                                     fileTypes: [...prev.fileTypes, type]
                                                 }));
                                             } else {
-                                                setFilters(prev => ({ 
-                                                    ...prev, 
+                                                setFilters(prev => ({
+                                                    ...prev,
                                                     fileTypes: prev.fileTypes.filter(t => t !== type)
                                                 }));
                                             }
@@ -334,9 +334,9 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
                             ))}
                         </div>
                     </div>
-                    
+
                     <div className="filter-actions">
-                        <button 
+                        <button
                             className="clear-filters-button"
                             onClick={() => {
                                 setFilters({
@@ -407,11 +407,11 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
         } else {
             // Performance timing for optimization verification
             const startTime = performance.now();
-            
+
             // For files, use ultra-fast fire-and-forget opening
             // This has zero latency as it doesn't wait for any response
             window.electronAPI.system.openFileFast(item.path);
-            
+
             const endTime = performance.now();
             console.log(`Fast file opening took ${(endTime - startTime).toFixed(2)}ms for: ${item.name}`);
         }
@@ -438,27 +438,27 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
             if (isDriveRoot) {
                 // Try to determine drive type based on common patterns and drive letter
                 const driveLetter = item.path.charAt(0).toLowerCase();
-                
+
                 // System drive (usually C:)
                 if (driveLetter === 'c') {
                     return <FaHdd className="file-icon drive-icon system-drive" title="System Drive" />;
                 }
-                
+
                 // Common removable drive patterns (D:, E:, F:, etc. are often removable)
                 // This is a simplified heuristic - in a real implementation you might want to
                 // get actual drive information from the backend
                 if (['d', 'e', 'f', 'g', 'h'].includes(driveLetter)) {
                     return <FaUsb className="file-icon drive-icon usb-drive" title="Removable Drive" />;
                 }
-                
+
                 // Default drive icon for other drives
                 return <FaHdd className="file-icon drive-icon" title="Local Drive" />;
             }
-            
+
             // Regular folder
             return <FaFolder className="file-icon directory-icon" title="Folder" />;
         }
-        
+
         const ext = item.extension?.toLowerCase();
         switch (ext) {
             case '.jpg':
@@ -527,13 +527,13 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
     // Enhanced context menu handlers
     const handleContextMenu = useCallback((event: React.MouseEvent, item: FileSystemItem) => {
         event.preventDefault();
-        
+
         // If the clicked item is not in the current selection, select only it
         // Otherwise, keep the current selection for multi-item operations
-        const itemsForContextMenu = isItemSelected(item) 
+        const itemsForContextMenu = isItemSelected(item)
             ? selectedFiles.length > 0 ? selectedFiles : [item]
             : [item];
-        
+
         setContextMenu({
             visible: true,
             x: event.clientX,
@@ -594,14 +594,14 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
         };
 
         window.addEventListener('clipboard-changed', handleClipboardChange as EventListener);
-        
+
         return () => {
             window.removeEventListener('clipboard-changed', handleClipboardChange as EventListener);
         };
     }, []);
 
     // Load directory contents
-const loadDirectory = useCallback(async (path: string) => {
+    const loadDirectory = useCallback(async (path: string) => {
         if (!path) return;
         setLoading(true);
         setError(null);
@@ -678,7 +678,7 @@ const loadDirectory = useCallback(async (path: string) => {
         if (filters.fileTypes.length > 0) {
             items = items.filter(item => {
                 if (item.type === 'directory') return filters.fileTypes.includes('Folders');
-                
+
                 const ext = item.extension?.toLowerCase();
                 const isImage = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.tiff'].includes(ext || '');
                 const isDocument = ['.doc', '.docx', '.pdf', '.txt', '.rtf', '.odt'].includes(ext || '');
@@ -744,7 +744,7 @@ const loadDirectory = useCallback(async (path: string) => {
 
             // Within the same type, apply sorting based on field
             let comparison = 0;
-            
+
             switch (sortState.field) {
                 case 'name':
                     // Windows uses natural alphanumeric sorting
@@ -772,7 +772,7 @@ const loadDirectory = useCallback(async (path: string) => {
                         const aExt = a.extension || '';
                         const bExt = b.extension || '';
                         comparison = aExt.localeCompare(bExt, undefined, { sensitivity: 'base' });
-                        
+
                         // If extensions are the same, sort by name
                         if (comparison === 0) {
                             comparison = windowsNaturalSort(a.name, b.name);
@@ -794,10 +794,10 @@ const loadDirectory = useCallback(async (path: string) => {
         try {
             const paths = selectedFiles.map(item => item.path);
             await window.electronAPI.clipboard.copyFiles(paths);
-            
+
             setClipboardState({ operation: 'copy', files: paths });
-            window.dispatchEvent(new CustomEvent('clipboard-changed', { 
-                detail: { operation: 'copy', files: paths } 
+            window.dispatchEvent(new CustomEvent('clipboard-changed', {
+                detail: { operation: 'copy', files: paths }
             }));
         } catch (error) {
             console.error('Failed to copy files:', error);
@@ -809,10 +809,10 @@ const loadDirectory = useCallback(async (path: string) => {
         try {
             const paths = selectedFiles.map(item => item.path);
             await window.electronAPI.clipboard.cutFiles(paths);
-            
+
             setClipboardState({ operation: 'cut', files: paths });
-            window.dispatchEvent(new CustomEvent('clipboard-changed', { 
-                detail: { operation: 'cut', files: paths } 
+            window.dispatchEvent(new CustomEvent('clipboard-changed', {
+                detail: { operation: 'cut', files: paths }
             }));
         } catch (error) {
             console.error('Failed to cut files:', error);
@@ -826,8 +826,8 @@ const loadDirectory = useCallback(async (path: string) => {
                 // If it was a cut operation, clear the clipboard state
                 if (clipboardState.operation === 'cut') {
                     setClipboardState({ operation: null, files: [] });
-                    window.dispatchEvent(new CustomEvent('clipboard-changed', { 
-                        detail: { operation: null, files: [] } 
+                    window.dispatchEvent(new CustomEvent('clipboard-changed', {
+                        detail: { operation: null, files: [] }
                     }));
                 }
                 loadDirectory(currentPath); // Refresh the directory
@@ -842,27 +842,27 @@ const loadDirectory = useCallback(async (path: string) => {
         try {
             const paths = selectedFiles.map(item => item.path);
             const itemNames = selectedFiles.map(item => item.name);
-            
+
             let confirmMessage: string;
             if (paths.length === 1) {
                 confirmMessage = `Are you sure you want to permanently delete "${itemNames[0]}"?\n\nThis action cannot be undone.`;
             } else {
                 confirmMessage = `Are you sure you want to permanently delete these ${paths.length} items?\n\n${itemNames.slice(0, 3).join('\n')}${paths.length > 3 ? `\n... and ${paths.length - 3} more` : ''}\n\nThis action cannot be undone.`;
             }
-            
+
             const confirmed = window.confirm(confirmMessage);
             if (confirmed) {
                 await window.electronAPI.files.delete(paths);
-                
+
                 // Clear clipboard if deleted files were in clipboard
                 if (clipboardState.files.some(file => paths.includes(file))) {
                     await window.electronAPI.clipboard.clear();
                     setClipboardState({ operation: null, files: [] });
-                    window.dispatchEvent(new CustomEvent('clipboard-changed', { 
-                        detail: { operation: null, files: [] } 
+                    window.dispatchEvent(new CustomEvent('clipboard-changed', {
+                        detail: { operation: null, files: [] }
                     }));
                 }
-                
+
                 onSelectionChange?.([]);
                 loadDirectory(currentPath); // Refresh the directory
             }
@@ -876,42 +876,42 @@ const loadDirectory = useCallback(async (path: string) => {
         try {
             const item = selectedFiles[0];
             const isDirectory = item.type === 'directory';
-            
+
             let defaultName = item.name;
             if (!isDirectory && item.name.includes('.')) {
                 const lastDotIndex = item.name.lastIndexOf('.');
                 defaultName = item.name.substring(0, lastDotIndex);
             }
-            
+
             const newName = window.prompt(
-                `Rename ${isDirectory ? 'folder' : 'file'}:`, 
+                `Rename ${isDirectory ? 'folder' : 'file'}:`,
                 defaultName
             );
-            
+
             if (newName && newName.trim() !== '') {
                 const trimmedName = newName.trim();
-                
+
                 let finalName = trimmedName;
                 if (!isDirectory && !trimmedName.includes('.') && item.name.includes('.')) {
                     const extension = item.name.substring(item.name.lastIndexOf('.'));
                     finalName = trimmedName + extension;
                 }
-                
+
                 if (finalName !== item.name) {
                     await window.electronAPI.files.rename(item.path, finalName);
-                    
+
                     // Update clipboard state if renamed file was in clipboard
                     if (clipboardState.files.includes(item.path)) {
                         const newPath = item.path.replace(item.name, finalName);
-                        const updatedFiles = clipboardState.files.map(file => 
+                        const updatedFiles = clipboardState.files.map(file =>
                             file === item.path ? newPath : file
                         );
                         setClipboardState({ ...clipboardState, files: updatedFiles });
-                        window.dispatchEvent(new CustomEvent('clipboard-changed', { 
-                            detail: { operation: clipboardState.operation, files: updatedFiles } 
+                        window.dispatchEvent(new CustomEvent('clipboard-changed', {
+                            detail: { operation: clipboardState.operation, files: updatedFiles }
                         }));
                     }
-                    
+
                     loadDirectory(currentPath); // Refresh the directory
                 }
             }

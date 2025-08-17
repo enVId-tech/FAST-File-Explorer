@@ -60,19 +60,19 @@ export default function initializeDataHandlers() {
     // Get detailed folder metadata
     ipcMain.handle('fs-get-folder-metadata', async (event, folderPath: string) => {
         const cacheKey = `folder-meta:${folderPath}`;
-        
+
         // Check cache first (longer TTL for metadata as it's expensive to compute)
         const cached = getCachedResult(cacheKey);
         if (cached) {
             return cached;
         }
-        
+
         console.log(`Analyzing folder metadata for: ${folderPath}`);
         const metadata = await getFolderMetadata(folderPath);
-        
+
         // Cache the result with longer TTL
         setCachedResult(cacheKey, metadata);
-        
+
         return metadata;
     });
 
@@ -218,7 +218,7 @@ export default function initializeDataHandlers() {
             // Direct file opening with minimal overhead
             // shell.openPath is non-blocking and returns immediately
             const result = await shell.openPath(filePath);
-            
+
             // Return success status immediately (empty string = success)
             return result === '';
         } catch (error) {
@@ -237,7 +237,7 @@ export default function initializeDataHandlers() {
     });
 
     // File operation handlers with OS integration
-    
+
     // Copy files
     ipcMain.handle('file-copy', async (event, sources: string[], destination: string) => {
         try {
@@ -363,7 +363,7 @@ export default function initializeDataHandlers() {
         try {
             clipboardFiles = [...paths];
             clipboardOperation = 'copy';
-            
+
             // For cross-platform compatibility, we'll store file paths
             // Some platforms support native file clipboard integration
             if (process.platform === 'win32') {
@@ -392,11 +392,11 @@ export default function initializeDataHandlers() {
     ipcMain.handle('clipboard-paste', async (event, destinationPath: string) => {
         try {
             if (clipboardFiles.length === 0) return false;
-            
+
             for (const source of clipboardFiles) {
                 const sourceName = path.basename(source);
                 const destPath = path.join(destinationPath, sourceName);
-                
+
                 if (clipboardOperation === 'copy') {
                     // Check if source is directory or file
                     const stats = await fs.stat(source);
@@ -432,12 +432,12 @@ export default function initializeDataHandlers() {
                     }
                 }
             }
-            
+
             // Clear clipboard if cut operation
             if (clipboardOperation === 'cut') {
                 clipboardFiles = [];
             }
-            
+
             return true;
         } catch (error) {
             console.error('Failed to paste files:', error);

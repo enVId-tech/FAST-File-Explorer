@@ -71,11 +71,11 @@ function generateBuildVersion(version) {
  */
 function updatePackageVersion(version) {
   const packagePath = path.join(__dirname, '..', 'package.json');
-  
+
   try {
     const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
     packageJson.version = version;
-    
+
     fs.writeFileSync(packagePath, JSON.stringify(packageJson, null, 2) + '\n');
     console.log(`Updated package.json version to: ${version}`);
     return true;
@@ -90,11 +90,11 @@ function updatePackageVersion(version) {
  */
 function createVersionFile(version) {
   const versionFilePath = path.join(__dirname, '..', 'src', 'version.ts');
-  
+
   const now = new Date();
   const buildDate = now.toISOString();
   const buildTimestamp = now.getTime();
-  
+
   const versionFileContent = `// Auto-generated version file
 // Do not edit manually - this file is updated by scripts/generate-version.js
 

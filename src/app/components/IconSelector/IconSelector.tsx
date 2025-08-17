@@ -85,8 +85,8 @@ export const IconSelector: React.FC<IconSelectorProps> = ({
   const filteredIcons = useMemo(() => {
     const iconEntries = Object.entries(driveIcons);
     if (!searchTerm) return iconEntries;
-    
-    return iconEntries.filter(([iconName]) => 
+
+    return iconEntries.filter(([iconName]) =>
       iconName.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [searchTerm]);
@@ -95,7 +95,7 @@ export const IconSelector: React.FC<IconSelectorProps> = ({
 
   return (
     <div className="icon-selector">
-      <button 
+      <button
         className="icon-selector-button"
         onClick={() => setIsOpen(!isOpen)}
         title="Select Icon"
@@ -115,7 +115,7 @@ export const IconSelector: React.FC<IconSelectorProps> = ({
               className="icon-search-input"
             />
           </div>
-          
+
           <div className="icon-grid">
             {filteredIcons.map(([iconName, IconComponent]) => (
               <button

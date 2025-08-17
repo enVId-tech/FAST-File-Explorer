@@ -34,15 +34,15 @@ const FileItem = React.memo<{
 }>(({ index, style, data }) => {
   const { items, onNavigate, onFileSelect, fileSizeUnit } = data;
   const item = items[index];
-  
+
   if (!item) return null;
 
   const formatFileSize = useCallback((size: number): string => {
     if (size === 0) return '-';
-    const units = fileSizeUnit === 'binary' 
+    const units = fileSizeUnit === 'binary'
       ? { k: 1024, sizes: ['B', 'KiB', 'MiB', 'GiB', 'TiB'] }
       : { k: 1000, sizes: ['B', 'KB', 'MB', 'GB', 'TB'] };
-    
+
     const i = Math.floor(Math.log(size) / Math.log(units.k));
     return `${(size / Math.pow(units.k, i)).toFixed(1)} ${units.sizes[i]}`;
   }, [fileSizeUnit]);
@@ -62,7 +62,7 @@ const FileItem = React.memo<{
   }, [item, onNavigate]);
 
   return (
-    <div 
+    <div
       style={style}
       className={`file-item ${item.type}`}
       onClick={handleClick}
@@ -125,13 +125,13 @@ export const VirtualizedFileList: React.FC<VirtualizedFileListProps> = ({
   // Filter items based on search
   const filteredItems = useMemo(() => {
     if (!directoryContents?.items) return [];
-    
+
     if (!searchTerm.trim()) {
       return directoryContents.items;
     }
-    
+
     const searchLower = searchTerm.toLowerCase().trim();
-    return directoryContents.items.filter(item => 
+    return directoryContents.items.filter(item =>
       item.name.toLowerCase().includes(searchLower) ||
       (item.extension && item.extension.toLowerCase().includes(searchLower))
     );
@@ -181,7 +181,7 @@ export const VirtualizedFileList: React.FC<VirtualizedFileListProps> = ({
   if (!directoryContents || filteredItems.length === 0) {
     const isSearching = searchTerm.trim().length > 0;
     const hasItems = directoryContents?.items && directoryContents.items.length > 0;
-    
+
     return (
       <div className="virtualized-file-list-empty">
         <FaFolder className="empty-icon" />

@@ -6,7 +6,7 @@
     background: linear-gradient(135deg, #0a0a0f 0%, #121218 100%);
     border-bottom: 1px solid #00ffff;
     box-shadow: 0 0 20px rgba(0, 255, 255, 0.1);
-    
+
     &::after {
       content: '';
       position: absolute;
@@ -22,18 +22,18 @@
   .tab {
     border: 1px solid #333366;
     box-shadow: 0 0 5px rgba(0, 255, 255, 0.1);
-    
+
     &:hover {
       border-color: #00ffff;
       box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
       text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
     }
-    
+
     &.active {
       border-color: #00ffff;
       background: rgba(0, 255, 255, 0.1);
       box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
-      
+
       .tab-title {
         color: #00ffff;
         text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
@@ -44,7 +44,7 @@
   .new-tab-button,
   .control-button {
     border: 1px solid #333366;
-    
+
     &:hover {
       border-color: #00ffff;
       box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
@@ -53,8 +53,13 @@
   }
 
   @keyframes neon-scan {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
+    0% {
+      transform: translateX(-100%);
+    }
+
+    100% {
+      transform: translateX(100%);
+    }
   }
 }
 
@@ -70,17 +75,17 @@
     border-radius: 0;
     border: 2px outset var(--border-color);
     background: var(--bg-secondary);
-    
+
     &:hover {
       border-style: inset;
       background: var(--bg-hover);
     }
-    
+
     &.active {
       background: var(--accent-color);
       border: 2px inset var(--accent-color);
       color: white;
-      
+
       .tab-title,
       .tab-icon {
         color: white;
@@ -93,7 +98,7 @@
   .control-button {
     border-radius: 0;
     border: 2px outset var(--border-color);
-    
+
     &:hover {
       border-style: inset;
       background: var(--accent-color);
@@ -103,7 +108,7 @@
 
   .tab-close-button {
     border-radius: 0;
-    
+
     &:hover {
       background: #ff0000;
       color: white;
@@ -118,7 +123,7 @@
     background: var(--gradient-surface);
     border-bottom: 1px solid rgba(88, 166, 255, 0.3);
     position: relative;
-    
+
     &::before {
       content: '';
       position: absolute;
@@ -136,18 +141,18 @@
     border-radius: 12px 12px 0 0;
     background: rgba(33, 38, 45, 0.6);
     backdrop-filter: blur(10px);
-    
+
     &:hover {
       border-color: var(--accent-color);
       background: rgba(88, 166, 255, 0.05);
       box-shadow: 0 0 15px rgba(88, 166, 255, 0.2);
     }
-    
+
     &.active {
       border-color: var(--accent-color);
       background: rgba(88, 166, 255, 0.1);
       box-shadow: 0 0 20px rgba(88, 166, 255, 0.3);
-      
+
       .tab-title {
         color: var(--accent-color);
         text-shadow: 0 0 8px rgba(88, 166, 255, 0.5);
@@ -160,7 +165,7 @@
     border: 1px solid var(--border-color);
     border-radius: 8px;
     backdrop-filter: blur(10px);
-    
+
     &:hover {
       border-color: var(--accent-color);
       box-shadow: 0 0 12px rgba(88, 166, 255, 0.2);
@@ -175,7 +180,7 @@
     background: var(--gradient-surface);
     border-bottom: 2px solid var(--accent-color);
     position: relative;
-    
+
     // Subtle wood grain effect
     &::before {
       content: '';
@@ -184,13 +189,11 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: repeating-linear-gradient(
-        90deg,
-        transparent,
-        transparent 3px,
-        rgba(45, 80, 22, 0.03) 3px,
-        rgba(45, 80, 22, 0.03) 6px
-      );
+      background: repeating-linear-gradient(90deg,
+          transparent,
+          transparent 3px,
+          rgba(45, 80, 22, 0.03) 3px,
+          rgba(45, 80, 22, 0.03) 6px);
       pointer-events: none;
     }
   }
@@ -199,20 +202,20 @@
     border-radius: 16px 16px 0 0;
     border: 1px solid var(--border-color);
     background: var(--bg-secondary);
-    
+
     &:hover {
       background: var(--bg-hover);
       transform: translateY(-1px);
       box-shadow: 0 4px 12px rgba(45, 80, 22, 0.15);
     }
-    
+
     &.active {
       background: var(--accent-color);
       border-color: var(--accent-color);
       color: white;
       transform: translateY(-2px);
       box-shadow: 0 6px 16px rgba(45, 80, 22, 0.25);
-      
+
       .tab-title,
       .tab-icon {
         color: white;
@@ -225,7 +228,7 @@
   .control-button {
     border-radius: 12px;
     border: 1px solid var(--border-color);
-    
+
     &:hover {
       background: var(--accent-color);
       color: white;

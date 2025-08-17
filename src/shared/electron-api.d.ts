@@ -1,31 +1,31 @@
 import { DirectoryContents, DirectoryListOptions, FolderMetadata } from './ipc-channels';
 
-export {};
+export { };
 declare global {
   interface Window {
     electronAPI: {
       // Generic IPC invoke method
       invoke: <T = any>(channel: string, ...args: any[]) => Promise<T>;
-      
+
       testAPI: () => Promise<string>;
       window: {
         minimize: () => Promise<void>;
         maximize: () => Promise<void>;
         unmaximize: () => Promise<void>;
         close: () => Promise<void>;
-        getBounds: () => Promise<{x: number, y: number, width: number, height: number}>;
-        setBounds: (bounds: {x?: number, y?: number, width?: number, height?: number}) => Promise<void>;
+        getBounds: () => Promise<{ x: number, y: number, width: number, height: number }>;
+        setBounds: (bounds: { x?: number, y?: number, width?: number, height?: number }) => Promise<void>;
         addMaximizeListener: () => Promise<boolean>;
         removeMaximizeListener: () => Promise<boolean>;
         onMaximizeChange: (callback: (event: any, maximized: boolean) => void) => void;
       };
       // Tab management
       tab: {
-        add: (url: string) => Promise<{id: string, title: string, url: string} | null>;
-        switch: (tabId: string) => Promise<{id: string, title: string, url: string} | null>;
-        close: (tabId: string) => Promise<{id: string, title: string, url: string}[]>;
-        getActive: () => Promise<{id: string, title: string, url: string} | null>;
-        getAll: () => Promise<{id: string, title: string, url: string}[]>;
+        add: (url: string) => Promise<{ id: string, title: string, url: string } | null>;
+        switch: (tabId: string) => Promise<{ id: string, title: string, url: string } | null>;
+        close: (tabId: string) => Promise<{ id: string, title: string, url: string }[]>;
+        getActive: () => Promise<{ id: string, title: string, url: string } | null>;
+        getAll: () => Promise<{ id: string, title: string, url: string }[]>;
         navigate: (tabId: string, url: string) => Promise<boolean>;
         reload: (tabId: string) => Promise<boolean>;
         goBack: (tabId: string) => Promise<boolean>;
@@ -35,10 +35,10 @@ declare global {
         create: (name: string) => Promise<string | null>;
         delete: (id: string) => Promise<boolean>;
         rename: (id: string, newName: string) => Promise<boolean>;
-        getDirectory: (folderPath: string) => Promise<{folderName: string, name: string}[]>;
-        getMetadata: (dataPath: string) => Promise<{folderName: string, name: string} | null>;
-        getDrives: () => Promise<{name: string, path: string}[]>;
-        getRecentFiles: () => Promise<{name: string, path: string, lastOpened: string, size?: string}[]>;
+        getDirectory: (folderPath: string) => Promise<{ folderName: string, name: string }[]>;
+        getMetadata: (dataPath: string) => Promise<{ folderName: string, name: string } | null>;
+        getDrives: () => Promise<{ name: string, path: string }[]>;
+        getRecentFiles: () => Promise<{ name: string, path: string, lastOpened: string, size?: string }[]>;
       },
       // Enhanced file system methods
       fs: {
@@ -79,11 +79,11 @@ declare global {
         getAll: () => Promise<AppSettings>;
         getKnownFolders: () => Promise<KnownFolderSettings>;
         getKnownFolder: (folderType: string) => Promise<string>;
-        updateKnownFolder: (folderType: string, newPath: string) => Promise<{success: boolean}>;
-        updateKnownFolders: (folders: Partial<KnownFolderSettings>) => Promise<{success: boolean}>;
-        resetKnownFolders: () => Promise<{success: boolean}>;
-        validateFolder: (folderPath: string) => Promise<{valid: boolean, error?: string}>;
-        update: (key: keyof AppSettings, value: any) => Promise<{success: boolean}>;
+        updateKnownFolder: (folderType: string, newPath: string) => Promise<{ success: boolean }>;
+        updateKnownFolders: (folders: Partial<KnownFolderSettings>) => Promise<{ success: boolean }>;
+        resetKnownFolders: () => Promise<{ success: boolean }>;
+        validateFolder: (folderPath: string) => Promise<{ valid: boolean, error?: string }>;
+        update: (key: keyof AppSettings, value: any) => Promise<{ success: boolean }>;
         getPath: () => Promise<string>;
       }
     };

@@ -1,43 +1,43 @@
 import React from 'react';
 
 // Lazy-loaded components with loading states
-export const LazyRecentsView = React.lazy(() => 
+export const LazyRecentsView = React.lazy(() =>
   import('./Views/RecentsView').then(module => ({ default: module.RecentsView }))
 );
 
-export const LazyThisPCView = React.lazy(() => 
+export const LazyThisPCView = React.lazy(() =>
   import('./Views/ThisPCView').then(module => ({ default: module.ThisPCView }))
 );
 
-export const LazyTabContent = React.lazy(() => 
+export const LazyTabContent = React.lazy(() =>
   import('./Views/TabContent').then(module => ({ default: module.TabContent }))
 );
 
-export const LazyFileList = React.lazy(() => 
+export const LazyFileList = React.lazy(() =>
   import('./Views/FileList').then(module => ({ default: module.FileList }))
 );
 
-export const LazyDetailsPanel = React.lazy(() => 
+export const LazyDetailsPanel = React.lazy(() =>
   import('./DetailsPanel').then(module => ({ default: module.DetailsPanel }))
 );
 
-export const LazySettingsMenu = React.lazy(() => 
+export const LazySettingsMenu = React.lazy(() =>
   import('./SettingsMenu/SettingsMenu').then(module => ({ default: module.SettingsMenu }))
 );
 
-export const LazySetupWizard = React.lazy(() => 
+export const LazySetupWizard = React.lazy(() =>
   import('./SetupWizard/SetupWizard').then(module => ({ default: module.SetupWizard }))
 );
 
-export const LazyFileTransferUI = React.lazy(() => 
+export const LazyFileTransferUI = React.lazy(() =>
   import('./FileTransferUI/FileTransferUI').then(module => ({ default: module.FileTransferUI }))
 );
 
-export const LazyThemeSelector = React.lazy(() => 
+export const LazyThemeSelector = React.lazy(() =>
   import('./ThemeSelector/ThemeSelector').then(module => ({ default: module.ThemeSelector }))
 );
 
-export const LazyCustomStyleEditor = React.lazy(() => 
+export const LazyCustomStyleEditor = React.lazy(() =>
   import('./CustomStyleEditor/CustomStyleEditor').then(module => ({ default: module.CustomStyleEditor }))
 );
 

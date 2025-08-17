@@ -78,7 +78,7 @@ export const FileTransferUI: React.FC<FileTransferUIProps> = ({ isVisible, onClo
                     const increment = Math.random() * transfer.speed * 0.5; // Simulate variable speed
                     const newTransferred = Math.min(transfer.transferred + increment, transfer.fileSize);
                     const progress = newTransferred / transfer.fileSize;
-                    
+
                     return {
                         ...transfer,
                         transferred: newTransferred,
@@ -97,8 +97,8 @@ export const FileTransferUI: React.FC<FileTransferUIProps> = ({ isVisible, onClo
     const formatFileSize = useCallback((bytes: number) => {
         if (bytes === 0) return '0 B';
         const k = fileSizeUnit === 'binary' ? 1024 : 1000;
-        const sizes = fileSizeUnit === 'binary' 
-            ? ['B', 'KiB', 'MiB', 'GiB', 'TiB'] 
+        const sizes = fileSizeUnit === 'binary'
+            ? ['B', 'KiB', 'MiB', 'GiB', 'TiB']
             : ['B', 'KB', 'MB', 'GB', 'TB'];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
         return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
@@ -187,7 +187,7 @@ export const FileTransferUI: React.FC<FileTransferUIProps> = ({ isVisible, onClo
                             getStatusColor={getStatusColor}
                         />
                     ))}
-                    
+
                     {(showCompleted ? completedTransfers : activeTransfers).length === 0 && (
                         <div className="empty-state">
                             <p>No {showCompleted ? 'completed' : 'active'} transfers</p>
@@ -208,7 +208,7 @@ const TransferItem: React.FC<{
     getStatusColor: (status: FileTransfer['status']) => string;
 }> = ({ transfer, formatFileSize, formatSpeed, formatTime, getTransferIcon, getStatusColor }) => {
     const progress = (transfer.transferred / transfer.fileSize) * 100;
-    
+
     return (
         <div className="transfer-item">
             <div className="transfer-info">
@@ -260,12 +260,12 @@ const TransferItem: React.FC<{
                     </div>
                 </div>
             </div>
-            
+
             <div className="progress-container">
                 <div className="progress-bar">
-                    <div 
+                    <div
                         className="progress-fill"
-                        style={{ 
+                        style={{
                             width: `${progress}%`,
                             backgroundColor: getStatusColor(transfer.status)
                         }}
@@ -275,7 +275,7 @@ const TransferItem: React.FC<{
                     {Math.round(progress)}%
                 </div>
             </div>
-            
+
             {transfer.status === 'active' && (
                 <div className="transfer-actions">
                     <button className="action-button" title="Pause">

@@ -28,30 +28,30 @@ const UNIT_CONFIGS: Record<FileSizeUnit, UnitConfig> = {
  * @returns Formatted size string (e.g., "1.50 GB" or "1.40 GiB")
  */
 export function formatFileSize(
-    bytes: number, 
-    unitType: FileSizeUnit = 'decimal', 
+    bytes: number,
+    unitType: FileSizeUnit = 'decimal',
     precision: number = 2
 ): string {
     if (bytes === 0) return '0 B';
     if (bytes < 0) return 'Invalid size';
-    
+
     const config = UNIT_CONFIGS[unitType];
     const { base, units } = config;
-    
+
     // Find the appropriate unit
     let unitIndex = 0;
     let size = bytes;
-    
+
     while (size >= base && unitIndex < units.length - 1) {
         size /= base;
         unitIndex++;
     }
-    
+
     // Format the number with specified precision
-    const formattedSize = unitIndex === 0 
+    const formattedSize = unitIndex === 0
         ? size.toString() // Don't show decimals for bytes
         : size.toFixed(precision);
-    
+
     return `${formattedSize} ${units[unitIndex]}`;
 }
 
@@ -63,17 +63,17 @@ export function formatFileSize(
 export function parseFileSize(sizeString: string): number | null {
     const match = sizeString.match(/^([\d.]+)\s*([A-Za-z]+)$/);
     if (!match) return null;
-    
+
     const [, numberStr, unitStr] = match;
     const number = parseFloat(numberStr);
     const unit = unitStr.toUpperCase();
-    
+
     if (isNaN(number)) return null;
-    
+
     // Determine unit type and find unit index
     let unitType: FileSizeUnit;
     let unitIndex: number;
-    
+
     if (unit.endsWith('IB') || unit.endsWith('B') && unit.length > 1) {
         // Binary units (KiB, MiB, GiB, etc.)
         unitType = 'binary';
@@ -85,9 +85,9 @@ export function parseFileSize(sizeString: string): number | null {
         const decimalUnits = UNIT_CONFIGS.decimal.units.map(u => u.toUpperCase());
         unitIndex = decimalUnits.indexOf(unit);
     }
-    
+
     if (unitIndex === -1) return null;
-    
+
     const config = UNIT_CONFIGS[unitType];
     return Math.round(number * Math.pow(config.base, unitIndex));
 }
@@ -114,7 +114,7 @@ function getUnitName(unit: string): string {
     const names: Record<string, string> = {
         'B': 'Bytes',
         'KB': 'Kilobytes',
-        'MB': 'Megabytes', 
+        'MB': 'Megabytes',
         'GB': 'Gigabytes',
         'TB': 'Terabytes',
         'PB': 'Petabytes',
@@ -141,13 +141,13 @@ function getUnitName(unit: string): string {
  * @returns Converted size string
  */
 export function convertUnitType(
-    size: string, 
-    targetUnitType: FileSizeUnit, 
+    size: string,
+    targetUnitType: FileSizeUnit,
     precision: number = 2
 ): string | null {
     const bytes = parseFileSize(size);
     if (bytes === null) return null;
-    
+
     return formatFileSize(bytes, targetUnitType, precision);
 }
 

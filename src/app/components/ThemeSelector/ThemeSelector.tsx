@@ -30,9 +30,9 @@ interface ThemeMeta {
 }
 
 const BUILTIN_THEMES: ThemeMeta[] = [
-  { 
-    id: 'win11-dark', 
-    name: 'Windows 11 Dark', 
+  {
+    id: 'win11-dark',
+    name: 'Windows 11 Dark',
     description: 'Modern dark theme with fluent design',
     class: 'win11-dark',
     colors: {
@@ -42,9 +42,9 @@ const BUILTIN_THEMES: ThemeMeta[] = [
       text: '#ffffff'
     }
   },
-  { 
-    id: 'win11-light', 
-    name: 'Windows 11 Light', 
+  {
+    id: 'win11-light',
+    name: 'Windows 11 Light',
     description: 'Clean light theme with modern aesthetics',
     class: 'win11-light',
     colors: {
@@ -54,9 +54,9 @@ const BUILTIN_THEMES: ThemeMeta[] = [
       text: '#0f172a'
     }
   },
-  { 
-    id: 'win10-dark', 
-    name: 'Windows 10 Dark', 
+  {
+    id: 'win10-dark',
+    name: 'Windows 10 Dark',
     description: 'Classic Windows 10 dark mode',
     class: 'win10-dark',
     colors: {
@@ -66,9 +66,9 @@ const BUILTIN_THEMES: ThemeMeta[] = [
       text: '#ffffff'
     }
   },
-  { 
-    id: 'win10-light', 
-    name: 'Windows 10 Light', 
+  {
+    id: 'win10-light',
+    name: 'Windows 10 Light',
     description: 'Traditional Windows 10 light theme',
     class: 'win10-light',
     colors: {
@@ -78,9 +78,9 @@ const BUILTIN_THEMES: ThemeMeta[] = [
       text: '#000000'
     }
   },
-  { 
-    id: 'cyberpunk', 
-    name: 'Cyberpunk', 
+  {
+    id: 'cyberpunk',
+    name: 'Cyberpunk',
     description: 'Neon-inspired futuristic theme',
     class: 'cyberpunk',
     colors: {
@@ -90,9 +90,9 @@ const BUILTIN_THEMES: ThemeMeta[] = [
       text: '#ffffff'
     }
   },
-  { 
-    id: 'futuristic', 
-    name: 'Futuristic', 
+  {
+    id: 'futuristic',
+    name: 'Futuristic',
     description: 'Sleek sci-fi inspired interface',
     class: 'futuristic',
     colors: {
@@ -102,9 +102,9 @@ const BUILTIN_THEMES: ThemeMeta[] = [
       text: '#f0f6fc'
     }
   },
-  { 
-    id: 'nature', 
-    name: 'Nature', 
+  {
+    id: 'nature',
+    name: 'Nature',
     description: 'Earth-toned organic theme',
     class: 'nature',
     colors: {
@@ -114,9 +114,9 @@ const BUILTIN_THEMES: ThemeMeta[] = [
       text: '#1a1a1a'
     }
   },
-  { 
-    id: 'retro', 
-    name: 'Retro', 
+  {
+    id: 'retro',
+    name: 'Retro',
     description: 'Vintage computing aesthetics',
     class: 'retro',
     colors: {
@@ -175,7 +175,7 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({ currentTheme: cont
     // Close dropdown when clicking outside
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-  closeDropdown();
+        closeDropdown();
       }
     };
 
@@ -246,32 +246,32 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({ currentTheme: cont
   }, []);
 
   const handleThemeSelect = (themeId: string) => {
-  if (themeId === currentTheme) return;
+    if (themeId === currentTheme) return;
 
-  // Controlled: notify parent; Uncontrolled: update own state
-  setCurrentTheme(themeId);
-  beginTransition();
-  closeDropdown();
+    // Controlled: notify parent; Uncontrolled: update own state
+    setCurrentTheme(themeId);
+    beginTransition();
+    closeDropdown();
   };
 
   const handleCreateNew = () => {
     setEditingStyle(null);
     setShowEditor(true);
-  closeDropdown();
+    closeDropdown();
   };
 
   const handleEditCustomTheme = (themeId: string) => {
     const customStyle = CustomStyleManager.getStyle(themeId);
     setEditingStyle(customStyle);
     setShowEditor(true);
-  closeDropdown();
+    closeDropdown();
   };
 
   const handleDeleteCustomTheme = (themeId: string) => {
     if (confirm('Are you sure you want to delete this custom theme?')) {
       CustomStyleManager.deleteStyle(themeId);
       loadCustomThemes();
-      
+
       // If we're currently using this theme, switch to default
       if (currentTheme === themeId) {
         handleThemeSelect('win11-dark');
@@ -328,26 +328,26 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({ currentTheme: cont
     loadCustomThemes();
     setShowEditor(false);
     setEditingStyle(null);
-    
-  // If this is the current theme, parent should already react via onThemeChange/currentTheme
+
+    // If this is the current theme, parent should already react via onThemeChange/currentTheme
   };
 
   const handleEditorCancel = () => {
     setShowEditor(false);
     setEditingStyle(null);
-  // Reload from storage to drop any unsaved preview changes in the list
-  loadCustomThemes();
-  // Re-apply the currently selected theme to avoid lingering preview state
-  const root = document.documentElement;
-  const body = document.body;
-  const appRoot = document.getElementById('root');
-  CustomStyleManager.clearDocumentStyles();
-  root.setAttribute('data-theme', String(currentTheme));
-  body.setAttribute('data-theme', String(currentTheme));
-  if (appRoot) appRoot.setAttribute('data-theme', String(currentTheme));
-  root.removeAttribute('data-custom-theme');
-  body.removeAttribute('data-custom-theme');
-  if (appRoot) appRoot.removeAttribute('data-custom-theme');
+    // Reload from storage to drop any unsaved preview changes in the list
+    loadCustomThemes();
+    // Re-apply the currently selected theme to avoid lingering preview state
+    const root = document.documentElement;
+    const body = document.body;
+    const appRoot = document.getElementById('root');
+    CustomStyleManager.clearDocumentStyles();
+    root.setAttribute('data-theme', String(currentTheme));
+    body.setAttribute('data-theme', String(currentTheme));
+    if (appRoot) appRoot.setAttribute('data-theme', String(currentTheme));
+    root.removeAttribute('data-custom-theme');
+    body.removeAttribute('data-custom-theme');
+    if (appRoot) appRoot.removeAttribute('data-custom-theme');
   };
 
   const handleEditorApply = (style: CustomStyle) => {
@@ -355,7 +355,7 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({ currentTheme: cont
     const root = document.documentElement;
     const body = document.body;
     const appRoot = document.getElementById('root');
-    
+
     // Clear any existing themes
     CustomStyleManager.clearDocumentStyles();
     root.removeAttribute('data-theme');
@@ -366,7 +366,7 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({ currentTheme: cont
       appRoot.removeAttribute('data-theme');
       appRoot.removeAttribute('data-custom-theme');
     }
-    
+
     // Apply the preview style directly
     CustomStyleManager.applyStyleToDocument(style);
     root.setAttribute('data-theme', 'custom');
@@ -411,18 +411,18 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({ currentTheme: cont
 
   const renderThemePreview = (theme: ThemeMeta) => {
     if (!theme.colors) return null;
-    
+
     return (
       <div className="theme-preview">
-        <div 
+        <div
           className="theme-preview__background"
           style={{ backgroundColor: theme.colors.primary }}
         >
-          <div 
+          <div
             className="theme-preview__secondary"
             style={{ backgroundColor: theme.colors.secondary }}
           />
-          <div 
+          <div
             className="theme-preview__accent"
             style={{ backgroundColor: theme.colors.accent }}
           />
@@ -434,7 +434,7 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({ currentTheme: cont
   return (
     <>
       <div className="theme-selector" ref={dropdownRef}>
-        <button 
+        <button
           className={`theme-selector__toggle ${isTransitioning ? 'transitioning' : ''}`}
           onClick={toggleDropdown}
           title={`Current theme: ${getCurrentTheme().name}`}
@@ -515,7 +515,7 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({ currentTheme: cont
                         key={theme.id}
                         className={`theme-selector__option theme-selector__option--custom ${currentTheme === theme.id ? 'active' : ''}`}
                       >
-                        <div 
+                        <div
                           className="theme-selector__option-content"
                           onClick={() => handleThemeSelect(theme.id)}
                           role="button"

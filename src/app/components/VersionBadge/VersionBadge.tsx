@@ -7,9 +7,9 @@ interface VersionBadgeProps {
   showTooltip?: boolean;
 }
 
-export const VersionBadge: React.FC<VersionBadgeProps> = ({ 
-  className = '', 
-  showTooltip = true 
+export const VersionBadge: React.FC<VersionBadgeProps> = ({
+  className = '',
+  showTooltip = true
 }) => {
   const formatBuildDate = () => {
     try {
@@ -20,7 +20,7 @@ export const VersionBadge: React.FC<VersionBadgeProps> = ({
   };
 
   return (
-    <div 
+    <div
       className={`version-badge ${className}`}
       title={showTooltip ? `Build: ${BUILD_VERSION}\nBuilt on: ${formatBuildDate()}` : undefined}
     >

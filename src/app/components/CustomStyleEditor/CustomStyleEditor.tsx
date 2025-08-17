@@ -15,25 +15,25 @@ export interface CustomStyle {
     '--secondary-bg': string;
     '--surface-bg': string;
     '--hover-bg': string;
-    
+
     // Accent colors
     '--accent-color': string;
     '--accent-hover': string;
     '--accent-active': string;
-    
+
     // Text colors
     '--text-primary': string;
     '--text-secondary': string;
     '--text-tertiary': string;
-    
+
     // Border colors
     '--border-color': string;
     '--border-hover': string;
-    
+
     // Selection colors
     '--selection-bg': string;
     '--selection-border': string;
-    
+
     // Shadow values
     '--shadow-small': string;
     '--shadow-medium': string;
@@ -120,7 +120,7 @@ export const CustomStyleEditor: React.FC<CustomStyleEditorProps> = ({
       setOriginalTheme(currentTheme);
       setPreviewMode(true);
     }
-    
+
     if (currentStyle) {
       setEditingStyle(currentStyle);
     } else if (isOpen) {
@@ -158,7 +158,7 @@ export const CustomStyleEditor: React.FC<CustomStyleEditorProps> = ({
 
   const handleVariableChange = (property: string, value: string) => {
     if (!editingStyle) return;
-    
+
     const updatedStyle = {
       ...editingStyle,
       variables: {
@@ -167,13 +167,13 @@ export const CustomStyleEditor: React.FC<CustomStyleEditorProps> = ({
       },
       modified: new Date().toISOString()
     };
-    
+
     setEditingStyle(updatedStyle);
   };
 
   const handleDriveIconChange = (driveType: string, iconName: string) => {
     if (!editingStyle) return;
-    
+
     const updatedStyle = {
       ...editingStyle,
       driveIcons: {
@@ -182,7 +182,7 @@ export const CustomStyleEditor: React.FC<CustomStyleEditorProps> = ({
       },
       modified: new Date().toISOString()
     };
-    
+
     setEditingStyle(updatedStyle);
   };
 
@@ -225,7 +225,7 @@ export const CustomStyleEditor: React.FC<CustomStyleEditorProps> = ({
 
   const renderColorSection = (title: string, filterFn: (key: string) => boolean) => {
     if (!editingStyle) return null;
-    
+
     return (
       <div className="color-category">
         <h3>{title}</h3>
@@ -294,7 +294,7 @@ export const CustomStyleEditor: React.FC<CustomStyleEditorProps> = ({
             >
               {expanded ? 'Compact' : 'Expand'}
             </button>
-            <button 
+            <button
               className={`preview-btn ${previewMode ? 'active' : ''}`}
               onClick={togglePreviewMode}
               title={previewMode ? 'Disable live preview' : 'Enable live preview'}
@@ -325,19 +325,19 @@ export const CustomStyleEditor: React.FC<CustomStyleEditorProps> = ({
           </div>
 
           <div className="editor-tabs">
-            <button 
+            <button
               className={`tab ${activeTab === 'colors' ? 'active' : ''}`}
               onClick={() => setActiveTab('colors')}
             >
               <FaPalette /> Colors
             </button>
-            <button 
+            <button
               className={`tab ${activeTab === 'icons' ? 'active' : ''}`}
               onClick={() => setActiveTab('icons')}
             >
               Icons
             </button>
-            <button 
+            <button
               className={`tab ${activeTab === 'preview' ? 'active' : ''}`}
               onClick={() => setActiveTab('preview')}
             >
@@ -386,27 +386,27 @@ export const CustomStyleEditor: React.FC<CustomStyleEditorProps> = ({
                       <span>⏸️ Live preview is disabled - click 'Preview' to apply changes</span>
                     )}
                   </div>
-                  
+
                   <div className="theme-preview-card">
-                    <div className="preview-header" style={{ 
+                    <div className="preview-header" style={{
                       backgroundColor: editingStyle.variables['--secondary-bg'],
                       color: editingStyle.variables['--text-primary'],
                       borderBottom: `1px solid ${editingStyle.variables['--border-color']}`
                     }}>
                       <h4>Theme Preview</h4>
-                      <button style={{ 
+                      <button style={{
                         backgroundColor: editingStyle.variables['--accent-color'],
                         color: 'white'
                       }}>
                         Action Button
                       </button>
                     </div>
-                    
-                    <div className="preview-body" style={{ 
+
+                    <div className="preview-body" style={{
                       backgroundColor: editingStyle.variables['--primary-bg'],
                       color: editingStyle.variables['--text-primary']
                     }}>
-                      <div className="preview-item" style={{ 
+                      <div className="preview-item" style={{
                         backgroundColor: editingStyle.variables['--surface-bg'],
                         color: editingStyle.variables['--text-secondary'],
                         border: `1px solid ${editingStyle.variables['--border-color']}`
@@ -414,16 +414,16 @@ export const CustomStyleEditor: React.FC<CustomStyleEditorProps> = ({
                         <h5>Surface Element</h5>
                         <p>This shows how surface elements will look with your theme.</p>
                       </div>
-                      
-                      <div className="preview-item accent" style={{ 
+
+                      <div className="preview-item accent" style={{
                         backgroundColor: editingStyle.variables['--accent-color'],
                         color: 'white'
                       }}>
                         <h5>Accent Element</h5>
                         <p>This highlights your chosen accent color.</p>
                       </div>
-                      
-                      <div className="preview-item" style={{ 
+
+                      <div className="preview-item" style={{
                         backgroundColor: editingStyle.variables['--hover-bg'],
                         color: editingStyle.variables['--text-tertiary']
                       }}>
@@ -444,8 +444,8 @@ export const CustomStyleEditor: React.FC<CustomStyleEditorProps> = ({
               <FaUndo /> Reset to Default
             </button>
             {currentStyle && (
-              <button 
-                className="danger-btn" 
+              <button
+                className="danger-btn"
                 onClick={() => {
                   if (onStyleDelete) {
                     onStyleDelete(currentStyle.id);

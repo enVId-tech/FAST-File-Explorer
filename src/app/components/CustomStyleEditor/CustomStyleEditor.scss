@@ -14,7 +14,8 @@
   align-items: flex-start;
   justify-content: center;
   overflow: auto;
-  z-index: 30000; /* Ensure above main body and other overlays */
+  z-index: 30000;
+  /* Ensure above main body and other overlays */
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   animation: overlay-enter 0.3s ease;
@@ -32,6 +33,7 @@
     opacity: 0;
     backdrop-filter: blur(0px);
   }
+
   to {
     opacity: 1;
     backdrop-filter: blur(8px);
@@ -46,16 +48,23 @@
   width: min(840px, 92vw);
   /* Constrain height to fit within viewport minus safe padding */
   max-height: calc(100vh - 2 * clamp(12px, 3vh, 32px));
-  height: auto; /* Let content define height up to max-height */
+  height: auto;
+  /* Let content define height up to max-height */
   display: flex;
   flex-direction: column;
   overflow: hidden;
   animation: editor-enter 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-  pointer-events: auto; /* Ensure interactions work even if overlay is pointer-none */
+  pointer-events: auto;
+  /* Ensure interactions work even if overlay is pointer-none */
 }
 
-.custom-style-editor.compact { width: min(720px, 92vw); }
-.custom-style-editor.expanded { width: min(1000px, 95vw); }
+.custom-style-editor.compact {
+  width: min(720px, 92vw);
+}
+
+.custom-style-editor.expanded {
+  width: min(1000px, 95vw);
+}
 
 .custom-style-editor.floating {
   position: fixed;
@@ -64,7 +73,7 @@
   left: auto;
   bottom: auto;
   max-height: calc(100vh - 72px);
-  box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
   cursor: default;
 }
 
@@ -73,6 +82,7 @@
     opacity: 0;
     transform: scale(0.9) translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -87,7 +97,7 @@
   border-bottom: 1px solid var(--border-color);
   background: var(--gradient-surface);
   -webkit-app-region: no-drag;
-  
+
   h2 {
     margin: 0;
     color: var(--text-primary);
@@ -96,19 +106,19 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    
+
     &::before {
       content: '🎨';
       font-size: 18px;
     }
   }
-  
+
   .header-actions {
     display: flex;
     gap: 8px;
     align-items: center;
   }
-  
+
   .preview-btn {
     display: flex;
     align-items: center;
@@ -122,14 +132,14 @@
     font-size: 12px;
     font-weight: 500;
     transition: all 0.2s ease;
-    
+
     &:hover {
       background: var(--accent-color);
       color: white;
       border-color: var(--accent-color);
       transform: translateY(-1px);
     }
-    
+
     &.active {
       background: var(--accent-color);
       color: white;
@@ -137,7 +147,7 @@
       box-shadow: 0 0 8px rgba(37, 99, 235, 0.3);
     }
   }
-  
+
   .close-btn {
     width: 36px;
     height: 36px;
@@ -148,7 +158,7 @@
     font-size: 18px;
     border-radius: 8px;
     transition: all 0.2s ease;
-    
+
     &:hover {
       background: #ef4444;
       color: white;
@@ -173,7 +183,7 @@
   padding: 20px 24px;
   border-bottom: 1px solid var(--border-color);
   background: var(--primary-bg);
-  
+
   .style-name-input,
   .style-description-input {
     width: 100%;
@@ -184,24 +194,24 @@
     border-radius: 8px;
     font-family: inherit;
     transition: all 0.2s ease;
-    
+
     &:focus {
       outline: none;
       border-color: var(--accent-color);
       box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     }
-    
+
     &::placeholder {
       color: var(--text-tertiary);
     }
   }
-  
+
   .style-name-input {
     font-size: 16px;
     font-weight: 600;
     margin-bottom: 12px;
   }
-  
+
   .style-description-input {
     font-size: 14px;
     resize: vertical;
@@ -213,7 +223,7 @@
   display: flex;
   border-bottom: 1px solid var(--border-color);
   background: var(--secondary-bg);
-  
+
   .tab {
     display: flex;
     align-items: center;
@@ -227,16 +237,16 @@
     font-weight: 500;
     transition: all 0.2s ease;
     position: relative;
-    
+
     &:hover {
       background: var(--hover-bg);
       color: var(--text-primary);
     }
-    
+
     &.active {
       background: var(--primary-bg);
       color: var(--accent-color);
-      
+
       &::after {
         content: '';
         position: absolute;
@@ -255,19 +265,19 @@
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--border-color) transparent;
-  
+
   &::-webkit-scrollbar {
     width: 8px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: var(--border-color);
     border-radius: 4px;
-    
+
     &:hover {
       background: var(--accent-color);
     }
@@ -293,7 +303,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    
+
     &::before {
       content: '';
       width: 4px;
@@ -314,19 +324,19 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  
+
   label {
     font-size: 14px;
     font-weight: 500;
     color: var(--text-secondary);
     text-transform: capitalize;
   }
-  
+
   .color-input-group {
     display: flex;
     gap: 8px;
     align-items: center;
-    
+
     .color-picker {
       width: 40px;
       height: 40px;
@@ -335,13 +345,13 @@
       cursor: pointer;
       background: none;
       transition: all 0.2s ease;
-      
+
       &:hover {
         border-color: var(--accent-color);
         transform: scale(1.05);
       }
     }
-    
+
     .color-text-input {
       flex: 1;
       padding: 10px 12px;
@@ -351,7 +361,7 @@
       border-radius: 8px;
       font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
       font-size: 13px;
-      
+
       &:focus {
         outline: none;
         border-color: var(--accent-color);
@@ -363,7 +373,7 @@
 
 .icons-tab {
   padding: 24px;
-  
+
   h3 {
     margin: 0 0 20px 0;
     font-size: 18px;
@@ -382,7 +392,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  
+
   label {
     font-size: 14px;
     font-weight: 500;
@@ -419,13 +429,13 @@
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
-  
+
   h4 {
     margin: 0;
     font-size: 16px;
     font-weight: 600;
   }
-  
+
   button {
     padding: 8px 16px;
     border: none;
@@ -434,7 +444,7 @@
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
-    
+
     &:hover {
       transform: translateY(-1px);
       filter: brightness(110%);
@@ -453,19 +463,19 @@
   padding: 16px;
   border-radius: 8px;
   transition: all 0.2s ease;
-  
+
   h5 {
     margin: 0 0 8px 0;
     font-size: 14px;
     font-weight: 600;
   }
-  
+
   p {
     margin: 0;
     font-size: 13px;
     line-height: 1.4;
   }
-  
+
   &.accent {
     transform: none !important;
     box-shadow: var(--shadow-medium);
@@ -479,13 +489,13 @@
   padding: 20px 24px;
   border-top: 1px solid var(--border-color);
   background: var(--gradient-surface);
-  
+
   .footer-left,
   .footer-right {
     display: flex;
     gap: 12px;
   }
-  
+
   button {
     display: flex;
     align-items: center;
@@ -497,39 +507,39 @@
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
-    
+
     &:hover {
       transform: translateY(-1px);
       box-shadow: var(--shadow-small);
     }
   }
-  
+
   .primary-btn {
     background: var(--accent-color);
     color: white;
     border-color: var(--accent-color);
-    
+
     &:hover {
       background: var(--accent-hover);
       border-color: var(--accent-hover);
     }
   }
-  
+
   .secondary-btn {
     background: var(--secondary-bg);
     color: var(--text-secondary);
-    
+
     &:hover {
       background: var(--hover-bg);
       color: var(--text-primary);
     }
   }
-  
+
   .danger-btn {
     background: #ef4444;
     color: white;
     border-color: #ef4444;
-    
+
     &:hover {
       background: #dc2626;
       border-color: #dc2626;
@@ -540,8 +550,8 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .custom-style-editor {
-  width: 95vw;
-  max-height: calc(100vh - 2 * clamp(8px, 2vh, 24px));
+    width: 95vw;
+    max-height: calc(100vh - 2 * clamp(8px, 2vh, 24px));
     border-radius: 12px;
   }
 
@@ -549,19 +559,19 @@
     left: 2.5vw;
     right: 2.5vw;
   }
-  
+
   .color-items {
     grid-template-columns: 1fr;
   }
-  
+
   .icon-settings {
     grid-template-columns: 1fr;
   }
-  
+
   .editor-footer {
     flex-direction: column;
     gap: 16px;
-    
+
     .footer-left,
     .footer-right {
       width: 100%;

@@ -17,13 +17,13 @@ export class CustomStyleManager {
     try {
       const styles = this.getAllStyles();
       const existingIndex = styles.findIndex(s => s.id === style.id);
-      
+
       if (existingIndex >= 0) {
         styles[existingIndex] = style;
       } else {
         styles.push(style);
       }
-      
+
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(styles));
     } catch (error) {
       console.error('Failed to save custom style:', error);
@@ -49,19 +49,19 @@ export class CustomStyleManager {
 
   static applyStyleToDocument(style: CustomStyle): void {
     const root = document.documentElement;
-    
+
     // Apply CSS variables
     Object.entries(style.variables).forEach(([property, value]) => {
       root.style.setProperty(property, value);
     });
-    
+
     // Store the applied style info
     root.setAttribute('data-custom-style', style.id);
   }
 
   static removeCustomStyleFromDocument(): void {
     const root = document.documentElement;
-    
+
     // List of CSS variables that could be custom
     const customVariables = [
       '--primary-bg',
@@ -82,12 +82,12 @@ export class CustomStyleManager {
       '--shadow-medium',
       '--shadow-large'
     ];
-    
+
     // Remove only custom CSS variables
     customVariables.forEach((property) => {
       root.style.removeProperty(property);
     });
-    
+
     root.removeAttribute('data-custom-style');
     root.removeAttribute('data-custom-theme');
   }
@@ -106,7 +106,7 @@ export class CustomStyleManager {
       if (!styleData.name || !styleData.variables) {
         return false;
       }
-      
+
       // Create a new style with unique ID
       const importedStyle: CustomStyle = {
         id: `imported-${Date.now()}`,
@@ -124,7 +124,7 @@ export class CustomStyleManager {
         created: new Date().toISOString(),
         modified: new Date().toISOString()
       };
-      
+
       // Save the imported style
       this.saveStyle(importedStyle);
       return true;
@@ -138,7 +138,7 @@ export class CustomStyleManager {
     const cssVariables = Object.entries(style.variables)
       .map(([property, value]) => `  ${property}: ${value};`)
       .join('\n');
-    
+
     return `/* Custom Style: ${style.name} */\n[data-theme="custom-${style.id}"] {\n${cssVariables}\n}`;
   }
 

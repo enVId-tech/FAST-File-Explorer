@@ -33,15 +33,15 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
   return (
     <div className="color-picker">
       {label && <label className="color-picker-label">{label}</label>}
-      
+
       <div className="color-picker-container">
-        <div 
+        <div
           className="color-preview"
           style={{ backgroundColor: color }}
           onClick={() => setIsOpen(!isOpen)}
           title="Click to change color"
         />
-        
+
         <input
           type="text"
           value={color}

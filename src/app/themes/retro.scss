@@ -1,34 +1,34 @@
 // Retro Theme - 80s/90s nostalgic computing aesthetic
 [data-theme="retro"] {
   // Base surfaces (warm beiges and browns)
-  --primary-bg: #f4f1e8;     // cream/beige background
-  --secondary-bg: #ebe6d3;   // slightly darker cream
-  --surface-bg: #e0d9c7;     // warm elevated surfaces
+  --primary-bg: #f4f1e8; // cream/beige background
+  --secondary-bg: #ebe6d3; // slightly darker cream
+  --surface-bg: #e0d9c7; // warm elevated surfaces
 
   // Semantic aliases
   --bg-primary: var(--primary-bg);
   --bg-secondary: var(--secondary-bg);
   --bg-tertiary: var(--surface-bg);
-  --bg-hover: #d6ccb8;       // darker on hover
+  --bg-hover: #d6ccb8; // darker on hover
   --hover-bg: var(--bg-hover); // Alias for consistency
 
   // Accent (retro orange/amber)
-  --accent-color: #ff6b35;    // retro orange
+  --accent-color: #ff6b35; // retro orange
   --accent-primary: #ff6b35;
-  --accent-hover: #ff8555;    // lighter orange
-  --accent-active: #e55a2b;   // darker orange
+  --accent-hover: #ff8555; // lighter orange
+  --accent-active: #e55a2b; // darker orange
   --accent-secondary: #ffb627; // amber yellow
 
   // Text (dark browns for readability)
-  --text-primary: #2d1810;    // dark brown
-  --text-secondary: #4a3426;  // medium brown
-  --text-tertiary: #6b4d3a;   // light brown
+  --text-primary: #2d1810; // dark brown
+  --text-secondary: #4a3426; // medium brown
+  --text-tertiary: #6b4d3a; // light brown
 
   // Borders (subtle browns)
-  --border-color: #c4b5a0;    // light brown
+  --border-color: #c4b5a0; // light brown
   --border-primary: #c4b5a0;
   --border-secondary: #b8a588;
-  --border-hover: #a6966d;    // darker on hover
+  --border-hover: #a6966d; // darker on hover
 
   // Selection & shadows (warm tones)
   --selection-bg: rgba(255, 107, 53, 0.2);
@@ -47,6 +47,7 @@
   --status-bg: rgba(235, 230, 211, 0.95);
   --status-border: rgba(196, 181, 160, 0.8);
   --status-text: #2d1810;
+
   .status-bar {
     display: flex;
     background: var(--status-bg);
@@ -56,7 +57,7 @@
     -webkit-backdrop-filter: blur(5px);
     font-family: 'Courier New', monospace; // Retro monospace font
 
-    .status-item { 
+    .status-item {
       color: var(--status-text);
       font-weight: 500;
     }
@@ -75,17 +76,17 @@
   .tab {
     border-radius: 0; // Sharp corners for retro look
     border: 1px solid var(--border-color);
-    
+
     &.active {
       border-color: var(--accent-color);
       background: var(--accent-color);
       color: white;
-      
+
       .tab-title {
         color: white;
         font-weight: bold;
       }
-      
+
       .tab-icon {
         color: white;
       }
@@ -97,7 +98,7 @@
   .control-button {
     border-radius: 0; // Sharp corners
     border: 1px solid var(--border-color);
-    
+
     &:hover {
       background: var(--accent-color);
       color: white;
@@ -121,7 +122,7 @@
     border: 1px outset var(--accent-color);
     opacity: 0.8;
     transition: all 0.3s ease;
-    
+
     &:hover {
       background: var(--accent-hover);
       opacity: 1;

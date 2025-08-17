@@ -40,7 +40,7 @@ class TabManager {
         const bounds = mainWindow.getBounds();
         newTab.view.setBounds({ x: 0, y: 0, width: bounds.width, height: bounds.height });
         newTab.view.webContents.loadURL(url);
-        
+
         return newTab;
     }
 
@@ -57,7 +57,7 @@ class TabManager {
         // Show the selected tab
         const bounds = mainWindow.getBounds();
         tab.view.setBounds({ x: 0, y: 0, width: bounds.width, height: bounds.height });
-        
+
         return tab;
     }
 
@@ -66,10 +66,10 @@ class TabManager {
         if (tabIndex === -1) return tabs;
 
         const tab = tabs[tabIndex];
-        
+
         // Remove the view from the window
         mainWindow.contentView.removeChildView(tab.view);
-        
+
         // Close the webContents to free memory
         if (!tab.view.webContents.isDestroyed()) {
             tab.view.webContents.close();

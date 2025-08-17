@@ -1,15 +1,15 @@
 // Windows 10 Dark Theme - Classic Windows 10 dark theme
 [data-theme="win10-dark"] {
   // Base surfaces (traditional dark theme)
-  --primary-bg: #1f1f1f;   // darker main background
+  --primary-bg: #1f1f1f; // darker main background
   --secondary-bg: #252526; // panels, cards
-  --surface-bg: #2d2d30;   // elevated surfaces
+  --surface-bg: #2d2d30; // elevated surfaces
 
   // Semantic aliases
   --bg-primary: var(--primary-bg);
   --bg-secondary: var(--secondary-bg);
   --bg-tertiary: var(--surface-bg);
-  --bg-hover: #37373d;     // hover state
+  --bg-hover: #37373d; // hover state
   --hover-bg: var(--bg-hover);
 
   // Accent (Windows 10 blue)
@@ -20,9 +20,9 @@
   --accent-secondary: var(--accent-hover);
 
   // Text
-  --text-primary: #cccccc;   // softer white
+  --text-primary: #cccccc; // softer white
   --text-secondary: #969696; // muted secondary text
-  --text-tertiary: #6a6a6a;  // darker tertiary text
+  --text-tertiary: #6a6a6a; // darker tertiary text
 
   // Borders
   --border-color: #3e3e42;

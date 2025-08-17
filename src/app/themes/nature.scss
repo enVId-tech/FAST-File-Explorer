@@ -1,34 +1,34 @@
 // Nature Theme - Organic, earthy, calming aesthetic
 [data-theme="nature"] {
   // Base surfaces (natural greens and browns)
-  --primary-bg: #f5f7f0;     // soft cream with green tint
-  --secondary-bg: #e8ede3;   // light sage
-  --surface-bg: #dae5d0;     // elevated green
+  --primary-bg: #f5f7f0; // soft cream with green tint
+  --secondary-bg: #e8ede3; // light sage
+  --surface-bg: #dae5d0; // elevated green
 
   // Semantic aliases
   --bg-primary: var(--primary-bg);
   --bg-secondary: var(--secondary-bg);
   --bg-tertiary: var(--surface-bg);
-  --bg-hover: #c9d4be;       // deeper sage on hover
+  --bg-hover: #c9d4be; // deeper sage on hover
   --hover-bg: var(--bg-hover); // Alias for consistency
 
   // Accent (forest greens)
-  --accent-color: #2d5016;    // deep forest green
+  --accent-color: #2d5016; // deep forest green
   --accent-primary: #2d5016;
-  --accent-hover: #3d6b1f;    // lighter forest green
-  --accent-active: #1e3a0f;   // darker forest green
+  --accent-hover: #3d6b1f; // lighter forest green
+  --accent-active: #1e3a0f; // darker forest green
   --accent-secondary: #8b4513; // earthy brown
 
   // Text (natural browns and greens)
-  --text-primary: #1c2e0a;    // very dark green
-  --text-secondary: #3a5d1f;  // medium green
-  --text-tertiary: #5a7a3a;   // light green
+  --text-primary: #1c2e0a; // very dark green
+  --text-secondary: #3a5d1f; // medium green
+  --text-tertiary: #5a7a3a; // light green
 
   // Borders (organic earth tones)
-  --border-color: #a8b89a;    // muted green
+  --border-color: #a8b89a; // muted green
   --border-primary: #a8b89a;
   --border-secondary: #96a688;
-  --border-hover: #7a8a6c;    // darker on hover
+  --border-hover: #7a8a6c; // darker on hover
 
   // Selection & shadows (natural)
   --selection-bg: rgba(45, 80, 22, 0.15);
@@ -47,6 +47,7 @@
   --status-bg: rgba(232, 237, 227, 0.95);
   --status-border: rgba(168, 184, 154, 0.8);
   --status-text: #1c2e0a;
+
   .status-bar {
     display: flex;
     background: var(--status-bg);
@@ -55,7 +56,7 @@
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     position: relative;
-    
+
     // Subtle wood grain texture effect
     &::before {
       content: '';
@@ -64,17 +65,15 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: repeating-linear-gradient(
-        90deg,
-        transparent,
-        transparent 2px,
-        rgba(45, 80, 22, 0.02) 2px,
-        rgba(45, 80, 22, 0.02) 4px
-      );
+      background: repeating-linear-gradient(90deg,
+          transparent,
+          transparent 2px,
+          rgba(45, 80, 22, 0.02) 2px,
+          rgba(45, 80, 22, 0.02) 4px);
       pointer-events: none;
     }
 
-    .status-item { 
+    .status-item {
       color: var(--status-text);
       font-weight: 500;
     }
@@ -90,7 +89,7 @@
     border-radius: 16px 16px 0 0; // Organic rounded corners
     border: 1px solid var(--border-color);
     position: relative;
-    
+
     &::after {
       content: '';
       position: absolute;
@@ -102,25 +101,25 @@
       background: var(--accent-color);
       transition: width 0.3s ease;
     }
-    
+
     &:hover::after {
       width: 80%;
     }
-    
+
     &.active {
       background: var(--accent-color);
       color: white;
       border-color: var(--accent-color);
-      
+
       &::after {
         width: 100%;
       }
-      
+
       .tab-title {
         color: white;
         font-weight: 600;
       }
-      
+
       .tab-icon {
         color: white;
       }
@@ -132,7 +131,7 @@
   .control-button {
     border-radius: 12px;
     border: 1px solid var(--border-color);
-    
+
     &:hover {
       background: var(--accent-color);
       color: white;
@@ -156,7 +155,7 @@
     background: var(--gradient-accent);
     border-radius: 6px;
     border: 2px solid var(--bg-primary);
-    
+
     &:hover {
       background: var(--accent-hover);
     }
@@ -168,9 +167,17 @@
 
   // Organic animations
   @keyframes nature-grow {
-    0% { transform: scale(0.95); }
-    50% { transform: scale(1.02); }
-    100% { transform: scale(1); }
+    0% {
+      transform: scale(0.95);
+    }
+
+    50% {
+      transform: scale(1.02);
+    }
+
+    100% {
+      transform: scale(1);
+    }
   }
 
   .tab.active {
@@ -185,16 +192,12 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: radial-gradient(
-      circle at 20% 80%,
-      rgba(45, 80, 22, 0.02) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      circle at 80% 20%,
-      rgba(139, 69, 19, 0.02) 0%,
-      transparent 50%
-    );
+    background: radial-gradient(circle at 20% 80%,
+        rgba(45, 80, 22, 0.02) 0%,
+        transparent 50%),
+      radial-gradient(circle at 80% 20%,
+        rgba(139, 69, 19, 0.02) 0%,
+        transparent 50%);
     pointer-events: none;
     z-index: -1;
   }

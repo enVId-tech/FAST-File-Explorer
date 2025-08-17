@@ -19,8 +19,9 @@
 
 // Global theme transition support
 :root {
-  --theme-transition: none; /* Will be set dynamically for smooth theme changes */
-  
+  --theme-transition: none;
+  /* Will be set dynamically for smooth theme changes */
+
   /* Performance optimizations */
   scroll-behavior: smooth;
 }
@@ -31,7 +32,8 @@
 }
 
 /* Ensure no animations on zoom - completely disable any zoom-related transitions */
-html, body {
+html,
+body {
   /* Disable ANY transitions that might affect zoom */
   transition: none !important;
   /* Ensure body fills the viewport properly */
@@ -53,7 +55,10 @@ html, body {
 }
 
 /* Optimize rendering for interactive elements */
-button, input, select, textarea {
+button,
+input,
+select,
+textarea {
   will-change: background-color;
   transition: background-color 0.1s ease, color 0.1s ease;
 }
@@ -63,18 +68,19 @@ body.theme-transitioning *,
 body.theme-transitioning *::before,
 body.theme-transitioning *::after {
   transition: background-color 0.3s cubic-bezier(0.4, 0.0, 0.2, 1),
-              color 0.3s cubic-bezier(0.4, 0.0, 0.2, 1),
-              border-color 0.3s cubic-bezier(0.4, 0.0, 0.2, 1),
-              box-shadow 0.3s cubic-bezier(0.4, 0.0, 0.2, 1) !important;
+    color 0.3s cubic-bezier(0.4, 0.0, 0.2, 1),
+    border-color 0.3s cubic-bezier(0.4, 0.0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0.0, 0.2, 1) !important;
 }
 
 // Windows 11 Light Theme (Default)
-:root, [data-theme="win11-light"] {
+:root,
+[data-theme="win11-light"] {
   // Windows 11 Light Theme (Default, refined)
-  --primary-bg: #f6f7fb;    // app background (mica-like)
-  --secondary-bg: #ffffff;  // panels, cards
-  --surface-bg: #ffffff;    // elevated surfaces
-  --accent-color: #2563eb;  // fluent primary
+  --primary-bg: #f6f7fb; // app background (mica-like)
+  --secondary-bg: #ffffff; // panels, cards
+  --surface-bg: #ffffff; // elevated surfaces
+  --accent-color: #2563eb; // fluent primary
   --accent-hover: #1d4ed8;
   --accent-active: #1e40af;
   --text-primary: #0f172a;
@@ -88,12 +94,12 @@ body.theme-transitioning *::after {
   --shadow-small: 0 1px 3px rgba(15, 23, 42, 0.06);
   --shadow-medium: 0 6px 16px rgba(15, 23, 42, 0.08);
   --shadow-large: 0 12px 28px rgba(15, 23, 42, 0.12);
-  
+
   // Gradients
   --gradient-primary: linear-gradient(135deg, #60a5fa 0%, #93c5fd 100%);
   --gradient-accent: linear-gradient(135deg, #2563eb 0%, #60a5fa 100%);
   --gradient-surface: linear-gradient(180deg, #ffffff 0%, #f3f4f6 100%);
-  
+
   // Semantic aliases (keeps layout intact; improves theme consistency)
   --bg-primary: var(--primary-bg);
   --bg-secondary: var(--secondary-bg);
@@ -103,7 +109,7 @@ body.theme-transitioning *::after {
   --accent-secondary: var(--accent-hover);
   --border-primary: var(--border-color);
   --border-secondary: #eef2f7;
-  
+
   // UI Properties
   --border-radius: 8px;
   --border-radius-small: 4px;
@@ -176,48 +182,52 @@ body {
   background: var(--surface-bg);
   color: var(--text-primary);
   box-shadow: var(--shadow-large);
-  overflow: hidden; /* Keep vertical overflow hidden for main content */
-  
+  overflow: hidden;
+  /* Keep vertical overflow hidden for main content */
+
   /* Allow horizontal overflow for dropdowns */
   .tab-bar {
-    overflow: visible; /* Allow dropdowns to show outside tab bar */
-    z-index: 1000; /* Ensure tab bar is above other content */
+    overflow: visible;
+    /* Allow dropdowns to show outside tab bar */
+    z-index: 1000;
+    /* Ensure tab bar is above other content */
   }
 }
 
 // Theme-Specific UI Adaptations
-[data-theme="win10-light"], [data-theme="win10-dark"] {
+[data-theme="win10-light"],
+[data-theme="win10-dark"] {
   .tab-bar {
     height: 40px;
-    
+
     .tab {
       border-radius: var(--border-radius-small);
       height: 28px;
     }
   }
-  
+
   .toolbar {
     height: 48px;
     padding: 0 var(--spacing-medium);
-    
+
     .toolbar-button {
       height: 32px;
       border-radius: var(--border-radius-small);
       box-shadow: none;
       border: 1px solid var(--border-color);
-      
+
       &:hover:not(:disabled) {
         transform: none;
         box-shadow: none;
         border-color: var(--accent-color);
       }
-      
+
       &:disabled {
         opacity: 0.4;
         cursor: not-allowed;
         color: var(--text-tertiary);
         border-color: var(--border-color);
-        
+
         &:hover {
           background: transparent;
           border-color: var(--border-color);
@@ -321,7 +331,8 @@ body {
 ::-webkit-scrollbar-thumb:active {
   background: var(--scrollbar-hover);
   opacity: 1;
-  transition: none; /* Disable transition during dragging */
+  transition: none;
+  /* Disable transition during dragging */
 }
 
 ::-webkit-scrollbar-corner {
@@ -330,40 +341,42 @@ body {
 
 // Sidebar specific scrollbar (optimized for performance)
 .sidebar {
-  scroll-behavior: auto; /* Disable smooth scrolling for better performance */
-  
+  scroll-behavior: auto;
+  /* Disable smooth scrolling for better performance */
+
   &::-webkit-scrollbar {
     width: 6px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: rgba(107, 114, 128, 0.3);
     border-radius: 3px;
     transition: opacity 0.15s ease-out;
   }
-  
+
   &::-webkit-scrollbar-thumb:hover {
     background: rgba(107, 114, 128, 0.6);
   }
-  
+
   &::-webkit-scrollbar-thumb:active {
     background: rgba(107, 114, 128, 0.8);
-    transition: none; /* Disable transition during dragging */
+    transition: none;
+    /* Disable transition during dragging */
   }
-  
+
   // Only show scrollbar on hover (with faster transitions)
   &:not(:hover)::-webkit-scrollbar-thumb {
     opacity: 0;
   }
-  
+
   &:hover::-webkit-scrollbar-thumb {
     opacity: 1;
   }
-  
+
   // Ensure scrollbar is always visible when actively scrolling
   &:active::-webkit-scrollbar-thumb,
   &:focus-within::-webkit-scrollbar-thumb {
@@ -386,7 +399,7 @@ body {
     display: flex;
     gap: 10px;
     align-items: center;
-    
+
     &:first-child {
       gap: 6px;
     }
@@ -407,22 +420,22 @@ body {
     color: var(--text-primary);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: var(--shadow-small);
-    
+
     &:hover {
       background: var(--hover-bg);
       transform: translateY(-1px);
       box-shadow: var(--shadow-medium);
       border-color: var(--border-hover);
     }
-    
+
     &:active {
       transform: translateY(0);
     }
-    
+
     &.primary {
       background: var(--gradient-accent);
       color: white;
-      
+
       &:hover {
         background: var(--accent-hover);
       }
@@ -432,7 +445,7 @@ body {
   .address-bar-container {
     flex: 1;
     margin: 20px 8px;
-    
+
     .address-bar {
       height: 40px;
       background: var(--secondary-bg);
@@ -444,12 +457,12 @@ body {
       gap: 6px;
       box-shadow: var(--shadow-small);
       transition: all 0.2s ease;
-      
+
       &:focus-within {
         border-color: var(--accent-color);
         box-shadow: 0 0 0 2px var(--selection-bg);
       }
-      
+
       .path-segment {
         font-size: 13px;
         color: var(--text-secondary);
@@ -457,12 +470,12 @@ body {
         padding: 4px 8px;
         border-radius: 4px;
         transition: all 0.2s ease;
-        
+
         &:hover {
           background: var(--hover-bg);
           color: var(--text-primary);
         }
-        
+
       }
     }
   }
@@ -472,7 +485,7 @@ body {
 .ribbon {
   background: var(--secondary-bg);
   border-bottom: 1px solid var(--border-color);
-  
+
   .ribbon-tabs {
     height: 32px;
     display: flex;
@@ -480,7 +493,7 @@ body {
     padding: 0 16px;
     background: var(--primary-bg);
     border-bottom: 1px solid var(--border-color);
-    
+
     .ribbon-tab {
       padding: 6px 16px;
       font-size: 13px;
@@ -489,12 +502,12 @@ body {
       cursor: pointer;
       border-radius: 6px 6px 0 0;
       transition: all 0.2s ease;
-      
+
       &:hover {
         background: var(--hover-bg);
         color: var(--text-primary);
       }
-      
+
       &.active {
         background: var(--secondary-bg);
         color: var(--accent-color);
@@ -504,20 +517,20 @@ body {
       }
     }
   }
-  
+
   .ribbon-content {
     height: 72px;
     display: flex;
     align-items: center;
     padding: 0 16px;
     gap: 24px;
-    
+
     .ribbon-group {
       display: flex;
       gap: 8px;
       align-items: center;
       position: relative;
-      
+
       &::after {
         content: '';
         position: absolute;
@@ -527,12 +540,12 @@ body {
         width: 1px;
         background: var(--border-color);
       }
-      
+
       &:last-child::after {
         display: none;
       }
     }
-    
+
     .ribbon-button {
       display: flex;
       flex-direction: column;
@@ -546,36 +559,36 @@ body {
       color: var(--text-primary);
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       min-width: 64px;
-      
+
       &:hover:not(.disabled):not(:disabled) {
         background: var(--hover-bg);
         transform: translateY(-1px);
       }
-      
+
       &:active:not(.disabled):not(:disabled) {
         transform: translateY(0);
       }
-      
+
       &.disabled,
       &:disabled {
         opacity: 0.5;
         cursor: not-allowed;
-        
+
         .ribbon-icon {
           color: var(--text-tertiary);
         }
-        
+
         span {
           color: var(--text-tertiary);
         }
       }
-      
+
       .ribbon-icon {
         font-size: 20px;
         color: var(--accent-color);
         margin-bottom: 2px;
       }
-      
+
       span {
         font-size: 11px;
         font-weight: 500;
@@ -627,7 +640,7 @@ body {
     margin-top: auto;
     box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.05);
     position: relative;
-    
+
     // Add a subtle decorative accent
     &::before {
       content: '';
@@ -639,7 +652,7 @@ body {
       background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
       border-radius: 2px;
     }
-    
+
     .settings-button {
       width: 100%;
       margin: 0 !important;
@@ -653,7 +666,7 @@ body {
       transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
       overflow: hidden;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-      
+
       // Subtle inner glow
       &::before {
         content: '';
@@ -668,7 +681,7 @@ body {
         pointer-events: none;
         z-index: 1;
       }
-      
+
       // Animated background gradient
       &::after {
         content: '';
@@ -681,57 +694,60 @@ body {
         transition: left 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         z-index: 0;
       }
-      
+
       // Content wrapper to ensure proper z-index
-      > * {
+      >* {
         position: relative;
         z-index: 2;
       }
-      
+
       &:hover {
         background: linear-gradient(135deg, var(--accent-color) 0%, #3b82f6 100%);
         color: white;
         transform: translateY(-3px) scale(1.02);
         box-shadow: 0 8px 24px rgba(37, 99, 235, 0.4), 0 4px 16px rgba(37, 99, 235, 0.2);
         border-color: var(--accent-color);
-        
+
         &::before {
           background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.1) 100%);
         }
-        
+
         &::after {
           left: 100%;
         }
-        
+
         .sidebar-icon {
           color: white;
           transform: rotate(180deg) scale(1.2);
           filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
         }
       }
-      
+
       &:active {
         transform: translateY(-1px) scale(1.01);
         box-shadow: 0 4px 16px rgba(37, 99, 235, 0.5);
       }
-      
+
       .sidebar-icon {
         transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.15));
         font-size: 18px;
       }
-      
+
       // Add a subtle pulse animation on hover
       &:hover {
         animation: settingsPulse 2s ease-in-out infinite;
       }
     }
   }
-  
+
   @keyframes settingsPulse {
-    0%, 100% {
+
+    0%,
+    100% {
       box-shadow: 0 8px 24px rgba(37, 99, 235, 0.4), 0 4px 16px rgba(37, 99, 235, 0.2);
     }
+
     50% {
       box-shadow: 0 8px 24px rgba(37, 99, 235, 0.5), 0 4px 16px rgba(37, 99, 235, 0.3), 0 0 0 4px rgba(37, 99, 235, 0.1);
     }
@@ -739,7 +755,7 @@ body {
 
   .sidebar-section {
     margin-bottom: 24px;
-    
+
     .sidebar-header {
       font-size: 12px;
       font-weight: 700;
@@ -749,7 +765,7 @@ body {
       padding: 0 20px 8px 20px;
       margin-bottom: 8px;
     }
-    
+
     .sidebar-item {
       font-size: 14px;
       padding: 12px 20px;
@@ -761,43 +777,43 @@ body {
       transition: all 0.2s ease;
       border-radius: 0 24px 24px 0;
       margin-right: 12px;
-      
+
       &:hover {
         background: var(--hover-bg);
         transform: translateX(4px);
       }
-      
+
       &.active {
         background: var(--selection-bg);
         color: var(--accent-color);
         font-weight: 600;
         border-left: 3px solid var(--accent-color);
       }
-      
+
       .sidebar-icon {
         font-size: 16px;
         width: 20px;
         text-align: center;
         color: var(--accent-color);
       }
-      
+
       // Drive item specific styles
       &.drive-item {
         flex-direction: column;
         align-items: stretch;
         padding: 16px 20px;
         gap: 8px;
-        
+
         .drive-main {
           display: flex;
           align-items: center;
           gap: 12px;
         }
-        
+
         .drive-info {
           flex: 1;
           min-width: 0;
-          
+
           .drive-name {
             font-size: 14px;
             font-weight: 500;
@@ -807,26 +823,26 @@ body {
             text-overflow: ellipsis;
             margin-bottom: 6px;
           }
-          
+
           .drive-usage {
             display: flex;
             flex-direction: column;
             gap: 4px;
-            
+
             .usage-bar {
               width: 100%;
               height: 4px;
               background: var(--border-color);
               border-radius: 2px;
               overflow: hidden;
-              
+
               .usage-fill {
                 height: 100%;
                 border-radius: 2px;
                 transition: all 0.3s ease;
               }
             }
-            
+
             .usage-text {
               font-size: 11px;
               color: var(--text-tertiary);
@@ -836,13 +852,13 @@ body {
             }
           }
         }
-        
+
         &:hover {
           .usage-bar {
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
           }
         }
-        
+
         &.active {
           .drive-name {
             color: var(--accent-color);
@@ -874,7 +890,7 @@ body {
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 16px;
   padding: 8px;
-  
+
   .file-item {
     display: flex;
     flex-direction: column;
@@ -884,25 +900,25 @@ body {
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     border: 2px solid transparent;
-    
+
     &:hover {
       background: var(--hover-bg);
       transform: translateY(-2px);
       box-shadow: var(--shadow-medium);
     }
-    
+
     &.selected {
       background: var(--selection-bg);
       border-color: var(--selection-border);
       transform: translateY(-1px);
     }
-    
+
     .file-icon {
       font-size: 32px;
       margin-bottom: 8px;
       color: var(--accent-color);
     }
-    
+
     .file-name {
       font-size: 12px;
       font-weight: 500;
@@ -954,7 +970,7 @@ body {
       text-align: right;
     }
   }
-  
+
   .file-item {
     display: grid;
     grid-template-columns: minmax(260px, 1fr) 110px 160px 140px;
@@ -964,16 +980,16 @@ body {
     border-bottom: 1px solid var(--border-color);
     cursor: pointer;
     transition: background-color 0.2s ease;
-    
+
     &:hover {
       background: var(--hover-bg);
     }
-    
+
     &.selected {
       background: var(--selection-bg);
       border-color: var(--selection-border);
     }
-    
+
     /* Left info (icon + name) */
     .file-info {
       display: flex;
@@ -997,13 +1013,13 @@ body {
         text-overflow: ellipsis;
       }
     }
-    
+
     .file-size {
       font-size: 12px;
       color: var(--text-secondary);
       text-align: right;
     }
-    
+
     .file-date {
       font-size: 12px;
       color: var(--text-secondary);
@@ -1030,33 +1046,35 @@ body {
   background: var(--primary-bg);
   overflow-y: auto;
   padding: var(--spacing-medium);
-  scroll-behavior: auto; /* Disable smooth scrolling for better performance */
-  
+  scroll-behavior: auto;
+  /* Disable smooth scrolling for better performance */
+
   // Optimized scrollbar for main content
   &::-webkit-scrollbar {
     width: 8px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: var(--scrollbar-thumb);
     border-radius: 4px;
     opacity: 0.6;
     transition: opacity 0.1s ease-out;
   }
-  
+
   &::-webkit-scrollbar-thumb:hover {
     background: var(--scrollbar-hover);
     opacity: 1;
   }
-  
+
   &::-webkit-scrollbar-thumb:active {
     background: var(--scrollbar-hover);
     opacity: 1;
-    transition: none; /* Remove transition during active dragging */
+    transition: none;
+    /* Remove transition during active dragging */
   }
 }
 
@@ -1067,16 +1085,17 @@ body {
   transition: background-color 0.2s ease;
   user-select: none;
   z-index: 10;
-  
+
   &.resize-handle-vertical {
     width: 4px;
     cursor: col-resize;
     min-height: 100%;
-    
-    &:hover, &.active {
+
+    &:hover,
+    &.active {
       background: var(--accent-color);
     }
-    
+
     // Expand hit area for easier grabbing
     &::before {
       content: '';
@@ -1087,7 +1106,7 @@ body {
       bottom: 0;
       background: transparent;
     }
-    
+
     // Visual indicator on hover
     &::after {
       content: '';
@@ -1102,21 +1121,22 @@ body {
       transition: opacity 0.2s ease;
       border-radius: 1px;
     }
-    
+
     &:hover::after {
       opacity: 0.5;
     }
   }
-  
+
   &.resize-handle-horizontal {
     height: 4px;
     cursor: row-resize;
     width: 100%;
-    
-    &:hover, &.active {
+
+    &:hover,
+    &.active {
       background: var(--accent-color);
     }
-    
+
     // Expand hit area for easier grabbing
     &::before {
       content: '';
@@ -1135,12 +1155,12 @@ body {
   flex-shrink: 0;
   overflow: hidden;
   transition: width 0.2s ease;
-  
+
   &.hidden {
     width: 0 !important;
     min-width: 0 !important;
   }
-  
+
   &.visible {
     border-left: 1px solid var(--border-primary);
   }
@@ -1151,7 +1171,7 @@ body {
   display: flex;
   flex: 1;
   overflow: hidden;
-  
+
   .file-area {
     flex: 1;
     overflow: hidden;
@@ -1160,7 +1180,8 @@ body {
   }
 }
 
-.item-size, .item-date {
+.item-size,
+.item-date {
   font-size: 12px;
   color: var(--text-tertiary);
   margin-left: 16px;
@@ -1237,16 +1258,16 @@ body {
     cursor: pointer;
     transition: all 0.2s ease;
     margin: 2px 0;
-    
+
     &:hover {
       background: var(--hover-bg);
     }
-    
+
     &.active {
       background: var(--selection-bg);
       border-left: 3px solid var(--accent-color);
       color: var(--accent-color);
-      
+
       .item-icon {
         color: var(--accent-color);
       }
@@ -1271,11 +1292,11 @@ body {
   .sidebar {
     width: 200px;
   }
-  
+
   .toolbar {
     padding: 0 var(--spacing-medium);
   }
-  
+
   .address-bar {
     min-width: 200px;
   }

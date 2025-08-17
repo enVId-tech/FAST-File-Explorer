@@ -23,7 +23,7 @@ export const DetailsPanel: React.FC<DetailsPanelProps> = ({ selectedItems, isVis
             for (const folderPath of folderPaths) {
                 if (!folderMetadata[folderPath] && !loadingMetadata.has(folderPath)) {
                     setLoadingMetadata(prev => new Set([...prev, folderPath]));
-                    
+
                     try {
                         const metadata = await window.electronAPI.fs.getFolderMetadata(folderPath);
                         setFolderMetadata(prev => ({
@@ -73,7 +73,7 @@ export const DetailsPanel: React.FC<DetailsPanelProps> = ({ selectedItems, isVis
                     <h3>Details</h3>
                     <div className="details-subtitle">{selectedItems.length} items selected</div>
                 </div>
-                
+
                 <div className="details-content">
                     <div className="multi-selection-summary">
                         <div className="summary-stats">
@@ -90,7 +90,7 @@ export const DetailsPanel: React.FC<DetailsPanelProps> = ({ selectedItems, isVis
                                 <span>{formatFileSize(totalSize)}</span>
                             </div>
                         </div>
-                        
+
                         {/* Show file type breakdown */}
                         {Object.keys(fileTypes).length > 0 && (
                             <div className="file-types-breakdown">
@@ -120,7 +120,7 @@ export const DetailsPanel: React.FC<DetailsPanelProps> = ({ selectedItems, isVis
         if (type === 'directory') {
             return { typeName: 'Folder', category: 'File Folder' };
         }
-        
+
         const extension = name.split('.').pop()?.toLowerCase() || '';
         const typeMap: Record<string, { typeName: string; category: string }> = {
             'docx': { typeName: 'Word Document', category: 'Microsoft Word Document' },
@@ -145,7 +145,7 @@ export const DetailsPanel: React.FC<DetailsPanelProps> = ({ selectedItems, isVis
             'css': { typeName: 'CSS File', category: 'Cascading Style Sheet' },
             'txt': { typeName: 'Text File', category: 'Plain Text Document' },
         };
-        
+
         return typeMap[extension] || { typeName: 'File', category: 'Unknown File Type' };
     };
 
@@ -206,7 +206,7 @@ export const DetailsPanel: React.FC<DetailsPanelProps> = ({ selectedItems, isVis
                 <h3>Details</h3>
                 <div className="details-subtitle">Properties & Information</div>
             </div>
-            
+
             <div className="details-content">
                 {/* File Preview */}
                 <div className="file-preview fade-in-up">
@@ -231,8 +231,8 @@ export const DetailsPanel: React.FC<DetailsPanelProps> = ({ selectedItems, isVis
                             <FaHdd className="detail-icon" />
                             <span className="detail-label">Size:</span>
                             <span className="detail-value">
-                                {selectedItem.type === 'directory' 
-                                    ? metadata 
+                                {selectedItem.type === 'directory'
+                                    ? metadata
                                         ? `${formatFileSize(metadata.totalSize)} (${metadata.totalFiles} files, ${metadata.totalFolders} folders)`
                                         : isFolderLoading ? 'Calculating...' : 'Unknown'
                                     : formatFileSize(selectedItem.size)
@@ -287,7 +287,7 @@ export const DetailsPanel: React.FC<DetailsPanelProps> = ({ selectedItems, isVis
                                     <span className="stat-value">{formatFileSize(metadata.totalSize)}</span>
                                 </div>
                             </div>
-                            
+
                             {/* File Type Breakdown */}
                             {Object.keys(metadata.fileTypes).length > 0 && (
                                 <div className="file-types-section">

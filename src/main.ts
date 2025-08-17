@@ -47,7 +47,7 @@ const createWindow = () => {
   // and load the index.html of the app.
   // Note: NODE_ENV is not production in development mode
   const isDevelopment = process.env.NODE_ENV !== 'production';
-  
+
   if (process.env.MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     // Use the environment variable set by Electron Forge Vite plugin
     mainWindow.loadURL(process.env.MAIN_WINDOW_VITE_DEV_SERVER_URL);
@@ -75,7 +75,7 @@ const createWindow = () => {
 
 app.whenReady().then(() => {
   createWindow();
-  
+
   // Initialize IPC handlers asynchronously to prevent blocking
   setImmediate(() => {
     initializeIpcHandlers(mainWindow);

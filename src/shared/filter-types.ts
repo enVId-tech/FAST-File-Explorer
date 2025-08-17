@@ -48,22 +48,22 @@ export interface FilterUIState {
 // Helper function to count active filters
 export function countActiveFilters(filters: FilterCriteria): number {
     let count = 0;
-    
+
     if (filters.query.trim()) count++;
     if (filters.dateRange.start || filters.dateRange.end) count++;
     if (filters.sizeRange.min || filters.sizeRange.max) count++;
     if (filters.selectedFileTypes.length > 0) count++;
     if (filters.caseSensitive) count++;
-    
+
     return count;
 }
 
 // Helper function to check if a file matches file type filter
 export function matchesFileType(fileName: string, selectedTypes: string[]): boolean {
     if (selectedTypes.length === 0) return true;
-    
+
     const extension = '.' + fileName.split('.').pop()?.toLowerCase();
-    
+
     return selectedTypes.some(type => {
         const extensions = FILE_TYPE_EXTENSIONS[type as CommonFileType];
         return extensions?.includes(extension);
@@ -73,13 +73,13 @@ export function matchesFileType(fileName: string, selectedTypes: string[]): bool
 // Helper function to parse size string (e.g., "100KB", "1.5MB")
 export function parseSizeString(sizeStr: string): number {
     if (!sizeStr.trim()) return 0;
-    
+
     const match = sizeStr.match(/^(\d+(?:\.\d+)?)\s*(KB|MB|GB|B)?$/i);
     if (!match) return 0;
-    
+
     const value = parseFloat(match[1]);
     const unit = (match[2] || 'B').toUpperCase();
-    
+
     switch (unit) {
         case 'B': return value;
         case 'KB': return value * 1024;

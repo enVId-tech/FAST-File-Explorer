@@ -44,7 +44,7 @@ const DriveItem: React.FC<DriveItemProps> = React.memo(({ drive, active, onClick
     }, [drive, onHover]);
 
     return (
-        <div 
+        <div
             className={`sidebar-item drive-item ${active ? 'active' : ''}`}
             onClick={onClick}
             onMouseEnter={handleMouseEnter}
@@ -55,9 +55,9 @@ const DriveItem: React.FC<DriveItemProps> = React.memo(({ drive, active, onClick
                     <div className="drive-name">{drive.driveName} ({drive.drivePath})</div>
                     <div className="drive-usage">
                         <div className="usage-bar">
-                            <div 
-                                className="usage-fill" 
-                                style={{ 
+                            <div
+                                className="usage-fill"
+                                style={{
                                     width: `${usagePercentage}%`,
                                     backgroundColor: usageColor
                                 }}
@@ -93,25 +93,25 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
     const [currentView, setCurrentView] = useState<'thispc' | 'recents' | 'folder'>('thispc');
     const [activeRibbonTab, setActiveRibbonTab] = useState<'home' | 'share' | 'view' | 'manage' | 'organize' | 'tools' | 'help'>('home');
     const [showSettingsMenu, setShowSettingsMenu] = useState(false);
-    
+
     // File browser state
     const [currentPath, setCurrentPath] = useState<string>('');
     const [selectedFiles, setSelectedFiles] = useState<FileSystemItem[]>([]);
-    
+
     // Clipboard state management
     const [clipboardState, setClipboardState] = useState<{
         operation: 'copy' | 'cut' | null;
         files: string[];
     }>({ operation: null, files: [] });
-    
+
     // File list refresh trigger
     const [refreshTrigger, setRefreshTrigger] = useState(0);
-    
+
     // Helper function to trigger file list refresh
     const triggerRefresh = useCallback(() => {
         setRefreshTrigger(prev => prev + 1);
     }, []);
-    
+
     // Clipboard state computed values
     const clipboardHasFiles = clipboardState.files.length > 0;
 
@@ -146,17 +146,17 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
     // Action handlers for context bar
     const handleCopyFiles = useCallback(async () => {
         if (selectedFiles.length === 0) return;
-        
+
         try {
             const paths = selectedFiles.map(file => file.path);
             await window.electronAPI.clipboard.copyFiles(paths);
             setClipboardState({ operation: 'copy', files: paths });
-            
+
             // Broadcast clipboard state change
             document.dispatchEvent(new CustomEvent('clipboard-state-changed', {
                 detail: { operation: 'copy', files: paths }
             }));
-            
+
             console.log('Copied files:', paths);
         } catch (error) {
             console.error('Failed to copy files:', error);
@@ -165,17 +165,17 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
 
     const handleCutFiles = useCallback(async () => {
         if (selectedFiles.length === 0) return;
-        
+
         try {
             const paths = selectedFiles.map(file => file.path);
             await window.electronAPI.clipboard.cutFiles(paths);
             setClipboardState({ operation: 'cut', files: paths });
-            
+
             // Broadcast clipboard state change
             document.dispatchEvent(new CustomEvent('clipboard-state-changed', {
                 detail: { operation: 'cut', files: paths }
             }));
-            
+
             console.log('Cut files:', paths);
         } catch (error) {
             console.error('Failed to cut files:', error);
@@ -184,19 +184,19 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
 
     const handlePasteFiles = useCallback(async () => {
         if (!clipboardHasFiles || !currentPath) return;
-        
+
         try {
             await window.electronAPI.clipboard.pasteFiles(currentPath);
             setClipboardState({ operation: null, files: [] });
-            
+
             // Broadcast clipboard state change (cleared)
             document.dispatchEvent(new CustomEvent('clipboard-state-changed', {
                 detail: { operation: null, files: [] }
             }));
-            
+
             // Trigger refresh after paste
             triggerRefresh();
-            
+
             console.log('Pasted files to:', currentPath);
         } catch (error) {
             console.error('Failed to paste files:', error);
@@ -205,15 +205,15 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
 
     const handleDeleteFiles = useCallback(async () => {
         if (selectedFiles.length === 0) return;
-        
+
         try {
             const paths = selectedFiles.map(file => file.path);
             await window.electronAPI.files.delete(paths);
             setSelectedFiles([]);
-            
+
             // Trigger refresh after delete
             triggerRefresh();
-            
+
             console.log('Deleted files:', paths);
         } catch (error) {
             console.error('Failed to delete files:', error);
@@ -222,17 +222,17 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
 
     const handleRenameFile = useCallback(async () => {
         if (selectedFiles.length !== 1) return;
-        
+
         const file = selectedFiles[0];
         const newName = prompt('Enter new name:', file.name);
         if (!newName || newName === file.name) return;
-        
+
         try {
             await window.electronAPI.files.rename(file.path, newName);
-            
+
             // Trigger refresh after rename
             triggerRefresh();
-            
+
             console.log('Renamed file:', file.path, 'to', newName);
         } catch (error) {
             console.error('Failed to rename file:', error);
@@ -241,16 +241,16 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
 
     const handleNewFolder = useCallback(async () => {
         if (!currentPath) return;
-        
+
         const folderName = prompt('Enter folder name:', 'New Folder');
         if (!folderName) return;
-        
+
         try {
             await window.electronAPI.files.createFolder(currentPath, folderName);
-            
+
             // Trigger refresh after creating folder
             triggerRefresh();
-            
+
             console.log('Created folder:', folderName, 'in', currentPath);
         } catch (error) {
             console.error('Failed to create folder:', error);
@@ -312,7 +312,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
     // Navigation history
     const [navigationHistory, setNavigationHistory] = useState<string[]>([]);
     const [historyIndex, setHistoryIndex] = useState<number>(-1);
-    
+
     // Search and filter state
     const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -324,7 +324,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
         sizeRange: { min: '', max: '' },
         nameContains: ''
     });
-    
+
     // Resizable panel states
     const [sidebarWidth, setSidebarWidth] = useState(280);
     const [detailsPanelWidth, setDetailsPanelWidth] = useState(320);
@@ -357,12 +357,12 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
         if (selectedFiles.length > 0) {
             return selectedFiles;
         }
-        
+
         // Only show drive info if no files are selected and a drive is hovered
         if (hoveredDrive) {
             return [driveToFileSystemItem(hoveredDrive)];
         }
-        
+
         return [];
     };
 
@@ -426,7 +426,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
             setNavigationHistory(newHistory);
             setHistoryIndex(newHistory.length - 1);
         }
-        
+
         setCurrentPath(path);
         setCurrentView('folder');
     };
@@ -475,10 +475,10 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
     // Generate breadcrumbs from current path
     const generateBreadcrumbs = () => {
         if (!currentPath) return [];
-        
+
         const parts = currentPath.split(/[\\\\/]/).filter(Boolean);
         const breadcrumbs = [];
-        
+
         let currentPathBuild = '';
         if (window.electronAPI.system.platform === 'win32' && parts[0]?.includes(':')) {
             // Windows drive
@@ -486,14 +486,14 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
             breadcrumbs.push({ name: parts[0], path: currentPathBuild });
             parts.shift();
         }
-        
+
         parts.forEach((part) => {
-            currentPathBuild = currentPathBuild.endsWith('/') || currentPathBuild.endsWith('\\') 
-                ? currentPathBuild + part 
+            currentPathBuild = currentPathBuild.endsWith('/') || currentPathBuild.endsWith('\\')
+                ? currentPathBuild + part
                 : currentPathBuild + (window.electronAPI.system.platform === 'win32' ? '\\' : '/') + part;
             breadcrumbs.push({ name: part, path: currentPathBuild });
         });
-        
+
         return breadcrumbs;
     };
 
@@ -550,7 +550,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                         path = selectedDrive.drivePath;
                     }
                 }
-                
+
                 if (path) {
                     setCurrentPath(path);
                 }
@@ -560,131 +560,131 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
         }
     };
     const fileItems: FileItem[] = [
-        { 
-            name: 'Desktop', 
-            type: 'folder', 
-            dateModified: '1/15/2024 3:42 PM', 
+        {
+            name: 'Desktop',
+            type: 'folder',
+            dateModified: '1/15/2024 3:42 PM',
             dateCreated: '12/1/2023 10:00 AM',
             owner: 'Current User',
             description: 'Desktop folder containing user shortcuts and files',
             tags: ['System', 'Desktop'],
-            icon: <FaDesktop /> 
+            icon: <FaDesktop />
         },
-        { 
-            name: 'Documents', 
-            type: 'folder', 
-            dateModified: '2/1/2024 9:15 AM', 
+        {
+            name: 'Documents',
+            type: 'folder',
+            dateModified: '2/1/2024 9:15 AM',
             dateCreated: '12/1/2023 10:00 AM',
             owner: 'Current User',
             description: 'Main documents folder for user files',
             tags: ['Documents', 'Personal'],
-            icon: <FaFolder /> 
+            icon: <FaFolder />
         },
-        { 
-            name: 'Downloads', 
-            type: 'folder', 
-            dateModified: '2/2/2024 2:30 PM', 
+        {
+            name: 'Downloads',
+            type: 'folder',
+            dateModified: '2/2/2024 2:30 PM',
             dateCreated: '12/1/2023 10:00 AM',
             owner: 'Current User',
             description: 'Downloaded files from web browsers',
             tags: ['Downloads', 'Temporary'],
-            icon: <FaDownload /> 
+            icon: <FaDownload />
         },
-        { 
-            name: 'Pictures', 
-            type: 'folder', 
-            dateModified: '1/28/2024 11:22 AM', 
+        {
+            name: 'Pictures',
+            type: 'folder',
+            dateModified: '1/28/2024 11:22 AM',
             dateCreated: '12/1/2023 10:00 AM',
             owner: 'Current User',
             description: 'Image files and photo collections',
             tags: ['Media', 'Photos'],
-            icon: <FaFolder /> 
+            icon: <FaFolder />
         },
-        { 
-            name: 'Music', 
-            type: 'folder', 
-            dateModified: '1/20/2024 4:18 PM', 
+        {
+            name: 'Music',
+            type: 'folder',
+            dateModified: '1/20/2024 4:18 PM',
             dateCreated: '12/1/2023 10:00 AM',
             owner: 'Current User',
             description: 'Audio files and music library',
             tags: ['Media', 'Audio'],
-            icon: <FaMusic /> 
+            icon: <FaMusic />
         },
-        { 
-            name: 'Videos', 
-            type: 'folder', 
-            dateModified: '1/25/2024 7:45 PM', 
+        {
+            name: 'Videos',
+            type: 'folder',
+            dateModified: '1/25/2024 7:45 PM',
             dateCreated: '12/1/2023 10:00 AM',
             owner: 'Current User',
             description: 'Video files and movie collection',
             tags: ['Media', 'Videos'],
-            icon: <FaVideo /> 
+            icon: <FaVideo />
         },
-        { 
-            name: 'Quarterly Report.docx', 
-            type: 'file', 
-            size: '245 KB', 
-            dateModified: '2/1/2024 10:30 AM', 
+        {
+            name: 'Quarterly Report.docx',
+            type: 'file',
+            size: '245 KB',
+            dateModified: '2/1/2024 10:30 AM',
             dateCreated: '1/15/2024 9:00 AM',
             owner: 'Current User',
             description: 'Q4 2023 business performance analysis and metrics',
             tags: ['Work', 'Reports', 'Q4'],
-            icon: <FaFileWord /> 
+            icon: <FaFileWord />
         },
-        { 
-            name: 'Project Presentation.pptx', 
-            type: 'file', 
-            size: '2.1 MB', 
-            dateModified: '1/30/2024 4:15 PM', 
+        {
+            name: 'Project Presentation.pptx',
+            type: 'file',
+            size: '2.1 MB',
+            dateModified: '1/30/2024 4:15 PM',
             dateCreated: '1/20/2024 2:30 PM',
             owner: 'Current User',
             description: 'Client presentation for upcoming project proposal',
             tags: ['Work', 'Presentation', 'Client'],
-            icon: <FaFilePowerpoint /> 
+            icon: <FaFilePowerpoint />
         },
-        { 
-            name: 'Budget Analysis.xlsx', 
-            type: 'file', 
-            size: '89 KB', 
-            dateModified: '1/29/2024 2:45 PM', 
+        {
+            name: 'Budget Analysis.xlsx',
+            type: 'file',
+            size: '89 KB',
+            dateModified: '1/29/2024 2:45 PM',
             dateCreated: '1/25/2024 11:00 AM',
             owner: 'Current User',
             description: 'Financial budget breakdown and expense tracking',
             tags: ['Finance', 'Budget', 'Analysis'],
-            icon: <FaFileExcel /> 
+            icon: <FaFileExcel />
         },
-        { 
-            name: 'Vacation Photo.jpg', 
-            type: 'file', 
-            size: '3.2 MB', 
-            dateModified: '1/28/2024 6:20 PM', 
+        {
+            name: 'Vacation Photo.jpg',
+            type: 'file',
+            size: '3.2 MB',
+            dateModified: '1/28/2024 6:20 PM',
             dateCreated: '1/28/2024 6:20 PM',
             owner: 'Current User',
             description: 'Beautiful sunset photo from recent vacation',
             tags: ['Personal', 'Photos', 'Vacation'],
-            icon: <FaFileImage /> 
+            icon: <FaFileImage />
         },
-        { 
-            name: 'app.js', 
-            type: 'file', 
-            size: '12 KB', 
-            dateModified: '2/2/2024 1:10 PM', 
+        {
+            name: 'app.js',
+            type: 'file',
+            size: '12 KB',
+            dateModified: '2/2/2024 1:10 PM',
             dateCreated: '1/30/2024 3:45 PM',
             owner: 'Current User',
             description: 'Main application JavaScript file with core functionality',
             tags: ['Code', 'JavaScript', 'Development'],
-            icon: <FaFileCode /> 
+            icon: <FaFileCode />
         },
-        { 
-            name: 'User Manual.pdf', 
-            type: 'file', 
-            size: '1.8 MB', 
-            dateModified: '1/22/2024 11:35 AM', 
+        {
+            name: 'User Manual.pdf',
+            type: 'file',
+            size: '1.8 MB',
+            dateModified: '1/22/2024 11:35 AM',
             dateCreated: '1/18/2024 4:20 PM',
             owner: 'Current User',
             description: 'Comprehensive user guide and documentation',
             tags: ['Documentation', 'Manual', 'Guide'],
-            icon: <FaFilePdf /> 
+            icon: <FaFilePdf />
         },
     ];
 
@@ -748,7 +748,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
     // Sort files
     const sortedFiles = [...fileItems].sort((a, b) => {
         let comparison = 0;
-        
+
         switch (sortBy) {
             case 'name':
                 comparison = a.name.localeCompare(b.name);
@@ -765,7 +765,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                 comparison = a.type.localeCompare(b.type);
                 break;
         }
-        
+
         return sortOrder === 'asc' ? comparison : -comparison;
     });
 
@@ -784,7 +784,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
 
     const getSortIcon = (column: 'name' | 'size' | 'date' | 'type') => {
         if (sortBy !== column) return null;
-        
+
         if (column === 'name' || column === 'type') {
             return sortOrder === 'asc' ? <FaSortAlphaDown /> : <FaSortAlphaUp />;
         } else {
@@ -802,7 +802,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                 {/* Modern Toolbar */}
                 <div className="toolbar">
                     <div className="toolbar-section">
-                        <button 
+                        <button
                             className={`toolbar-button ${historyIndex <= 0 ? 'disabled' : ''}`}
                             onClick={navigateBack}
                             disabled={historyIndex <= 0}
@@ -810,7 +810,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                         >
                             <FaArrowLeft />
                         </button>
-                        <button 
+                        <button
                             className={`toolbar-button ${historyIndex >= navigationHistory.length - 1 ? 'disabled' : ''}`}
                             onClick={navigateForward}
                             disabled={historyIndex >= navigationHistory.length - 1}
@@ -818,8 +818,8 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                         >
                             <FaArrowRight />
                         </button>
-                        <button 
-                            className="toolbar-button" 
+                        <button
+                            className="toolbar-button"
                             onClick={navigateHome}
                             title="Home"
                         >
@@ -839,7 +839,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                                     {generateBreadcrumbs().map((breadcrumb, index) => (
                                         <React.Fragment key={breadcrumb.path}>
                                             {index > 0 && <span className="path-separator">›</span>}
-                                            <span 
+                                            <span
                                                 className={`path-segment ${index === generateBreadcrumbs().length - 1 ? 'active' : ''}`}
                                                 onClick={() => index < generateBreadcrumbs().length - 1 && navigateToPath(breadcrumb.path)}
                                                 style={{ cursor: index < generateBreadcrumbs().length - 1 ? 'pointer' : 'default' }}
@@ -854,43 +854,43 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                     </div>
                     <div className="toolbar-section">
                         <div className="search-container">
-                            <button 
+                            <button
                                 className={`toolbar-button ${showAdvancedSearch ? 'active' : ''}`}
                                 onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
                                 title="Advanced Search"
                             >
                                 <FaSearch />
                             </button>
-                            
+
                             {showAdvancedSearch && (
                                 <div className="advanced-search-overlay">
                                     <div className="advanced-search-panel">
                                         <div className="search-header">
                                             <h3>Advanced Search</h3>
-                                            <button 
+                                            <button
                                                 className="close-button"
                                                 onClick={() => setShowAdvancedSearch(false)}
                                             >
                                                 <FaTimes />
                                             </button>
                                         </div>
-                                        
+
                                         <div className="search-content">
                                             <div className="search-input-group">
                                                 <label>Search for:</label>
-                                                <input 
+                                                <input
                                                     type="text"
                                                     value={searchQuery}
                                                     onChange={(e) => setSearchQuery(e.target.value)}
                                                     placeholder="Enter search terms..."
                                                 />
                                             </div>
-                                            
+
                                             <div className="search-scope-group">
                                                 <label>Search in:</label>
                                                 <div className="radio-group">
                                                     <label className="radio-option">
-                                                        <input 
+                                                        <input
                                                             type="radio"
                                                             value="current"
                                                             checked={searchScope === 'current'}
@@ -899,7 +899,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                                                         Current directory and subdirectories
                                                     </label>
                                                     <label className="radio-option">
-                                                        <input 
+                                                        <input
                                                             type="radio"
                                                             value="global"
                                                             checked={searchScope === 'global'}
@@ -909,97 +909,97 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                                                     </label>
                                                 </div>
                                             </div>
-                                            
+
                                             <div className="filter-section">
                                                 <div className="filter-header">
                                                     <label>
                                                         <FaFilter /> Filters
                                                     </label>
-                                                    <button 
+                                                    <button
                                                         className={`filter-toggle ${showFilters ? 'active' : ''}`}
                                                         onClick={() => setShowFilters(!showFilters)}
                                                     >
                                                         {showFilters ? 'Hide' : 'Show'} Filters
                                                     </button>
                                                 </div>
-                                                
+
                                                 {showFilters && (
                                                     <div className="filter-options">
                                                         <div className="filter-row">
                                                             <label><FaFont /> Name contains:</label>
-                                                            <input 
+                                                            <input
                                                                 type="text"
                                                                 value={filters.nameContains}
                                                                 onChange={(e) => setFilters(prev => ({ ...prev, nameContains: e.target.value }))}
                                                                 placeholder="Text in filename..."
                                                             />
                                                         </div>
-                                                        
+
                                                         <div className="filter-row">
                                                             <label><FaCalendarAlt /> Date range:</label>
                                                             <div className="date-range">
-                                                                <input 
+                                                                <input
                                                                     type="date"
                                                                     value={filters.dateRange.start}
-                                                                    onChange={(e) => setFilters(prev => ({ 
-                                                                        ...prev, 
+                                                                    onChange={(e) => setFilters(prev => ({
+                                                                        ...prev,
                                                                         dateRange: { ...prev.dateRange, start: e.target.value }
                                                                     }))}
                                                                 />
                                                                 <span>to</span>
-                                                                <input 
+                                                                <input
                                                                     type="date"
                                                                     value={filters.dateRange.end}
-                                                                    onChange={(e) => setFilters(prev => ({ 
-                                                                        ...prev, 
+                                                                    onChange={(e) => setFilters(prev => ({
+                                                                        ...prev,
                                                                         dateRange: { ...prev.dateRange, end: e.target.value }
                                                                     }))}
                                                                 />
                                                             </div>
                                                         </div>
-                                                        
+
                                                         <div className="filter-row">
                                                             <label><FaRulerHorizontal /> Size range:</label>
                                                             <div className="size-range">
-                                                                <input 
+                                                                <input
                                                                     type="text"
                                                                     value={filters.sizeRange.min}
-                                                                    onChange={(e) => setFilters(prev => ({ 
-                                                                        ...prev, 
+                                                                    onChange={(e) => setFilters(prev => ({
+                                                                        ...prev,
                                                                         sizeRange: { ...prev.sizeRange, min: e.target.value }
                                                                     }))}
                                                                     placeholder="Min size (e.g., 1MB)"
                                                                 />
                                                                 <span>to</span>
-                                                                <input 
+                                                                <input
                                                                     type="text"
                                                                     value={filters.sizeRange.max}
-                                                                    onChange={(e) => setFilters(prev => ({ 
-                                                                        ...prev, 
+                                                                    onChange={(e) => setFilters(prev => ({
+                                                                        ...prev,
                                                                         sizeRange: { ...prev.sizeRange, max: e.target.value }
                                                                     }))}
                                                                     placeholder="Max size (e.g., 100MB)"
                                                                 />
                                                             </div>
                                                         </div>
-                                                        
+
                                                         <div className="filter-row">
                                                             <label>File types:</label>
                                                             <div className="file-type-checkboxes">
                                                                 {['Images', 'Documents', 'Videos', 'Audio', 'Archives', 'Code'].map(type => (
                                                                     <label key={type} className="checkbox-option">
-                                                                        <input 
+                                                                        <input
                                                                             type="checkbox"
                                                                             checked={filters.fileTypes.includes(type)}
                                                                             onChange={(e) => {
                                                                                 if (e.target.checked) {
-                                                                                    setFilters(prev => ({ 
-                                                                                        ...prev, 
+                                                                                    setFilters(prev => ({
+                                                                                        ...prev,
                                                                                         fileTypes: [...prev.fileTypes, type]
                                                                                     }));
                                                                                 } else {
-                                                                                    setFilters(prev => ({ 
-                                                                                        ...prev, 
+                                                                                    setFilters(prev => ({
+                                                                                        ...prev,
                                                                                         fileTypes: prev.fileTypes.filter(t => t !== type)
                                                                                     }));
                                                                                 }
@@ -1013,12 +1013,12 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                                                     </div>
                                                 )}
                                             </div>
-                                            
+
                                             <div className="search-actions">
                                                 <button className="search-button primary">
                                                     <FaSearch /> Search
                                                 </button>
-                                                <button 
+                                                <button
                                                     className="clear-button"
                                                     onClick={() => {
                                                         setSearchQuery('');
@@ -1038,14 +1038,14 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                                 </div>
                             )}
                         </div>
-                        
-                        <button 
-                            className="toolbar-button" 
+
+                        <button
+                            className="toolbar-button"
                             onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
                         >
                             {viewMode === 'list' ? <FaThLarge /> : <FaBars />}
                         </button>
-                        <button 
+                        <button
                             className={`toolbar-button ${showDetailsPanel ? 'primary' : ''}`}
                             onClick={() => setShowDetailsPanel(!showDetailsPanel)}
                         >
@@ -1057,43 +1057,43 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                 {/* Modern Ribbon - Show different content based on theme */}
                 <div className="ribbon">
                     <div className="ribbon-tabs">
-                        <span 
+                        <span
                             className={`ribbon-tab ${activeRibbonTab === 'home' ? 'active' : ''}`}
                             onClick={() => setActiveRibbonTab('home')}
                         >
                             Home
                         </span>
-                        <span 
+                        <span
                             className={`ribbon-tab ${activeRibbonTab === 'share' ? 'active' : ''}`}
                             onClick={() => setActiveRibbonTab('share')}
                         >
                             Share
                         </span>
-                        <span 
+                        <span
                             className={`ribbon-tab ${activeRibbonTab === 'view' ? 'active' : ''}`}
                             onClick={() => setActiveRibbonTab('view')}
                         >
                             View
                         </span>
-                        <span 
+                        <span
                             className={`ribbon-tab ${activeRibbonTab === 'manage' ? 'active' : ''}`}
                             onClick={() => setActiveRibbonTab('manage')}
                         >
                             Manage
                         </span>
-                        <span 
+                        <span
                             className={`ribbon-tab ${activeRibbonTab === 'organize' ? 'active' : ''}`}
                             onClick={() => setActiveRibbonTab('organize')}
                         >
                             Organize
                         </span>
-                        <span 
+                        <span
                             className={`ribbon-tab ${activeRibbonTab === 'tools' ? 'active' : ''}`}
                             onClick={() => setActiveRibbonTab('tools')}
                         >
                             Tools
                         </span>
-                        <span 
+                        <span
                             className={`ribbon-tab ${activeRibbonTab === 'help' ? 'active' : ''}`}
                             onClick={() => setActiveRibbonTab('help')}
                         >
@@ -1105,7 +1105,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                             <>
                                 <div className="ribbon-group">
                                     <div className="ribbon-group-label">Clipboard</div>
-                                    <button 
+                                    <button
                                         className={`ribbon-button ${selectedFiles.length === 0 ? 'disabled' : ''}`}
                                         disabled={selectedFiles.length === 0}
                                         onClick={handleCopyFiles}
@@ -1114,7 +1114,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                                         <div className="ribbon-icon"><FaCopy /></div>
                                         <span>Copy</span>
                                     </button>
-                                    <button 
+                                    <button
                                         className={`ribbon-button ${selectedFiles.length === 0 ? 'disabled' : ''}`}
                                         disabled={selectedFiles.length === 0}
                                         onClick={handleCutFiles}
@@ -1123,7 +1123,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                                         <div className="ribbon-icon"><FaCut /></div>
                                         <span>Cut</span>
                                     </button>
-                                    <button 
+                                    <button
                                         className={`ribbon-button ${!clipboardHasFiles ? 'disabled' : ''}`}
                                         disabled={!clipboardHasFiles}
                                         onClick={handlePasteFiles}
@@ -1135,7 +1135,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                                 </div>
                                 <div className="ribbon-group">
                                     <div className="ribbon-group-label">Organize</div>
-                                    <button 
+                                    <button
                                         className={`ribbon-button ${selectedFiles.length === 0 ? 'disabled' : ''}`}
                                         disabled={selectedFiles.length === 0}
                                         onClick={handleDeleteFiles}
@@ -1144,7 +1144,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                                         <div className="ribbon-icon"><FaTrash /></div>
                                         <span>Delete</span>
                                     </button>
-                                    <button 
+                                    <button
                                         className={`ribbon-button ${selectedFiles.length !== 1 ? 'disabled' : ''}`}
                                         disabled={selectedFiles.length !== 1}
                                         onClick={handleRenameFile}
@@ -1156,7 +1156,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                                 </div>
                                 <div className="ribbon-group">
                                     <div className="ribbon-group-label">New</div>
-                                    <button 
+                                    <button
                                         className="ribbon-button"
                                         onClick={handleNewFolder}
                                         title="Create new folder (Ctrl+Shift+N)"
@@ -1210,14 +1210,14 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                             <>
                                 <div className="ribbon-group">
                                     <div className="ribbon-group-label">Layout</div>
-                                    <button 
+                                    <button
                                         className={`ribbon-button ${viewMode === 'grid' ? 'active' : ''}`}
                                         onClick={() => setViewMode('grid')}
                                     >
                                         <div className="ribbon-icon"><FaThLarge /></div>
                                         <span>Large icons</span>
                                     </button>
-                                    <button 
+                                    <button
                                         className={`ribbon-button ${viewMode === 'list' ? 'active' : ''}`}
                                         onClick={() => setViewMode('list')}
                                     >
@@ -1227,7 +1227,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                                 </div>
                                 <div className="ribbon-group">
                                     <div className="ribbon-group-label">Panes</div>
-                                    <button 
+                                    <button
                                         className={`ribbon-button ${showDetailsPanel ? 'active' : ''}`}
                                         onClick={() => setShowDetailsPanel(!showDetailsPanel)}
                                     >
@@ -1354,8 +1354,8 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                 {/* File Explorer Content */}
                 <div className="file-explorer-content">
                     {/* Modern Sidebar */}
-                    <div 
-                        className="sidebar" 
+                    <div
+                        className="sidebar"
                         style={{ width: `${sidebarWidth}px`, minWidth: '200px', maxWidth: '500px' }}
                     >
                         <div className="sidebar-main">
@@ -1363,8 +1363,8 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                                 <div key={index} className="sidebar-section">
                                     <div className="sidebar-header">{section.title}</div>
                                     {section.items.map((item, itemIndex) => (
-                                        <div 
-                                            key={itemIndex} 
+                                        <div
+                                            key={itemIndex}
                                             className={`sidebar-item ${item.active ? 'active' : ''}`}
                                             onClick={() => handleSidebarNavigation(item.view, item.name)}
                                         >
@@ -1385,10 +1385,10 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                                 </div>
                             ))}
                         </div>
-                        
+
                         {/* Settings Button */}
                         <div className="sidebar-footer">
-                            <div 
+                            <div
                                 className="sidebar-item settings-button"
                                 onClick={() => setShowSettingsMenu(true)}
                                 title="Settings"
@@ -1400,7 +1400,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                     </div>
 
                     {/* Sidebar Resize Handle */}
-                    <div 
+                    <div
                         className={`resize-handle resize-handle-vertical ${isResizingSidebar ? 'active' : ''}`}
                         onMouseDown={handleSidebarResize}
                         title="Resize sidebar"
@@ -1409,9 +1409,9 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                     {/* File Area */}
                     <div className="file-area">
                         {currentView === 'thispc' && (
-                            <ThisPCView 
-                                viewMode={viewMode} 
-                                onDriveHover={handleDriveHover} 
+                            <ThisPCView
+                                viewMode={viewMode}
+                                onDriveHover={handleDriveHover}
                                 drives={drives}
                                 drivesLoading={drivesLoading}
                                 drivesError={drivesError}
@@ -1420,11 +1420,11 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                                 networkDevices={networkDevices}
                             />
                         )}
-                        
+
                         {currentView === 'recents' && (
                             <RecentsView viewMode={viewMode} />
                         )}
-                        
+
                         {currentView === 'folder' && (
                             <FileList
                                 currentPath={currentPath}
@@ -1440,7 +1440,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
 
                     {/* Details Panel Resize Handle */}
                     {showDetailsPanel && (
-                        <div 
+                        <div
                             className={`resize-handle resize-handle-vertical ${isResizingDetails ? 'active' : ''}`}
                             onMouseDown={handleDetailsPanelResize}
                             title="Resize details panel"
@@ -1448,20 +1448,20 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                     )}
 
                     {/* Details Panel */}
-                    <div 
+                    <div
                         className={`details-panel-container ${showDetailsPanel ? 'visible' : 'hidden'}`}
                         style={{ width: showDetailsPanel ? `${detailsPanelWidth}px` : '0px', minWidth: showDetailsPanel ? '250px' : '0px', maxWidth: '600px' }}
                     >
-                        <DetailsPanel 
-                            selectedItems={getDetailsPanelItems()} 
-                            isVisible={showDetailsPanel} 
+                        <DetailsPanel
+                            selectedItems={getDetailsPanelItems()}
+                            isVisible={showDetailsPanel}
                         />
                     </div>
                 </div>
             </div>
-            
+
             {/* Settings Menu */}
-            <SettingsMenu 
+            <SettingsMenu
                 isOpen={showSettingsMenu}
                 onClose={() => setShowSettingsMenu(false)}
             />

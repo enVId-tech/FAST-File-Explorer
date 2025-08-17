@@ -61,7 +61,7 @@ export const TabBar: React.FC<TabBarProps> = ({
             const scrollButtonsWidth = isOverflowing ? 64 : 0; // Account for scroll buttons
             const availableWidth = containerWidth - newTabButtonWidth - scrollButtonsWidth;
             const tabCount = tabs.length;
-            
+
             if (tabCount === 0) return;
 
             // Calculate ideal width per tab (including margins)
@@ -91,14 +91,14 @@ export const TabBar: React.FC<TabBarProps> = ({
             const el = tabsContainerRef.current;
             const hasOverflow = el.scrollWidth > el.clientWidth + 1;
             setIsOverflowing(hasOverflow);
-            
+
             // Auto-scroll to active tab when overflow changes
             if (hasOverflow) {
                 const activeTab = el.querySelector('.tab.active') as HTMLElement;
                 if (activeTab) {
                     const containerRect = el.getBoundingClientRect();
                     const tabRect = activeTab.getBoundingClientRect();
-                    
+
                     if (tabRect.left < containerRect.left || tabRect.right > containerRect.right) {
                         activeTab.scrollIntoView({ behavior: 'smooth', inline: 'center' });
                     }
@@ -107,12 +107,12 @@ export const TabBar: React.FC<TabBarProps> = ({
         };
 
         calculateTabSizes();
-        
+
         // Use ResizeObserver for better performance if available
         if (window.ResizeObserver && tabsContainerRef.current) {
             const resizeObserver = new ResizeObserver(calculateTabSizes);
             resizeObserver.observe(tabsContainerRef.current);
-            
+
             return () => resizeObserver.disconnect();
         } else {
             window.addEventListener('resize', calculateTabSizes);
@@ -124,7 +124,7 @@ export const TabBar: React.FC<TabBarProps> = ({
     useEffect(() => {
         const el = tabsContainerRef.current;
         if (!el) return;
-        
+
         const onWheel = (e: WheelEvent) => {
             // Allow horizontal scrolling with shift+wheel, trackpad horizontal, or when overflowing
             if (e.deltaX !== 0 || e.shiftKey || isOverflowing) {
@@ -133,7 +133,7 @@ export const TabBar: React.FC<TabBarProps> = ({
                 el.scrollLeft += scrollAmount;
             }
         };
-        
+
         el.addEventListener('wheel', onWheel, { passive: false });
         return () => el.removeEventListener('wheel', onWheel);
     }, [isOverflowing]);
@@ -141,30 +141,30 @@ export const TabBar: React.FC<TabBarProps> = ({
     const scrollByAmount = (dir: 'left' | 'right') => {
         const el = tabsContainerRef.current;
         if (!el) return;
-        
+
         // Calculate scroll amount based on container width for better UX
         const scrollAmount = Math.max(120, Math.floor(el.clientWidth * 0.6));
-        const newScrollLeft = dir === 'left' 
+        const newScrollLeft = dir === 'left'
             ? Math.max(0, el.scrollLeft - scrollAmount)
             : Math.min(el.scrollWidth - el.clientWidth, el.scrollLeft + scrollAmount);
-            
+
         el.scrollTo({ left: newScrollLeft, behavior: 'smooth' });
     };
 
     // Auto-scroll to active tab when it changes
     useEffect(() => {
         if (!isOverflowing || !tabsContainerRef.current) return;
-        
+
         const el = tabsContainerRef.current;
         const activeTab = el.querySelector('.tab.active') as HTMLElement;
-        
+
         if (activeTab) {
             const containerRect = el.getBoundingClientRect();
             const tabRect = activeTab.getBoundingClientRect();
-            
+
             // Check if active tab is fully visible
             const isFullyVisible = tabRect.left >= containerRect.left && tabRect.right <= containerRect.right;
-            
+
             if (!isFullyVisible) {
                 // Scroll to center the active tab
                 const tabCenter = activeTab.offsetLeft + activeTab.offsetWidth / 2;
@@ -177,11 +177,11 @@ export const TabBar: React.FC<TabBarProps> = ({
     // Apply different styling based on tab count and available space
     const getTabClassName = (tab: Tab) => {
         const baseClass = `tab ${tab.id === activeTabId ? 'active' : ''}`;
-        
+
         if (tabSizeClass === 'overflow') {
             return `${baseClass} very-small overflow`;
         }
-        
+
         return `${baseClass} ${tabSizeClass}`;
     };
 
@@ -190,8 +190,8 @@ export const TabBar: React.FC<TabBarProps> = ({
             {isOverflowing && (
                 <button className="tabs-scroll-button left" onClick={() => scrollByAmount('left')} aria-label="Scroll tabs left">‹</button>
             )}
-            <div 
-                className={`tabs-container ${(tabSizeClass === 'overflow' || isOverflowing) ? 'overflowing' : ''}`} 
+            <div
+                className={`tabs-container ${(tabSizeClass === 'overflow' || isOverflowing) ? 'overflowing' : ''}`}
                 ref={tabsContainerRef}
             >
                 {tabs.map((tab) => (
@@ -222,26 +222,26 @@ export const TabBar: React.FC<TabBarProps> = ({
             {isOverflowing && (
                 <button className="tabs-scroll-button right" onClick={() => scrollByAmount('right')} aria-label="Scroll tabs right">›</button>
             )}
-            
+
             <div className="window-controls">
                 <div className="zoom-controls">
-                    <button 
-                        className="zoom-button zoom-out" 
+                    <button
+                        className="zoom-button zoom-out"
                         onClick={onZoomOut}
                         disabled={zoomLevel <= 50}
                         title={`Zoom Out (Ctrl+-) - Current: ${zoomLevel}%`}
                     >
                         <FaSearchMinus />
                     </button>
-                    <button 
-                        className="zoom-button zoom-reset" 
+                    <button
+                        className="zoom-button zoom-reset"
                         onClick={onResetZoom}
                         title={`Reset Zoom (Ctrl+0) - Current: ${zoomLevel}%`}
                     >
                         <span className="zoom-level">{zoomLevel}%</span>
                     </button>
-                    <button 
-                        className="zoom-button zoom-in" 
+                    <button
+                        className="zoom-button zoom-in"
                         onClick={onZoomIn}
                         disabled={zoomLevel >= 200}
                         title={`Zoom In (Ctrl++) - Current: ${zoomLevel}%`}

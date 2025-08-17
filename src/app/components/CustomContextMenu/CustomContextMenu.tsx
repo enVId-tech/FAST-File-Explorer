@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { 
-    FaCopy, FaCut, FaPaste, FaTrash, FaEdit, FaShare, FaDownload, 
+import {
+    FaCopy, FaCut, FaPaste, FaTrash, FaEdit, FaShare, FaDownload,
     FaCompress, FaInfoCircle, FaLock, FaEye, FaStar, FaLink,
     FaFolder, FaFolderPlus, FaFile, FaImage, FaCode, FaMusic,
     FaVideo, FaFilePdf, FaFileWord, FaFileExcel, FaFilePowerpoint
@@ -139,7 +139,7 @@ export const CustomContextMenu: React.FC<CustomContextMenuProps> = ({
             id: 'separator-1',
             label: '',
             icon: <></>,
-            action: () => {},
+            action: () => { },
             separator: true
         },
         // Clipboard operations
@@ -166,7 +166,7 @@ export const CustomContextMenu: React.FC<CustomContextMenuProps> = ({
             id: 'separator-2',
             label: '',
             icon: <></>,
-            action: () => {},
+            action: () => { },
             separator: true
         },
         // File operations
@@ -187,7 +187,7 @@ export const CustomContextMenu: React.FC<CustomContextMenuProps> = ({
             id: 'separator-3',
             label: '',
             icon: <></>,
-            action: () => {},
+            action: () => { },
             separator: true
         },
         // Advanced operations
@@ -254,7 +254,7 @@ export const CustomContextMenu: React.FC<CustomContextMenuProps> = ({
             id: 'separator-4',
             label: '',
             icon: <></>,
-            action: () => {},
+            action: () => { },
             separator: true
         },
         // Organization
@@ -306,7 +306,7 @@ export const CustomContextMenu: React.FC<CustomContextMenuProps> = ({
             id: 'separator-5',
             label: '',
             icon: <></>,
-            action: () => {},
+            action: () => { },
             separator: true
         },
         // Properties
@@ -321,24 +321,24 @@ export const CustomContextMenu: React.FC<CustomContextMenuProps> = ({
     // Calculate menu position to keep it on screen
     const getMenuStyle = () => {
         if (!menuRef.current) return { left: position.x, top: position.y };
-        
+
         const rect = menuRef.current.getBoundingClientRect();
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
-        
+
         let left = position.x;
         let top = position.y;
-        
+
         // Adjust horizontal position
         if (left + rect.width > viewportWidth) {
             left = viewportWidth - rect.width - 10;
         }
-        
+
         // Adjust vertical position
         if (top + rect.height > viewportHeight) {
             top = viewportHeight - rect.height - 10;
         }
-        
+
         return { left: Math.max(10, left), top: Math.max(10, top) };
     };
 
@@ -353,7 +353,7 @@ export const CustomContextMenu: React.FC<CustomContextMenuProps> = ({
                 if (item.separator) {
                     return <div key={`separator-${index}`} className="menu-separator" />;
                 }
-                
+
                 return (
                     <div
                         key={item.id}
@@ -365,9 +365,9 @@ export const CustomContextMenu: React.FC<CustomContextMenuProps> = ({
                         <span className="menu-icon">{item.icon}</span>
                         <span className="menu-label">{item.label}</span>
                         {item.submenu && <span className="submenu-arrow">▶</span>}
-                        
+
                         {item.submenu && activeSubmenu === item.id && (
-                            <div 
+                            <div
                                 className="submenu"
                                 style={{
                                     left: submenuPosition.x,

@@ -22,14 +22,14 @@
   -webkit-app-region: no-drag;
   box-shadow: var(--shadow-small);
   min-width: 140px;
-  
+
   &:hover {
     background: var(--hover-bg);
     border-color: var(--accent-color);
     transform: translateY(-1px);
     box-shadow: var(--shadow-medium);
   }
-  
+
   &:active {
     transform: translateY(0);
   }
@@ -107,7 +107,7 @@
   cursor: pointer;
   font-size: 14px;
   transition: all 0.2s ease;
-  
+
   &:hover {
     background: var(--accent-color);
     color: white;
@@ -120,19 +120,19 @@
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--border-color) transparent;
-  
+
   &::-webkit-scrollbar {
     width: 6px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: var(--border-color);
     border-radius: 3px;
-    
+
     &:hover {
       background: var(--accent-color);
     }
@@ -141,7 +141,7 @@
 
 .theme-selector__section {
   padding: 16px 20px;
-  
+
   &:not(:last-child) {
     border-bottom: 1px solid var(--border-color);
   }
@@ -174,28 +174,28 @@
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
   outline: none;
-  
+
   &:hover {
     background: var(--hover-bg);
     transform: translateX(4px);
   }
-  
+
   &:focus-visible {
     border-color: var(--accent-color);
     box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
   }
-  
+
   &.active {
     background: var(--selection-bg);
     border-color: var(--accent-color);
     box-shadow: var(--shadow-medium);
-    
+
     .theme-selector__name {
       color: var(--accent-color);
       font-weight: 600;
     }
   }
-  
+
   &--custom {
     border-left: 4px solid var(--accent-color);
     padding-left: 8px;
@@ -251,7 +251,7 @@
   gap: 4px;
   opacity: 0;
   transition: opacity 0.2s ease;
-  
+
   .theme-selector__option:hover & {
     opacity: 1;
   }
@@ -270,13 +270,13 @@
   cursor: pointer;
   font-size: 12px;
   transition: all 0.2s ease;
-  
+
   &:hover {
     background: var(--accent-color);
     color: white;
     transform: scale(1.1);
   }
-  
+
   &--danger:hover {
     background: #ef4444;
   }
@@ -308,7 +308,7 @@
   flex-shrink: 0;
   position: relative;
   transition: all 0.2s ease;
-  
+
   .theme-selector__option:hover & {
     transform: scale(1.05);
     border-color: var(--accent-color);
@@ -346,6 +346,7 @@
     opacity: 0;
     transform: translateY(-12px) scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -353,9 +354,17 @@
 }
 
 @keyframes theme-switching {
-  0% { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(180deg) scale(1.2); }
-  100% { transform: rotate(360deg) scale(1); }
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+
+  50% {
+    transform: rotate(180deg) scale(1.2);
+  }
+
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
 }
 
 /* Responsive Design */
@@ -366,10 +375,10 @@
     min-width: 320px;
     max-width: calc(100vw - 40px);
   }
-  
+
   .theme-selector__toggle {
     min-width: 120px;
-    
+
     .theme-selector__current-theme {
       display: none;
     }
@@ -381,18 +390,19 @@
   .theme-selector__toggle:hover {
     box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
   }
-  
+
   .theme-selector__dropdown {
     border-color: #333366;
     box-shadow: 0 8px 32px rgba(0, 255, 255, 0.1);
   }
-  
+
   .theme-preview {
     box-shadow: 0 0 8px rgba(0, 255, 255, 0.2);
   }
 }
 
 [data-theme="retro"] .theme-selector {
+
   .theme-selector__toggle,
   .theme-selector__dropdown,
   .theme-selector__option,
@@ -406,19 +416,20 @@
     border-color: rgba(88, 166, 255, 0.3);
     box-shadow: 0 8px 40px rgba(88, 166, 255, 0.1);
   }
-  
+
   .theme-selector__toggle:hover {
     box-shadow: 0 0 12px rgba(88, 166, 255, 0.3);
   }
 }
 
 [data-theme="nature"] .theme-selector {
+
   .theme-selector__toggle,
   .theme-selector__dropdown,
   .theme-selector__option {
     border-radius: 16px;
   }
-  
+
   .theme-preview {
     border-radius: 12px;
   }
@@ -430,7 +441,7 @@
     border-width: 2px;
     border-style: solid;
   }
-  
+
   .theme-preview {
     border-width: 3px;
   }

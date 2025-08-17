@@ -21,13 +21,13 @@ const FileListItem = React.memo<{
   onContextMenu?: (event: React.MouseEvent, item: FileSystemItem) => void;
   fileSizeUnit: string;
 }>(({ item, isSelected, onNavigate, onFileSelect, onContextMenu, fileSizeUnit }) => {
-  
+
   const formatFileSize = useCallback((size: number): string => {
     if (size === 0) return '-';
-    const units = fileSizeUnit === 'binary' 
+    const units = fileSizeUnit === 'binary'
       ? { k: 1024, sizes: ['B', 'KiB', 'MiB', 'GiB', 'TiB'] }
       : { k: 1000, sizes: ['B', 'KB', 'MB', 'GB', 'TB'] };
-    
+
     const i = Math.floor(Math.log(size) / Math.log(units.k));
     return `${(size / Math.pow(units.k, i)).toFixed(1)} ${units.sizes[i]}`;
   }, [fileSizeUnit]);
@@ -51,7 +51,7 @@ const FileListItem = React.memo<{
   }, [item, onContextMenu]);
 
   return (
-    <div 
+    <div
       className={`file-list-item ${item.type} ${isSelected ? 'selected' : ''}`}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
@@ -133,25 +133,25 @@ export const OptimizedFileList: React.FC<OptimizedFileListProps> = ({
   // Memoized filtered and sorted items
   const processedItems = useMemo(() => {
     if (!directoryContents?.items) return [];
-    
+
     let items = directoryContents.items;
-    
+
     // Filter by search term
     if (debouncedSearchTerm.trim()) {
       const searchLower = debouncedSearchTerm.toLowerCase().trim();
-      items = items.filter(item => 
+      items = items.filter(item =>
         item.name.toLowerCase().includes(searchLower) ||
         (item.extension && item.extension.toLowerCase().includes(searchLower))
       );
     }
-    
+
     return items;
   }, [directoryContents?.items, debouncedSearchTerm]);
 
   // Optimized item selection handlers
   const handleItemSelect = useCallback((item: FileSystemItem, event: React.MouseEvent) => {
     event.preventDefault();
-    
+
     if (event.ctrlKey || event.metaKey) {
       // Multi-select
       setSelectedItems(prev => {
@@ -229,7 +229,7 @@ export const OptimizedFileList: React.FC<OptimizedFileListProps> = ({
   if (!directoryContents || processedItems.length === 0) {
     const isSearching = debouncedSearchTerm.trim().length > 0;
     const hasItems = directoryContents?.items && directoryContents.items.length > 0;
-    
+
     return (
       <div className="optimized-file-list-empty">
         <FaFolder className="empty-icon" />

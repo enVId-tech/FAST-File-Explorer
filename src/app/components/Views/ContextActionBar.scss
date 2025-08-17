@@ -9,20 +9,20 @@
     min-height: 48px;
     flex-shrink: 0;
     gap: 16px;
-    
+
     .action-bar-left {
         display: flex;
         align-items: center;
         gap: 4px;
         flex-wrap: wrap;
     }
-    
+
     .action-bar-right {
         display: flex;
         align-items: center;
         gap: 12px;
     }
-    
+
     .action-button {
         display: flex;
         align-items: center;
@@ -38,31 +38,31 @@
         transition: all 0.15s ease;
         min-height: 32px;
         white-space: nowrap;
-        
+
         svg {
             font-size: 14px;
             flex-shrink: 0;
         }
-        
+
         span {
             font-weight: 500;
         }
-        
+
         &:hover:not(.disabled) {
             background: var(--hover-bg);
             border-color: var(--border-color);
         }
-        
+
         &:active:not(.disabled) {
             background: var(--selection-bg);
         }
-        
+
         &.disabled {
             opacity: 0.5;
             cursor: not-allowed;
             color: var(--text-tertiary);
         }
-        
+
         // Special styling for destructive actions
         &:has(svg[data-icon="trash"]) {
             &:hover:not(.disabled) {
@@ -72,7 +72,7 @@
             }
         }
     }
-    
+
     .action-separator {
         width: 1px;
         height: 24px;
@@ -80,12 +80,12 @@
         margin: 0 4px;
         flex-shrink: 0;
     }
-    
+
     .selection-info {
         display: flex;
         align-items: center;
         gap: 8px;
-        
+
         .selection-count {
             font-size: 13px;
             color: var(--text-secondary);
@@ -102,20 +102,20 @@
 @media (max-width: 768px) {
     .context-action-bar {
         padding: 6px 12px;
-        
+
         .action-button {
             padding: 5px 8px;
             font-size: 12px;
-            
+
             span {
                 display: none; // Hide text on small screens, show only icons
             }
-            
+
             svg {
                 font-size: 16px;
             }
         }
-        
+
         .action-separator {
             height: 20px;
         }
@@ -137,11 +137,11 @@
     .context-action-bar {
         .action-button {
             border: 1px solid var(--border-color);
-            
+
             &:hover:not(.disabled) {
                 border: 2px solid var(--accent-color);
             }
-            
+
             &.disabled {
                 border-color: var(--border-color);
                 opacity: 0.6;

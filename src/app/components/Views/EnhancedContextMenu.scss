@@ -4,7 +4,7 @@
     background: var(--background-primary);
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    box-shadow: 
+    box-shadow:
         0 8px 32px rgba(0, 0, 0, 0.15),
         0 2px 8px rgba(0, 0, 0, 0.1);
     min-width: 200px;
@@ -14,13 +14,13 @@
     user-select: none;
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    
+
     /* Platform-specific styling */
     @media (prefers-color-scheme: dark) {
         background: rgba(40, 40, 40, 0.95);
         border-color: rgba(255, 255, 255, 0.1);
     }
-    
+
     @media (prefers-color-scheme: light) {
         background: rgba(255, 255, 255, 0.95);
         border-color: rgba(0, 0, 0, 0.1);
@@ -32,7 +32,7 @@
     padding: 8px 16px;
     border-bottom: 1px solid var(--border-color-light, rgba(120, 120, 120, 0.2));
     margin-bottom: 4px;
-    
+
     .selection-count {
         font-size: 12px;
         color: var(--text-secondary);
@@ -40,7 +40,7 @@
         margin-bottom: 4px;
         word-break: break-all;
     }
-    
+
     .clipboard-indicator {
         display: inline-flex;
         align-items: center;
@@ -49,13 +49,13 @@
         padding: 2px 6px;
         border-radius: 4px;
         font-weight: 600;
-        
+
         &.cut {
             background: rgba(255, 187, 36, 0.2);
             color: #fbbf24;
             border: 1px solid rgba(255, 187, 36, 0.3);
         }
-        
+
         &.copy {
             background: rgba(34, 197, 94, 0.2);
             color: #22c55e;
@@ -71,19 +71,19 @@
     cursor: pointer;
     transition: background-color 0.1s ease;
     white-space: nowrap;
-    
+
     &:hover:not(.disabled) {
         background: var(--background-hover, rgba(120, 120, 120, 0.1));
     }
-    
+
     &:active:not(.disabled) {
         background: var(--background-active, rgba(120, 120, 120, 0.2));
     }
-    
+
     &.disabled {
         opacity: 0.5;
         cursor: not-allowed;
-        
+
         .context-menu-icon,
         .context-menu-label,
         .context-menu-shortcut {
@@ -128,18 +128,18 @@
 @media (platform: windows) {
     .enhanced-context-menu {
         border-radius: 6px;
-        box-shadow: 
+        box-shadow:
             0 4px 16px rgba(0, 0, 0, 0.2),
             0 2px 4px rgba(0, 0, 0, 0.1);
     }
-    
+
     .context-menu-item {
         padding: 6px 16px;
-        
+
         &:hover:not(.disabled) {
             background: #0078d4;
             color: white;
-            
+
             .context-menu-icon,
             .context-menu-label,
             .context-menu-shortcut {
@@ -157,12 +157,12 @@
         -webkit-backdrop-filter: blur(20px);
         border: 1px solid rgba(255, 255, 255, 0.1);
     }
-    
+
     .context-menu-item {
         padding: 8px 16px;
         border-radius: 4px;
         margin: 0 4px;
-        
+
         &:hover:not(.disabled) {
             background: rgba(0, 122, 255, 0.15);
         }
@@ -173,18 +173,18 @@
 @media (platform: linux) {
     .enhanced-context-menu {
         border-radius: 4px;
-        box-shadow: 
+        box-shadow:
             0 4px 12px rgba(0, 0, 0, 0.15),
             0 2px 4px rgba(0, 0, 0, 0.1);
     }
-    
+
     .context-menu-item {
         padding: 8px 16px;
-        
+
         &:hover:not(.disabled) {
             background: var(--accent-color, #4285f4);
             color: white;
-            
+
             .context-menu-icon,
             .context-menu-label,
             .context-menu-shortcut {
@@ -200,13 +200,13 @@
         border: 2px solid var(--text-primary);
         background: var(--background-primary);
     }
-    
+
     .context-menu-item:hover:not(.disabled) {
         background: var(--text-primary);
         color: var(--background-primary);
         border: 1px solid var(--text-primary);
     }
-    
+
     .context-menu-separator {
         background: var(--text-primary);
         height: 2px;
@@ -225,6 +225,7 @@
         opacity: 0;
         transform: scale(0.95);
     }
+
     to {
         opacity: 1;
         transform: scale(1);
@@ -248,11 +249,11 @@
         min-width: 180px;
         font-size: 16px;
     }
-    
+
     .context-menu-item {
         padding: 12px 16px;
     }
-    
+
     .context-menu-icon {
         font-size: 16px;
         width: 24px;
@@ -264,7 +265,7 @@
 [data-theme="dark"] .enhanced-context-menu {
     background: rgba(32, 32, 32, 0.95);
     border-color: rgba(255, 255, 255, 0.1);
-    
+
     .context-menu-separator {
         background: rgba(255, 255, 255, 0.1);
     }
@@ -273,7 +274,7 @@
 [data-theme="light"] .enhanced-context-menu {
     background: rgba(255, 255, 255, 0.95);
     border-color: rgba(0, 0, 0, 0.1);
-    
+
     .context-menu-separator {
         background: rgba(0, 0, 0, 0.1);
     }

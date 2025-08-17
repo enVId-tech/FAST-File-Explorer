@@ -113,9 +113,9 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ isOpen, onComplete, on
                                 Previous
                             </button>
                         )}
-                        
+
                         <div className="spacer" />
-                        
+
                         {currentStep === 0 && (
                             <button
                                 className="setup-button secondary"
@@ -124,7 +124,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ isOpen, onComplete, on
                                 Skip Setup
                             </button>
                         )}
-                        
+
                         <button
                             className="setup-button primary"
                             onClick={handleNext}
@@ -177,7 +177,7 @@ const ExplorerModeStep: React.FC<{
     <div className="setup-step explorer-mode-step">
         <h3>Choose Your Explorer Experience</h3>
         <p>Select how you want the file explorer to behave:</p>
-        
+
         <div className="mode-options">
             <div
                 className={`mode-option ${settings.explorerMode === 'windows' ? 'selected' : ''}`}
@@ -195,7 +195,7 @@ const ExplorerModeStep: React.FC<{
                     </div>
                 </div>
             </div>
-            
+
             <div
                 className={`mode-option ${settings.explorerMode === 'fast' ? 'selected' : ''}`}
                 onClick={() => updateSetting('explorerMode', 'fast')}
@@ -223,7 +223,7 @@ const PerformanceStep: React.FC<{
     <div className="setup-step performance-step">
         <h3>Performance Optimizations</h3>
         <p>Enable optional features that can improve performance:</p>
-        
+
         <div className="option-card">
             <div className="option-header">
                 <FaLinux className="option-icon" />
@@ -258,7 +258,7 @@ const FeaturesStep: React.FC<{
     <div className="setup-step features-step">
         <h3>Experimental Features</h3>
         <p>Enable preview features that are still in development:</p>
-        
+
         <div className="option-card">
             <div className="option-header">
                 <FaCog className="option-icon" />
@@ -276,7 +276,7 @@ const FeaturesStep: React.FC<{
                 </label>
             </div>
         </div>
-        
+
         <div className="option-card">
             <div className="option-header">
                 <FaCog className="option-icon" />
@@ -307,7 +307,7 @@ const CompleteStep: React.FC<{
         </div>
         <h3>Setup Complete!</h3>
         <p>Your FAST File Explorer is now configured with the following settings:</p>
-        
+
         <div className="settings-summary">
             <div className="summary-item">
                 <strong>Explorer Mode:</strong> {settings.explorerMode === 'fast' ? 'FAST Mode' : 'Windows Default'}
@@ -322,7 +322,7 @@ const CompleteStep: React.FC<{
                 <strong>Custom Context Menu:</strong> {settings.enableCustomContextMenu ? 'Enabled' : 'Disabled'}
             </div>
         </div>
-        
+
         <p className="complete-note">
             You can change any of these settings later in the Setup tab of the settings menu.
         </p>

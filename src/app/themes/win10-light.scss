@@ -1,15 +1,15 @@
 // Windows 10 Light Theme - Classic Windows 10 light theme
 [data-theme="win10-light"] {
   // Base surfaces (traditional light theme)
-  --primary-bg: #f0f0f0;   // light gray background
+  --primary-bg: #f0f0f0; // light gray background
   --secondary-bg: #ffffff; // white panels, cards
-  --surface-bg: #ffffff;   // elevated surfaces
+  --surface-bg: #ffffff; // elevated surfaces
 
   // Semantic aliases
   --bg-primary: var(--primary-bg);
   --bg-secondary: var(--secondary-bg);
   --bg-tertiary: var(--surface-bg);
-  --bg-hover: #e5e5e5;     // hover state
+  --bg-hover: #e5e5e5; // hover state
   --hover-bg: var(--bg-hover);
 
   // Accent (Windows 10 blue)
@@ -20,9 +20,9 @@
   --accent-secondary: var(--accent-hover);
 
   // Text
-  --text-primary: #000000;   // black text
+  --text-primary: #000000; // black text
   --text-secondary: #323130; // dark gray
-  --text-tertiary: #605e5c;  // medium gray
+  --text-tertiary: #605e5c; // medium gray
 
   // Borders
   --border-color: #d1d1d1;

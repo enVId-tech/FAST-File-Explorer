@@ -16,26 +16,26 @@ import { SettingsProvider, useSettings } from './contexts/SettingsContext';
 import { ComponentLoader, LazyComponentErrorBoundary } from './components/LazyComponents';
 
 // Lazy load the heavy TabContent component
-const LazyTabContent = React.lazy(() => 
-  import('./components/Views/TabContent').then(module => ({ default: module.TabContent }))
+const LazyTabContent = React.lazy(() =>
+    import('./components/Views/TabContent').then(module => ({ default: module.TabContent }))
 );
 
 // Component to handle animation control based on settings
 const AnimationController: React.FC = () => {
     const { settings } = useSettings();
-    
+
     useEffect(() => {
         // Set CSS custom property to control animations globally
         document.documentElement.style.setProperty(
-            '--animation-duration', 
+            '--animation-duration',
             settings.enableAnimations ? '0.2s' : '0s'
         );
         document.documentElement.style.setProperty(
-            '--transition-duration', 
+            '--transition-duration',
             settings.enableAnimations ? '0.2s' : '0s'
         );
     }, [settings.enableAnimations]);
-    
+
     return null; // This component only manages CSS properties
 };
 
@@ -48,7 +48,7 @@ interface Tab {
 
 // Memoized component for better performance  
 const Main = React.memo(function Main(): React.JSX.Element {
-    
+
     // Initialize view mode from localStorage or default to list
     const [viewMode, setViewMode] = useState(() => {
         try {
@@ -59,9 +59,9 @@ const Main = React.memo(function Main(): React.JSX.Element {
             return 'list';
         }
     });
-    
+
     const [isMaximized, setIsMaximized] = useState(false);
-    
+
     // Initialize theme from localStorage or default to win11-light
     const [theme, setTheme] = useState<Theme>(() => {
         try {
@@ -72,9 +72,9 @@ const Main = React.memo(function Main(): React.JSX.Element {
             return 'win11-light';
         }
     });
-    
+
     const [isThemeSelectorOpen, setIsThemeSelectorOpen] = useState(false);
-    
+
     // Initialize zoom level from localStorage or default to 100%
     const [zoomLevel, setZoomLevel] = useState(() => {
         try {
@@ -85,7 +85,7 @@ const Main = React.memo(function Main(): React.JSX.Element {
             return 100;
         }
     });
-    
+
     const [tabs, setTabs] = useState<Tab[]>([
         { id: 'tab-1', title: 'This PC', url: 'home', isActive: true },
     ]);
@@ -95,7 +95,7 @@ const Main = React.memo(function Main(): React.JSX.Element {
     const [drives, setDrives] = useState<Drive[]>([]);
     const [drivesLoading, setDrivesLoading] = useState(true);
     const [drivesError, setDrivesError] = useState<string | null>(null);
-    
+
     // UI state for modal components
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isSetupOpen, setIsSetupOpen] = useState(false);
@@ -155,38 +155,38 @@ const Main = React.memo(function Main(): React.JSX.Element {
     useEffect(() => {
         try {
             localStorage.setItem('fast-file-explorer-zoom-level', zoomLevel.toString());
-            
+
             // Use the native CSS zoom property for instant, no-animation scaling
             const rootElement = document.documentElement;
-            
+
             // Apply zoom immediately - this is instant with no animations
             rootElement.style.zoom = `${zoomLevel}%`;
-            
+
             // Force immediate layout recalculation to prevent gaps
             rootElement.style.minHeight = '100vh';
             rootElement.style.height = 'auto';
-            
+
             // Force the body to fill the available space
             document.body.style.minHeight = '100vh';
             document.body.style.height = 'auto';
-            
+
             // INSTANT window resizing based on zoom level
             const adjustWindowSizeInstantly = async () => {
                 if (window.electronAPI?.window) {
                     try {
                         const bounds = await window.electronAPI.window.getBounds();
-                        
+
                         // Calculate zoom factor
                         const zoomFactor = zoomLevel / 100;
-                        
+
                         // Define base comfortable dimensions at 100% zoom
                         const baseWidth = 1200;
                         const baseHeight = 800;
-                        
+
                         // Calculate new window size more intelligently
                         // The goal: maintain comfortable usable area regardless of zoom
                         let newWidth, newHeight;
-                        
+
                         if (zoomLevel < 100) {
                             // Zoomed out: increase window size moderately to maintain usability
                             const expansionFactor = 1 + (100 - zoomLevel) / 300; // More conservative expansion
@@ -208,16 +208,16 @@ const Main = React.memo(function Main(): React.JSX.Element {
                             newWidth = bounds.width;
                             newHeight = bounds.height;
                         }
-                        
+
                         // Only resize if there's a meaningful difference (avoid micro-adjustments)
                         const widthDiff = Math.abs(bounds.width - newWidth);
                         const heightDiff = Math.abs(bounds.height - newHeight);
-                        
+
                         if (widthDiff > 30 || heightDiff > 30) {
                             // Center the window while resizing
                             const newX = bounds.x + Math.round((bounds.width - newWidth) / 2);
                             const newY = bounds.y + Math.round((bounds.height - newHeight) / 2);
-                            
+
                             // Apply resize INSTANTLY - no animation
                             await window.electronAPI.window.setBounds({
                                 x: newX,
@@ -231,10 +231,10 @@ const Main = React.memo(function Main(): React.JSX.Element {
                     }
                 }
             };
-            
+
             // Execute window resize immediately - no setTimeout, no delays
             adjustWindowSizeInstantly();
-            
+
         } catch (error) {
             console.warn('Failed to save or apply zoom level:', error);
         }
@@ -371,21 +371,21 @@ const Main = React.memo(function Main(): React.JSX.Element {
         setDrivesError(null);
         let retryCount = 0;
         const maxRetries = 1; // Single retry for manual refresh
-        
+
         while (retryCount <= maxRetries) {
             try {
                 console.log('Manually refreshing drives...');
                 const timeoutPromise = new Promise((_, reject) => {
                     setTimeout(() => reject(new Error('Drive loading timeout')), 5000);
                 });
-                
+
                 const drivePromise = window.electronAPI.data.getDrives();
                 const driveData = await Promise.race([drivePromise, timeoutPromise]);
-                
+
                 if (!Array.isArray(driveData)) {
                     throw new Error('Invalid drive data format');
                 }
-                
+
                 const mappedDrives: Drive[] = driveData.map((drive: any) => ({
                     driveName: drive.name || drive.driveName || 'Unknown Drive',
                     drivePath: drive.path || drive.drivePath || '',
@@ -399,23 +399,23 @@ const Main = React.memo(function Main(): React.JSX.Element {
                     partitionType: drive.partitionType,
                     percentageUsed: drive.percentageUsed
                 }));
-                
+
                 setDrives(mappedDrives);
                 setDrivesLoading(false);
                 setDrivesError(null);
                 console.log(`Manually refreshed ${mappedDrives.length} drives`);
                 return;
-                
+
             } catch (error) {
                 console.error(`Manual drive refresh failed (attempt ${retryCount + 1}):`, error);
                 retryCount++;
-                
+
                 if (retryCount > maxRetries) {
                     setDrivesLoading(false);
                     setDrivesError('Failed to refresh drives');
                     return;
                 }
-                
+
                 await new Promise(resolve => setTimeout(resolve, 1000));
             }
         }
@@ -495,7 +495,7 @@ const Main = React.memo(function Main(): React.JSX.Element {
             url: 'home',
             isActive: true
         };
-        
+
         setTabs(prev => [...prev.map(tab => ({ ...tab, isActive: false })), newTab]);
         setActiveTabId(newTabId);
 
@@ -573,32 +573,32 @@ const Main = React.memo(function Main(): React.JSX.Element {
         let retryCount = 0;
         const maxRetries = 2; // Reduced to 2 retries instead of 3
         const retryDelay = 1500; // 1.5 seconds
-        
+
         const loadDrivesWithRetry = async (isManualRefresh = false) => {
             if (mounted) {
                 setDrivesLoading(true);
                 setDrivesError(null);
             }
-            
+
             while (mounted && retryCount <= maxRetries) {
                 try {
                     if (isManualRefresh || retryCount === 0) {
                         console.log(`Loading drives (attempt ${retryCount + 1}/${maxRetries + 1})`);
                     }
-                    
+
                     // Add timeout to prevent hanging
                     const timeoutPromise = new Promise((_, reject) => {
                         setTimeout(() => reject(new Error('Drive loading timeout')), 5000);
                     });
-                    
+
                     const drivePromise = window.electronAPI.data.getDrives();
                     const driveData = await Promise.race([drivePromise, timeoutPromise]);
-                    
+
                     // Validate that we got actual data
                     if (!Array.isArray(driveData)) {
                         throw new Error('Invalid drive data format');
                     }
-                    
+
                     // Map the drive data to match the Drive interface
                     const mappedDrives: Drive[] = driveData.map((drive: any) => ({
                         driveName: drive.name || drive.driveName || 'Unknown Drive',
@@ -613,7 +613,7 @@ const Main = React.memo(function Main(): React.JSX.Element {
                         partitionType: drive.partitionType,
                         percentageUsed: drive.percentageUsed
                     }));
-                    
+
                     if (mounted) {
                         setDrives(mappedDrives);
                         setDrivesLoading(false);
@@ -622,13 +622,13 @@ const Main = React.memo(function Main(): React.JSX.Element {
                             console.log(`Successfully loaded ${mappedDrives.length} drives`);
                         }
                     }
-                    
+
                     return; // Success, exit the retry loop
-                    
+
                 } catch (error) {
                     console.error(`Failed to load drives (attempt ${retryCount + 1}):`, error);
                     retryCount++;
-                    
+
                     if (retryCount > maxRetries) {
                         console.warn('All drive loading attempts failed');
                         if (mounted) {
@@ -638,16 +638,16 @@ const Main = React.memo(function Main(): React.JSX.Element {
                         }
                         return;
                     }
-                    
+
                     // Wait before retrying
                     await new Promise(resolve => setTimeout(resolve, retryDelay));
                 }
             }
         };
-        
+
         // Load drives only once at startup
         loadDrivesWithRetry();
-        
+
         return () => {
             mounted = false;
         };
@@ -663,7 +663,7 @@ const Main = React.memo(function Main(): React.JSX.Element {
     // Handler functions for UI components
     const handleShowSettings = useCallback(() => setIsSettingsOpen(true), []);
     const handleCloseSettings = useCallback(() => setIsSettingsOpen(false), []);
-    
+
     const handleShowSetup = useCallback(() => {
         console.log('handleShowSetup called!');
         setIsSetupOpen(true);
@@ -678,7 +678,7 @@ const Main = React.memo(function Main(): React.JSX.Element {
             console.warn('Failed to save setup completion status:', error);
         }
     }, []);
-    
+
     const handleShowFileTransfer = useCallback(() => {
         console.log('handleShowFileTransfer called!');
         setIsFileTransferOpen(true);
@@ -734,7 +734,7 @@ const Main = React.memo(function Main(): React.JSX.Element {
                         </LazyComponentErrorBoundary>
                     </Suspense>
                 ))}
-                
+
                 {/* Modal Components */}
                 <SettingsMenu
                     isOpen={isSettingsOpen}
@@ -742,13 +742,13 @@ const Main = React.memo(function Main(): React.JSX.Element {
                     onShowSetup={handleShowSetup}
                     onShowFileTransferUI={handleShowFileTransfer}
                 />
-                
+
                 <SetupWizard
                     isOpen={isSetupOpen}
                     onComplete={handleCompleteSetup}
                     onSkip={handleCloseSetup}
                 />
-                
+
                 <FileTransferUI
                     isVisible={isFileTransferOpen}
                     onClose={handleCloseFileTransfer}

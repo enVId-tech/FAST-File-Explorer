@@ -108,17 +108,17 @@ export async function listDirectoryContents(dirPath: string, options: {
 
         // Read directory contents
         const fileNames = await getFolderContents(dirPath);
-        
+
         // Process files in batches for better performance
         const batchSize = 50;
         const items: FileSystemItem[] = [];
-        
+
         for (let i = 0; i < fileNames.length && items.length < maxItems; i += batchSize) {
             const batch = fileNames.slice(i, i + batchSize);
             const batchPromises = batch.map(async (fileName): Promise<FileSystemItem | null> => {
                 try {
                     const fullPath = path.join(dirPath, fileName);
-                    
+
                     // Special handling for Windows shortcuts and broken symlinks
                     if (isWindowsShortcut(fileName)) {
                         // For .lnk files, we can still show them even if the target is broken
@@ -145,24 +145,24 @@ export async function listDirectoryContents(dirPath: string, options: {
                             return null;
                         }
                     }
-                    
+
                     // Check if it might be a broken symlink before trying to stat
                     if (await isBrokenLink(fullPath)) {
                         return null;
                     }
-                    
+
                     const stats = await getMetadata(fullPath);
-                    
+
                     if (!stats) return null;
 
                     // Check if hidden file (starts with . on Unix/Linux or has hidden attribute on Windows)
-                    const isHidden = fileName.startsWith('.') || 
+                    const isHidden = fileName.startsWith('.') ||
                         (process.platform === 'win32' && (stats as any).isHidden?.());
-                    
+
                     if (!includeHidden && isHidden) return null;
 
                     const extension = stats.isFile() ? path.extname(fileName).toLowerCase() : undefined;
-                    
+
                     return {
                         name: fileName,
                         path: fullPath,
@@ -200,17 +200,17 @@ export async function listDirectoryContents(dirPath: string, options: {
             switch (sortBy) {
                 case 'name':
                     // Windows uses natural sorting (alphanumeric) that handles numbers correctly
-                    comparison = a.name.localeCompare(b.name, undefined, { 
-                        numeric: true, 
+                    comparison = a.name.localeCompare(b.name, undefined, {
+                        numeric: true,
                         sensitivity: 'base' // Case-insensitive
                     });
                     break;
                 case 'size':
                     // For directories, fall back to name sorting since size isn't meaningful
                     if (a.type === 'directory' && b.type === 'directory') {
-                        comparison = a.name.localeCompare(b.name, undefined, { 
-                            numeric: true, 
-                            sensitivity: 'base' 
+                        comparison = a.name.localeCompare(b.name, undefined, {
+                            numeric: true,
+                            sensitivity: 'base'
                         });
                     } else {
                         comparison = a.size - b.size;
@@ -278,12 +278,12 @@ export async function getFolderMetadata(folderPath: string): Promise<FolderMetad
 
             try {
                 const items = await fs.readdir(dirPath);
-                
+
                 for (const item of items) {
                     try {
                         const itemPath = path.join(dirPath, item);
                         const itemStats = await getMetadata(itemPath);
-                        
+
                         if (!itemStats) continue;
 
                         if (itemStats.mtime > lastModified) {
@@ -297,19 +297,19 @@ export async function getFolderMetadata(folderPath: string): Promise<FolderMetad
                             totalSize += subResult.size;
                             totalFiles += subResult.files;
                             totalFolders += subResult.folders;
-                            
+
                             // Merge file types
                             for (const [ext, count] of Object.entries(subResult.types)) {
                                 fileTypes[ext] = (fileTypes[ext] || 0) + count;
                             }
-                            
+
                             if (subResult.lastModified > lastModified) {
                                 lastModified = subResult.lastModified;
                             }
                         } else {
                             totalFiles++;
                             totalSize += itemStats.size;
-                            
+
                             // Track file extensions
                             const ext = path.extname(item).toLowerCase();
                             const extension = ext || 'no extension';
@@ -328,7 +328,7 @@ export async function getFolderMetadata(folderPath: string): Promise<FolderMetad
         };
 
         const result = await analyzeRecursive(folderPath);
-        
+
         return {
             totalSize: result.size,
             totalFiles: result.files,
