@@ -86,6 +86,50 @@
     letter-spacing: 0.5px;
 }
 
+.sortable-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+    transition: all var(--transition-duration, 0.2s) ease;
+    border-radius: 4px;
+    padding: 4px 8px;
+    margin: -4px 0;
+    
+    &:hover {
+        background: var(--background-tertiary, rgba(255, 255, 255, 0.05));
+        color: var(--text-primary);
+    }
+    
+    &.active {
+        color: var(--accent-color);
+        font-weight: 600;
+        
+        .sort-indicator {
+            opacity: 1;
+            color: var(--accent-color);
+        }
+    }
+    
+    .header-text {
+        flex: 1;
+        margin-right: 8px;
+    }
+    
+    .sort-indicator {
+        opacity: 0.4;
+        font-size: 10px;
+        transition: opacity var(--transition-duration, 0.2s) ease;
+        min-width: 12px;
+        text-align: center;
+        
+        .sortable-header:hover & {
+            opacity: 0.7;
+        }
+    }
+}
+
 .file-list-content {
     flex: 1;
     overflow-y: auto;
@@ -173,6 +217,17 @@
 }
 
 .directory-icon { color: #fbbf24; }
+.drive-icon { 
+    color: #4A90E2; 
+    
+    &.system-drive {
+        color: #E74C3C;
+    }
+    
+    &.usb-drive {
+        color: #27AE60;
+    }
+}
 .image-icon { color: #10b981; }
 .video-icon { color: #8b5cf6; }
 .audio-icon { color: #06b6d4; }

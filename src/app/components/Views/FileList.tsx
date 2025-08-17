@@ -17,7 +17,12 @@ import {
     FaCalendarAlt,
     FaRulerHorizontal,
     FaFont,
-    FaTimes
+    FaTimes,
+    FaSortUp,
+    FaSortDown,
+    FaSort,
+    FaHdd,
+    FaUsb
 } from 'react-icons/fa';
 import { FileSystemItem, DirectoryContents, FolderMetadata } from '../../../shared/ipc-channels';
 import { formatFileSize } from '../../../shared/fileSizeUtils';
@@ -25,6 +30,26 @@ import { useSettings } from '../../contexts/SettingsContext';
 import { CustomContextMenu } from '../CustomContextMenu/CustomContextMenu';
 import './FileList.scss';
 import { VirtualizedList } from '../VirtualizedList/VirtualizedList';
+
+// Enhanced sorting type definitions
+type SortField = 'name' | 'size' | 'modified' | 'type';
+type SortDirection = 'asc' | 'desc';
+
+interface SortState {
+    field: SortField;
+    direction: SortDirection;
+}
+
+// Windows-style natural sorting helper
+const windowsNaturalSort = (a: string, b: string): number => {
+    // Windows File Explorer uses natural sorting (alphanumeric)
+    // This handles numbers within strings properly (e.g., "file10.txt" comes after "file2.txt")
+    return a.localeCompare(b, undefined, {
+        numeric: true,
+        sensitivity: 'base', // Case-insensitive
+        ignorePunctuation: false
+    });
+};
 
 interface FileListProps {
     currentPath: string;
@@ -131,6 +156,12 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
         nameContains: ''
     });
 
+    // Sorting state - default to Windows File Explorer behavior (name, ascending)
+    const [sortState, setSortState] = useState<SortState>({
+        field: 'name', // Windows default
+        direction: 'asc' // Windows default
+    });
+
     // Context menu state
     const [contextMenu, setContextMenu] = useState<{
         visible: boolean;
@@ -143,6 +174,33 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
         y: 0,
         item: null,
     });
+
+    // Sortable header component
+    const SortableHeader = ({ field, children }: { field: SortField; children: React.ReactNode }) => {
+        const isActive = sortState.field === field;
+        const nextDirection = isActive && sortState.direction === 'asc' ? 'desc' : 'asc';
+
+        const handleSort = () => {
+            setSortState({ field, direction: nextDirection });
+        };
+
+        return (
+            <div 
+                className={`file-list-column sortable-header ${field}-column ${isActive ? 'active' : ''}`}
+                onClick={handleSort}
+                title={`Sort by ${field} (${isActive ? (sortState.direction === 'asc' ? 'ascending' : 'descending') : 'click to sort'})`}
+            >
+                <span className="header-text">{children}</span>
+                <span className="sort-indicator">
+                    {isActive ? (
+                        sortState.direction === 'asc' ? <FaSortUp /> : <FaSortDown />
+                    ) : (
+                        <FaSort />
+                    )}
+                </span>
+            </div>
+        );
+    };
 
     // Reusable search bar component
     const SearchBarWithFilters = () => (
@@ -335,22 +393,45 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
     // Get file size unit from settings context (no need for separate state)
     const fileSizeUnit = settings.fileSizeUnit;
 
-    // Build list options from settings once
+    // Build list options from settings and current sort state
     const listOptions = useMemo(() => {
-        const sortBy = settings.defaultSortBy === 'type' ? 'name' : settings.defaultSortBy;
         return {
             includeHidden: settings.showHiddenFiles,
-            sortBy,
-            sortDirection: settings.defaultSortOrder as 'asc' | 'desc',
+            sortBy: sortState.field === 'type' ? 'name' : sortState.field, // Backend doesn't handle 'type' sorting
+            sortDirection: sortState.direction,
             maxItems: 5000,
         };
-    }, [settings.showHiddenFiles, settings.defaultSortBy, settings.defaultSortOrder]);
+    }, [settings.showHiddenFiles, sortState]);
 
-    // Get file icon based on extension
+    // Get file icon based on extension and type
     const getFileIcon = useCallback((item: FileSystemItem) => {
         if (item.type === 'directory') {
+            // Check if this is a drive root (e.g., C:\, D:\, etc.)
+            const isDriveRoot = /^[A-Z]:\\?$/i.test(item.path);
+            if (isDriveRoot) {
+                // Try to determine drive type based on common patterns
+                const driveLetter = item.path.charAt(0).toLowerCase();
+                
+                // System drive (usually C:)
+                if (driveLetter === 'c') {
+                    return <FaHdd className="file-icon drive-icon system-drive" />;
+                }
+                
+                // Check if it's a removable drive or USB
+                // This is a simplified check - you might want to enhance this with actual drive info
+                const driveData = item as any; // Cast to access potential drive metadata
+                if (driveData.flags?.isUSB || driveData.flags?.isRemovable) {
+                    return <FaUsb className="file-icon drive-icon usb-drive" />;
+                }
+                
+                // Default drive icon
+                return <FaHdd className="file-icon drive-icon" />;
+            }
+            
+            // Regular folder
             return <FaFolder className="file-icon directory-icon" />;
         }
+        
         const ext = item.extension?.toLowerCase();
         switch (ext) {
             case '.jpg':
@@ -502,7 +583,7 @@ const loadDirectory = useCallback(async (path: string) => {
     // Memoized directory items for performance
     const directoryItems = useMemo(() => directoryContents?.items || [], [directoryContents]);
 
-    // Filtered items based on search term and filters
+    // Filtered and sorted items based on search term, filters, and sort state
     const filteredItems = useMemo(() => {
         let items = directoryItems;
 
@@ -584,8 +665,58 @@ const loadDirectory = useCallback(async (path: string) => {
             });
         }
 
+        // Windows-style sorting logic (matches Windows File Explorer behavior)
+        items.sort((a, b) => {
+            // First, always sort directories before files (Windows default)
+            if (a.type !== b.type) {
+                return a.type === 'directory' ? -1 : 1;
+            }
+
+            // Within the same type, apply sorting based on field
+            let comparison = 0;
+            
+            switch (sortState.field) {
+                case 'name':
+                    // Windows uses natural alphanumeric sorting
+                    comparison = windowsNaturalSort(a.name, b.name);
+                    break;
+                case 'size':
+                    // Sort by size, but directories always show as 0 or unspecified
+                    if (a.type === 'directory' && b.type === 'directory') {
+                        // For directories, fall back to name sorting
+                        comparison = windowsNaturalSort(a.name, b.name);
+                    } else {
+                        comparison = a.size - b.size;
+                    }
+                    break;
+                case 'modified':
+                    // Sort by date modified (most recent first by default)
+                    comparison = b.modified.getTime() - a.modified.getTime();
+                    break;
+                case 'type':
+                    if (a.type === 'directory' && b.type === 'directory') {
+                        // For directories, sort by name
+                        comparison = windowsNaturalSort(a.name, b.name);
+                    } else if (a.type === 'file' && b.type === 'file') {
+                        // For files, sort by extension first, then by name
+                        const aExt = a.extension || '';
+                        const bExt = b.extension || '';
+                        comparison = aExt.localeCompare(bExt, undefined, { sensitivity: 'base' });
+                        
+                        // If extensions are the same, sort by name
+                        if (comparison === 0) {
+                            comparison = windowsNaturalSort(a.name, b.name);
+                        }
+                    }
+                    break;
+            }
+
+            // Apply sort direction
+            return sortState.direction === 'desc' ? -comparison : comparison;
+        });
+
         return items;
-    }, [directoryItems, searchTerm, filters]);
+    }, [directoryItems, searchTerm, filters, sortState]);
 
     // Clear selection when clicking on empty space
     const handleBackgroundClick = useCallback((event: React.MouseEvent) => {
@@ -657,10 +788,10 @@ const loadDirectory = useCallback(async (path: string) => {
                 <div className="file-list-view" onClick={handleBackgroundClick}>
                     <SearchBarWithFilters />
                     <div className="file-list-header">
-                        <div className="file-list-column name-column">Name</div>
-                        <div className="file-list-column date-column">Date modified</div>
-                        <div className="file-list-column type-column">Type</div>
-                        <div className="file-list-column size-column">Size</div>
+                        <SortableHeader field="name">Name</SortableHeader>
+                        <SortableHeader field="modified">Date modified</SortableHeader>
+                        <SortableHeader field="type">Type</SortableHeader>
+                        <SortableHeader field="size">Size</SortableHeader>
                     </div>
                     <div className="file-list-empty-content">
                         <FaFolder className="empty-icon" />
@@ -703,10 +834,10 @@ const loadDirectory = useCallback(async (path: string) => {
             <div className="file-list-view" onClick={handleBackgroundClick}>
                 <SearchBarWithFilters />
                 <div className="file-list-header">
-                    <div className="file-list-column name-column">Name</div>
-                    <div className="file-list-column date-column">Date modified</div>
-                    <div className="file-list-column type-column">Type</div>
-                    <div className="file-list-column size-column">Size</div>
+                    <SortableHeader field="name">Name</SortableHeader>
+                    <SortableHeader field="modified">Date modified</SortableHeader>
+                    <SortableHeader field="type">Type</SortableHeader>
+                    <SortableHeader field="size">Size</SortableHeader>
                 </div>
                 <VirtualizedList
                     itemCount={filteredItems.length}
