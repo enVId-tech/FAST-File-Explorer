@@ -70,6 +70,7 @@ const defaultSettings: AppSettings = {
 interface SettingsContextType {
     settings: AppSettings;
     updateSetting: <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => Promise<void>;
+    updateKnownFolder: (folderType: keyof KnownFolderSettings, path: string) => Promise<void>;
     loadSettings: () => Promise<void>;
     resetSettings: () => Promise<void>;
     isLoading: boolean;
@@ -102,7 +103,26 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
             const loadedSettings = await window.electronAPI?.settings.getAll();
             if (loadedSettings) {
                 // Merge with defaults to ensure all properties exist
-                const merged = { ...defaultSettings, ...loadedSettings } as AppSettings;
+                let merged = { ...defaultSettings, ...loadedSettings } as AppSettings;
+                
+                // If known folders are empty or not set, try to load them from the system
+                const knownFoldersEmpty = !merged.knownFolders || 
+                    Object.values(merged.knownFolders).every(path => !path || path.trim() === '');
+                
+                if (knownFoldersEmpty) {
+                    console.log('Known folders not set, loading from system...');
+                    try {
+                        const systemKnownFolders = await window.electronAPI?.settings.getKnownFolders();
+                        if (systemKnownFolders) {
+                            merged = { ...merged, knownFolders: systemKnownFolders };
+                            // Save the loaded known folders to settings
+                            await window.electronAPI?.settings.updateKnownFolders(systemKnownFolders);
+                        }
+                    } catch (error) {
+                        console.warn('Failed to load system known folders:', error);
+                    }
+                }
+                
                 setSettings(merged);
                 // Apply CSS flags for loaded settings
                 document.documentElement.classList.toggle('no-animations', !merged.enableAnimations);
@@ -138,6 +158,27 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
             // Revert local state on error
             setSettings(prev);
             throw error as any;
+        }
+    }, [settings]);
+
+    const updateKnownFolder = useCallback(async (
+        folderType: keyof KnownFolderSettings,
+        path: string
+    ): Promise<void> => {
+        const prev = settings;
+        try {
+            // Update local state immediately
+            const newKnownFolders = { ...settings.knownFolders, [folderType]: path };
+            const newSettings = { ...settings, knownFolders: newKnownFolders };
+            setSettings(newSettings);
+
+            // Save to backend
+            await window.electronAPI?.settings.updateKnownFolder(String(folderType), path);
+        } catch (error) {
+            console.error(`Failed to update known folder ${folderType}:`, error);
+            // Revert local state on error
+            setSettings(prev);
+            throw error;
         }
     }, [settings]);
 
@@ -184,10 +225,11 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     const contextValue: SettingsContextType = useMemo(() => ({
         settings,
         updateSetting,
+        updateKnownFolder,
         loadSettings,
         resetSettings,
         isLoading,
-    }), [settings, updateSetting, loadSettings, resetSettings, isLoading]);
+    }), [settings, updateSetting, updateKnownFolder, loadSettings, resetSettings, isLoading]);
 
     return (
         <SettingsContext.Provider value={contextValue}>

@@ -12,7 +12,7 @@ interface SettingsMenuProps {
 }
 
 export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onShowSetup, onShowFileTransferUI }) => {
-    const { settings, updateSetting, isLoading } = useSettings();
+    const { settings, updateSetting, updateKnownFolder, loadSettings, isLoading } = useSettings();
     const [activeCategory, setActiveCategory] = useState<'general' | 'appearance' | 'performance' | 'security' | 'folders' | 'setup' | 'developer' | 'about'>('general');
     const [editingFolder, setEditingFolder] = useState<string | null>(null);
     const [editValue, setEditValue] = useState<string>('');
@@ -46,8 +46,8 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
                 return;
             }
 
-            // Update the folder
-            await window.electronAPI?.settings?.updateKnownFolder(folderType, editValue);
+            // Update the folder using SettingsContext
+            await updateKnownFolder(folderType, editValue);
 
             setEditingFolder(null);
             setEditValue('');
@@ -91,6 +91,8 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
         if (window.confirm('Are you sure you want to reset all known folders to their default locations?')) {
             try {
                 await window.electronAPI?.settings?.resetKnownFolders();
+                // Reload settings to reflect the reset
+                await loadSettings();
                 console.log('Known folders reset to defaults');
             } catch (error: any) {
                 console.error('Failed to reset known folders:', error);

@@ -69,43 +69,27 @@ export const ThisPCView = React.memo<ThisPCViewProps>(({
 }) => {
     const { settings } = useSettings();
     const [selectedDrive, setSelectedDrive] = useState<string | null>(null);
-    const [knownFolderPaths, setKnownFolderPaths] = useState<{[key: string]: string}>({});
-    const [loadingKnownFolders, setLoadingKnownFolders] = useState(true);
 
-    // Load known folder paths from settings
-    useEffect(() => {
-        const loadKnownFolders = async () => {
-            try {
-                setLoadingKnownFolders(true);
-                const folders = {
-                    desktop: await window.electronAPI.fs.getKnownFolder('desktop'),
-                    documents: await window.electronAPI.fs.getKnownFolder('documents'),
-                    downloads: await window.electronAPI.fs.getKnownFolder('downloads'),
-                    pictures: await window.electronAPI.fs.getKnownFolder('pictures'),
-                    music: await window.electronAPI.fs.getKnownFolder('music'),
-                    videos: await window.electronAPI.fs.getKnownFolder('videos'),
-                    home: await window.electronAPI.fs.getKnownFolder('home')
-                };
-                setKnownFolderPaths(folders);
-            } catch (error) {
-                console.error('Failed to load known folders:', error);
-                // Fallback to hardcoded paths if known folders fail
-                setKnownFolderPaths({
-                    desktop: 'C:\\Users\\User\\Desktop',
-                    documents: 'C:\\Users\\User\\Documents',
-                    downloads: 'C:\\Users\\User\\Downloads',
-                    pictures: 'C:\\Users\\User\\Pictures',
-                    music: 'C:\\Users\\User\\Music',
-                    videos: 'C:\\Users\\User\\Videos',
-                    home: 'C:\\Users\\User'
-                });
-            } finally {
-                setLoadingKnownFolders(false);
-            }
+    // Use known folder paths directly from settings context
+    const knownFolderPaths = useMemo(() => {
+        // If settings have been loaded and contain valid known folders, use them
+        if (settings.knownFolders && Object.values(settings.knownFolders).some(path => path && path.trim() !== '')) {
+            console.log('ThisPCView: Using known folders from settings:', settings.knownFolders);
+            return settings.knownFolders;
+        }
+        
+        console.log('ThisPCView: Using fallback known folder paths');
+        // Fallback to default Windows paths if settings are empty
+        return {
+            desktop: 'C:\\Users\\User\\Desktop',
+            documents: 'C:\\Users\\User\\Documents',
+            downloads: 'C:\\Users\\User\\Downloads',
+            pictures: 'C:\\Users\\User\\Pictures',
+            music: 'C:\\Users\\User\\Music',
+            videos: 'C:\\Users\\User\\Videos',
+            home: 'C:\\Users\\User'
         };
-
-        loadKnownFolders();
-    }, [settings.knownFolders]); // Reload when known folders settings change
+    }, [settings.knownFolders]);
 
     // Convert actual drive data to DriveInfo format
     const convertActualDrives = (actualDrives: any[] = []): DriveInfo[] => {
@@ -191,10 +175,6 @@ export const ThisPCView = React.memo<ThisPCViewProps>(({
     const networkDevices = propNetworkDevices || getDefaultNetworkDevices();
     const dynamicQuickAccessItems = useMemo(() => {
         if (propQuickAccess) return propQuickAccess;
-        
-        if (loadingKnownFolders) {
-            return []; // Return empty array while loading
-        }
 
         return [
             {
@@ -234,7 +214,7 @@ export const ThisPCView = React.memo<ThisPCViewProps>(({
                 description: 'Video files and movies'
             }
         ];
-    }, [propQuickAccess, knownFolderPaths, loadingKnownFolders]);
+    }, [propQuickAccess, knownFolderPaths]);
     const [drives, setDrives] = useState<DriveInfo[]>([
         {
             name: 'Local Disk',
