@@ -141,46 +141,100 @@ export default function initializeDataHandlers() {
     ipcMain.handle('data-get-drives', async () => {
         // Check if the drives are already cached
         if (driveCache.length > 0 && Date.now() - drivesCacheTime < DRIVE_CACHE_TTL) {
-            return driveCache;
+            return { driveDetails: driveCache };
         }
 
         try {
-            // Use Promise.race with timeout to prevent indefinite blocking
-            const drivePromise = Promise.all([
+            console.log("Starting drive enumeration...");
+            
+            // Create individual promises with their own timeouts
+            const driveListPromise = Promise.race([
                 drivelist.list(),
-                nodeDiskInfo.getDiskInfo()
+                new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('drivelist timeout')), 8000)
+                )
             ]);
 
-            const timeoutPromise = new Promise((_, reject) => {
-                setTimeout(() => reject(new Error('Drive enumeration timeout')), 5000);
-            });
+            const diskInfoPromise = Promise.race([
+                nodeDiskInfo.getDiskInfo(),
+                new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('diskinfo timeout')), 8000)
+                )
+            ]);
 
-            const [drives, diskInfo] = await Promise.race([drivePromise, timeoutPromise]) as [any[], any];
+            // Try to get both, but continue with partial data if one fails
+            let drives: any[] = [];
+            let diskInfo: any = {};
 
-            console.log("Fetching drives");
+            try {
+                drives = await driveListPromise as any[];
+                console.log("Successfully got drive list");
+            } catch (error) {
+                console.warn("Failed to get drive list:", error);
+                // Continue with empty drives array
+            }
 
+            try {
+                diskInfo = await diskInfoPromise as any;
+                console.log("Successfully got disk info");
+            } catch (error) {
+                console.warn("Failed to get disk info:", error);
+                // Continue with empty disk info
+            }
+
+            console.log("Processing drive information...");
             const driveDetails: Drive[] = [];
 
-            // Iterate through each drive and find its disk information
-            // Check for matching drive and disk information, and then get data from matched index
-            Object.values(diskInfo).forEach((disk: any) => {
-                let details: Drive = {
-                    driveName: disk.filesystem,
-                    drivePath: disk.mounted,
-                    available: disk.available,
-                    used: disk.used,
-                    total: disk.blocks,
-                    percentageUsed: disk.capacity,
-                }
+            // If we have disk info, use it as the primary source
+            if (diskInfo && Object.keys(diskInfo).length > 0) {
+                Object.values(diskInfo).forEach((disk: any) => {
+                    let details: Drive = {
+                        driveName: disk.filesystem || 'Unknown',
+                        drivePath: disk.mounted || '',
+                        available: disk.available || 0,
+                        used: disk.used || 0,
+                        total: disk.blocks || 0,
+                        percentageUsed: typeof disk.capacity === 'string' ? disk.capacity : `${disk.capacity || 0}%`,
+                    }
 
-                // Match drive information with disk information
-                // Push matched details to driveDetails array
+                    // Match drive information with disk information
+                    drives.forEach((drive) => {
+                        if (drive.mountpoints?.[0]?.path?.includes(disk.mounted)) {
+                            details = {
+                                ...details,
+                                busType: drive.busType === "INVALID" ? "NVMe" : (drive.busType || "Unknown"),
+                                description: drive.description || 'Local Drive',
+                                flags: {
+                                    isCard: drive.isCard ?? false,
+                                    isReadOnly: drive.isReadOnly ?? false,
+                                    isRemovable: drive.isRemovable ?? false,
+                                    isSCSI: drive.isSCSI ?? false,
+                                    isSystem: drive.isSystem ?? false,
+                                    isUSB: drive.isUSB ?? false,
+                                    isVirtual: drive.isVirtual ?? false
+                                },
+                                partitionType: drive.partitionTableType === 'mbr' || drive.partitionTableType === 'gpt' ? drive.partitionTableType : null,
+                                logicalBlockSize: drive.logicalBlockSize || 4096
+                            };
+                        }
+                    });
+
+                    driveDetails.push(details);
+                });
+            } else if (drives.length > 0) {
+                // Fallback: use drive list without disk info
+                console.log("Using fallback drive enumeration");
                 drives.forEach((drive) => {
-                    if (drive.mountpoints[0]?.path.includes(disk.mounted)) {
-                        details = {
-                            ...details,
-                            busType: drive.busType === "INVALID" ? "NVMe" : drive.busType,
-                            description: drive.description,
+                    if (drive.mountpoints?.[0]?.path) {
+                        driveDetails.push({
+                            driveName: drive.description || 'Local Drive',
+                            drivePath: drive.mountpoints[0].path,
+                            available: 0, // Unknown
+                            used: 0, // Unknown
+                            total: drive.size || 0,
+                            percentageUsed: '0%', // Unknown
+                            busType: drive.busType === "INVALID" ? "NVMe" : (drive.busType || "Unknown"),
+                            description: drive.description || 'Local Drive',
                             flags: {
                                 isCard: drive.isCard ?? false,
                                 isReadOnly: drive.isReadOnly ?? false,
@@ -190,25 +244,68 @@ export default function initializeDataHandlers() {
                                 isUSB: drive.isUSB ?? false,
                                 isVirtual: drive.isVirtual ?? false
                             },
-                            partitionType: drive.partitionTableType,
-                            logicalBlockSize: drive.logicalBlockSize
-                        };
+                            partitionType: drive.partitionTableType === 'mbr' || drive.partitionTableType === 'gpt' ? drive.partitionTableType : null,
+                            logicalBlockSize: drive.logicalBlockSize || 4096
+                        });
                     }
                 });
-
-                driveDetails.push(details);
-            });
+            }
 
             // Cache the results
             driveCache = driveDetails;
             drivesCacheTime = Date.now();
 
+            console.log(`Successfully enumerated ${driveDetails.length} drives`);
             return { driveDetails };
 
         } catch (error) {
             console.error('Failed to fetch drives:', error);
-            // Return cached drives or empty array on error
-            return { driveDetails: driveCache.length > 0 ? driveCache : [] };
+            
+            // If we have cached drives, return them
+            if (driveCache.length > 0) {
+                console.log("Returning cached drive information");
+                return { driveDetails: driveCache };
+            }
+            
+            // Last resort: return basic system drives on Windows
+            const fallbackDrives: Drive[] = [];
+            if (process.platform === 'win32') {
+                console.log("Using Windows fallback drives");
+                const commonDrives = ['C:', 'D:', 'E:', 'F:'];
+                for (const letter of commonDrives) {
+                    try {
+                        const fs = require('fs');
+                        // Check if drive exists by trying to access it
+                        if (fs.existsSync(letter + '\\')) {
+                            fallbackDrives.push({
+                                driveName: `Local Disk (${letter})`,
+                                drivePath: letter + '\\',
+                                available: 0,
+                                used: 0,
+                                total: 0,
+                                percentageUsed: '0%',
+                                busType: 'Unknown',
+                                description: 'Local Drive',
+                                flags: {
+                                    isCard: false,
+                                    isReadOnly: false,
+                                    isRemovable: false,
+                                    isSCSI: false,
+                                    isSystem: letter === 'C:',
+                                    isUSB: false,
+                                    isVirtual: false
+                                },
+                                partitionType: null,
+                                logicalBlockSize: 4096
+                            });
+                        }
+                    } catch (driveError) {
+                        // Skip drives that can't be accessed
+                    }
+                }
+            }
+            
+            return { driveDetails: fallbackDrives };
         }
     });
 
