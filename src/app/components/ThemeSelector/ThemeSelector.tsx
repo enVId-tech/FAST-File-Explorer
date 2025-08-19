@@ -124,6 +124,15 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({ currentTheme: cont
     }, 300);
   }, []);
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (transitionTimeoutRef.current) {
+        clearTimeout(transitionTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const handleThemeSelect = (themeId: string) => {
     if (themeId === currentTheme) return;
 

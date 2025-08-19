@@ -375,12 +375,22 @@ const Main = React.memo(function Main(): React.JSX.Element {
         while (retryCount <= maxRetries) {
             try {
                 console.log('Manually refreshing drives...');
-                const timeoutPromise = new Promise((_, reject) => {
-                    setTimeout(() => reject(new Error('Drive loading timeout')), 5000);
+                
+                let timeoutId: NodeJS.Timeout | undefined;
+                const timeoutPromise = new Promise<never>((_, reject) => {
+                    timeoutId = setTimeout(() => reject(new Error('Drive loading timeout')), 5000);
                 });
 
                 const drivePromise = window.electronAPI.data.getDrives();
-                const driveData = await Promise.race([drivePromise, timeoutPromise]);
+                
+                let driveData;
+                try {
+                    driveData = await Promise.race([drivePromise, timeoutPromise]);
+                    if (timeoutId) clearTimeout(timeoutId); // Clear timeout on success
+                } catch (error) {
+                    if (timeoutId) clearTimeout(timeoutId); // Clear timeout on error
+                    throw error; // Re-throw the error
+                }
 
                 if (!Array.isArray(driveData)) {
                     throw new Error('Invalid drive data format');
@@ -592,13 +602,22 @@ const Main = React.memo(function Main(): React.JSX.Element {
                     }
 
                     // Add timeout to prevent hanging
-                    const timeoutPromise = new Promise((_, reject) => {
-                        setTimeout(() => reject(new Error('Drive loading timeout')), 5000);
+                    let timeoutId: NodeJS.Timeout | undefined;
+                    const timeoutPromise = new Promise<never>((_, reject) => {
+                        timeoutId = setTimeout(() => reject(new Error('Drive loading timeout')), 5000);
                     });
 
                     const drivePromise = window.electronAPI.data.getDrives();
-                    const driveData = await Promise.race([drivePromise, timeoutPromise]);
-
+                    
+                    let driveData;
+                    try {
+                        driveData = await Promise.race([drivePromise, timeoutPromise]);
+                        if (timeoutId) clearTimeout(timeoutId); // Clear timeout on success
+                    } catch (error) {
+                        if (timeoutId) clearTimeout(timeoutId); // Clear timeout on error
+                        throw error; // Re-throw the error
+                    }
+                    
                     // Validate that we got actual data
                     if (!Array.isArray(driveData)) {
                         throw new Error('Invalid drive data format');
