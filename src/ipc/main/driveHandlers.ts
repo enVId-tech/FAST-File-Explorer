@@ -28,11 +28,21 @@ export function registerDriveHandlers(): void {
                 nodeDiskInfo.getDiskInfo()
             ]);
 
-            const timeoutPromise = new Promise((_, reject) => {
-                setTimeout(() => reject(new Error('Drive enumeration timeout')), 5000);
+            let timeoutId: NodeJS.Timeout | undefined;
+            const timeoutPromise = new Promise<never>((_, reject) => {
+                timeoutId = setTimeout(() => reject(new Error('Drive enumeration timeout')), 5000);
             });
 
-            const [drives, diskInfo] = await Promise.race([drivePromise, timeoutPromise]) as [any[], any];
+            let result;
+            try {
+                result = await Promise.race([drivePromise, timeoutPromise]);
+                if (timeoutId) clearTimeout(timeoutId);
+            } catch (error) {
+                if (timeoutId) clearTimeout(timeoutId);
+                throw error;
+            }
+            
+            const [drives, diskInfo] = result as [any[], any];
 
             const driveDetails: Drive[] = [];
 

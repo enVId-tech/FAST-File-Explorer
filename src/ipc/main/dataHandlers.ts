@@ -148,18 +148,20 @@ export default function initializeDataHandlers() {
             console.log("Starting drive enumeration...");
             
             // Create individual promises with their own timeouts
+            let driveListTimeoutId: NodeJS.Timeout | undefined;
             const driveListPromise = Promise.race([
                 drivelist.list(),
-                new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error('drivelist timeout')), 8000)
-                )
+                new Promise<never>((_, reject) => {
+                    driveListTimeoutId = setTimeout(() => reject(new Error('drivelist timeout')), 8000);
+                })
             ]);
 
+            let diskInfoTimeoutId: NodeJS.Timeout | undefined;
             const diskInfoPromise = Promise.race([
                 nodeDiskInfo.getDiskInfo(),
-                new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error('diskinfo timeout')), 8000)
-                )
+                new Promise<never>((_, reject) => {
+                    diskInfoTimeoutId = setTimeout(() => reject(new Error('diskinfo timeout')), 8000);
+                })
             ]);
 
             // Try to get both, but continue with partial data if one fails
@@ -168,16 +170,20 @@ export default function initializeDataHandlers() {
 
             try {
                 drives = await driveListPromise as any[];
+                if (driveListTimeoutId) clearTimeout(driveListTimeoutId);
                 console.log("Successfully got drive list");
             } catch (error) {
+                if (driveListTimeoutId) clearTimeout(driveListTimeoutId);
                 console.warn("Failed to get drive list:", error);
                 // Continue with empty drives array
             }
 
             try {
                 diskInfo = await diskInfoPromise as any;
+                if (diskInfoTimeoutId) clearTimeout(diskInfoTimeoutId);
                 console.log("Successfully got disk info");
             } catch (error) {
+                if (diskInfoTimeoutId) clearTimeout(diskInfoTimeoutId);
                 console.warn("Failed to get disk info:", error);
                 // Continue with empty disk info
             }
