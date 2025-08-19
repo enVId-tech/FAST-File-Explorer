@@ -553,16 +553,21 @@ const Main = React.memo(function Main(): React.JSX.Element {
             setIsMaximized(maximized);
         };
 
+        let cleanup: (() => void) | undefined;
+
         // Add listener for window state changes
         if (window.electronAPI?.window) {
-            window.electronAPI.window.onMaximizeChange(handleWindowMaximized);
+            cleanup = window.electronAPI.window.onMaximizeChange(handleWindowMaximized);
             window.electronAPI.window.addMaximizeListener();
         }
 
         return () => {
-            // Cleanup listener
+            // Cleanup listeners
             if (window.electronAPI?.window) {
                 window.electronAPI.window.removeMaximizeListener();
+            }
+            if (cleanup) {
+                cleanup();
             }
         };
     }, []);

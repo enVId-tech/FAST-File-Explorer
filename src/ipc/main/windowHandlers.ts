@@ -1,7 +1,38 @@
 import { ipcMain, BrowserWindow } from 'electron';
 
 // Store maximize event listeners for cleanup
-const maximizeListeners = new Map<number, (maximized: boolean) => void>();
+const maximizeListeners = new Map<number, {
+    maximizeListener: () => void;
+    unmaximizeListener: () => void;
+}>();
+
+// Track which windows have been set up for cleanup
+const cleanupSetupWindows = new Set<number>();
+
+// Clean up listeners when window is closed
+const setupWindowCleanup = (window: BrowserWindow) => {
+    const windowId = window.id;
+    
+    // Only set up cleanup once per window
+    if (cleanupSetupWindows.has(windowId)) {
+        return;
+    }
+    cleanupSetupWindows.add(windowId);
+    
+    // Increase max listeners to prevent warnings
+    window.setMaxListeners(20);
+    
+    // Clean up when window is closed
+    window.once('closed', () => {
+        if (maximizeListeners.has(windowId)) {
+            maximizeListeners.delete(windowId);
+        }
+        cleanupSetupWindows.delete(windowId);
+    });
+};
+
+// Export the cleanup function for use in main process
+export { setupWindowCleanup };
 
 // Window control IPC handlers
 ipcMain.handle('window-minimize', () => {
@@ -38,12 +69,15 @@ ipcMain.handle('window-add-maximize-listener', (event) => {
     if (!window) return false;
 
     const windowId = window.id;
+    
+    // Set up cleanup for this window if not already done
+    setupWindowCleanup(window);
 
     // Remove existing listener if any
     if (maximizeListeners.has(windowId)) {
-        const existingListener = maximizeListeners.get(windowId)!;
-        window.removeListener('maximize', existingListener as any);
-        window.removeListener('unmaximize', existingListener as any);
+        const existingListeners = maximizeListeners.get(windowId)!;
+        window.removeListener('maximize', existingListeners.maximizeListener);
+        window.removeListener('unmaximize', existingListeners.unmaximizeListener);
         maximizeListeners.delete(windowId);
     }
 
@@ -60,8 +94,8 @@ ipcMain.handle('window-add-maximize-listener', (event) => {
     window.on('maximize', maximizeListener);
     window.on('unmaximize', unmaximizeListener);
 
-    // Store for cleanup (store the maximize listener as reference)
-    maximizeListeners.set(windowId, maximizeListener);
+    // Store both listeners for cleanup
+    maximizeListeners.set(windowId, { maximizeListener, unmaximizeListener });
 
     // Send initial state
     window.webContents.send('window-maximized', window.isMaximized());
@@ -77,9 +111,9 @@ ipcMain.handle('window-remove-maximize-listener', (event) => {
     const windowId = window.id;
 
     if (maximizeListeners.has(windowId)) {
-        const listener = maximizeListeners.get(windowId)!;
-        window.removeListener('maximize', listener as any);
-        window.removeListener('unmaximize', listener as any);
+        const listeners = maximizeListeners.get(windowId)!;
+        window.removeListener('maximize', listeners.maximizeListener);
+        window.removeListener('unmaximize', listeners.unmaximizeListener);
         maximizeListeners.delete(windowId);
         return true;
     }

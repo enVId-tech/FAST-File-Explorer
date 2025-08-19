@@ -23,6 +23,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
         removeMaximizeListener: () => ipcRenderer.invoke('window-remove-maximize-listener'),
         onMaximizeChange: (callback: (event: any, maximized: boolean) => void) => {
             ipcRenderer.on('window-maximized', callback);
+            
+            // Return a cleanup function
+            return () => {
+                ipcRenderer.removeListener('window-maximized', callback);
+            };
         },
     },
     tab: {

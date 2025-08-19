@@ -2,6 +2,7 @@ import { app, BrowserWindow } from 'electron';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
 import { initializeIpcHandlers } from './ipc/main/ipcSetup';
+import { setupWindowCleanup } from './ipc/main/windowHandlers';
 import { getVersionDisplayString } from './version';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -43,6 +44,9 @@ const createWindow = () => {
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
   });
+
+  // Set up event listener cleanup for this window
+  setupWindowCleanup(mainWindow);
 
   // and load the index.html of the app.
   // Note: NODE_ENV is not production in development mode
