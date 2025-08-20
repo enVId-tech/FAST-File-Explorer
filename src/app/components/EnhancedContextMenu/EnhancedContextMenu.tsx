@@ -1,37 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import {
-    FaCopy,
-    FaCut,
-    FaPaste,
-    FaTrash,
-    FaEdit,
-    FaInfoCircle,
-    FaEye,
-    FaFolder,
-    FaFolderPlus,
-    FaExternalLinkAlt,
-    FaUndo
-} from 'react-icons/fa';
 import { FileSystemItem } from '../../../shared/ipc-channels';
-import { useFileExplorerUI, useNavigation } from '../../utils';
+import { useFileExplorerUI, generateContextMenuItems } from '../../utils';
 import './EnhancedContextMenu.scss';
-
-interface ContextMenuItem {
-    id: string;
-    label: string;
-    icon?: React.ReactElement;
-    action: () => void | Promise<void>;
-    disabled?: boolean;
-    separator?: boolean;
-    shortcut?: string;
-    submenu?: ContextMenuItem[];
-}
 
 interface EnhancedContextMenuProps {
     isVisible: boolean;
     position: { x: number; y: number };
     selectedItems: FileSystemItem[];
-    currentPath: string;
     onClose: () => void;
     onRefresh?: () => void;
     onNavigate?: (path: string) => void;
@@ -41,18 +16,14 @@ export const EnhancedContextMenu: React.FC<EnhancedContextMenuProps> = ({
     isVisible,
     position,
     selectedItems,
-    currentPath,
     onClose,
     onRefresh,
     onNavigate
 }) => {
     const menuRef = useRef<HTMLDivElement>(null);
-    const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
-    const [submenuPosition, setSubmenuPosition] = useState({ x: 0, y: 0 });
 
     // Initialize file explorer utilities with refresh callback
     const fileExplorer = useFileExplorerUI(onRefresh);
-    const navigationUtils = useNavigation();
     const { clipboardState } = fileExplorer;
     const clipboardHasFiles = clipboardState.files.length > 0;
 
@@ -170,288 +141,34 @@ export const EnhancedContextMenu: React.FC<EnhancedContextMenuProps> = ({
         };
     }, [isVisible, onClose]);
 
-    // Action handlers using system default behaviors
-    const handleCopy = useCallback(async () => {
-        await fileExplorer.handleCopy();
-        onClose();
-    }, [fileExplorer, onClose]);
-
-    const handleCut = useCallback(async () => {
-        await fileExplorer.handleCut();
-        onClose();
-    }, [fileExplorer, onClose]);
-
-    const handlePaste = useCallback(async () => {
-        await fileExplorer.handlePaste();
-        onRefresh?.();
-        onClose();
-    }, [fileExplorer, onRefresh, onClose]);
-
-    const handleDelete = useCallback(async () => {
-        await fileExplorer.handleDelete();
-        onRefresh?.();
-        onClose();
-    }, [fileExplorer, onRefresh, onClose]);
-
-    const handleRename = useCallback(async () => {
-        await fileExplorer.handleRename();
-        onRefresh?.();
-        onClose();
-    }, [fileExplorer, onRefresh, onClose]);
-
-    const handleNewFolder = useCallback(async () => {
-        await fileExplorer.handleNewFolder();
-        onRefresh?.();
-        onClose();
-    }, [fileExplorer, onRefresh, onClose]);
-
-    const handleOpen = useCallback(async () => {
-        for (const item of selectedItems) {
-            if (item.type === 'directory') {
-                navigationUtils.navigateToPath(item.path);
-            } else {
-                await window.electronAPI.system.openFileFast(item.path);
-            }
-        }
-        onClose();
-    }, [selectedItems, navigationUtils, onClose]);
-
-    const handleOpenWith = useCallback(async () => {
-        // This would require additional system integration
-        try {
-            for (const item of selectedItems) {
-                if (item.type === 'file') {
-                    await window.electronAPI.system.openFile(item.path);
+    // Generate menu items using the shared utility; wrap actions to close/refresh when needed
+    const menuItems = React.useMemo(() => {
+        const handlers = {
+            onCopy: async () => { await fileExplorer.handleCopy(); onClose(); },
+            onCut: async () => { await fileExplorer.handleCut(); onClose(); },
+            onPaste: async () => { await fileExplorer.handlePaste(); onRefresh?.(); onClose(); },
+            onDelete: async () => { await fileExplorer.handleDelete(); onRefresh?.(); onClose(); },
+            onRename: async () => { await fileExplorer.handleRename(); onRefresh?.(); onClose(); },
+            onNewFolder: async () => { await fileExplorer.handleNewFolder(); onRefresh?.(); onClose(); },
+            onProperties: async () => {
+                if (selectedItems.length === 1) {
+                    await fileExplorer.showProperties(selectedItems[0]);
                 }
+                onClose();
+            },
+            onShowInExplorer: async () => {
+                if (selectedItems.length === 1) {
+                    await fileExplorer.showInExplorer(selectedItems[0]);
+                }
+                onClose();
             }
-            onClose();
-        } catch (error) {
-            console.error('Failed to open with:', error);
-        }
-    }, [selectedItems, onClose]);
+        };
 
-    const handleProperties = useCallback(async () => {
-        try {
-            for (const item of selectedItems) {
-                await window.electronAPI.files.showProperties(item.path);
-            }
-            onClose();
-        } catch (error) {
-            console.error('Failed to show properties:', error);
-        }
-    }, [selectedItems, onClose]);
-
-    const handleShowInExplorer = useCallback(async () => {
-        try {
-            const item = selectedItems[0];
-            await window.electronAPI.files.showInExplorer(item.path);
-            onClose();
-        } catch (error) {
-            console.error('Failed to show in explorer:', error);
-        }
-    }, [selectedItems, onClose]);
-
-    // Generate menu items based on selection
-    const getMenuItems = useCallback((): ContextMenuItem[] => {
-        const hasSelection = selectedItems.length > 0;
-        const singleSelection = selectedItems.length === 1;
-        const multipleSelection = selectedItems.length > 1;
-        const hasFiles = selectedItems.some(item => item.type === 'file');
-        const hasDirectories = selectedItems.some(item => item.type === 'directory');
-        const allFiles = selectedItems.every(item => item.type === 'file');
-        const allDirectories = selectedItems.every(item => item.type === 'directory');
-
-        const items: ContextMenuItem[] = [];
-
-        if (hasSelection) {
-            // Open/Open with
-            items.push({
-                id: 'open',
-                label: singleSelection ? 'Open' : 'Open selected',
-                icon: <FaEye />,
-                action: handleOpen,
-                shortcut: 'Enter'
-            });
-
-            if (hasFiles) {
-                items.push({
-                    id: 'open-with',
-                    label: 'Open with...',
-                    icon: <FaExternalLinkAlt />,
-                    action: handleOpenWith
-                });
-            }
-
-            items.push({ id: 'sep1', label: '', separator: true, action: () => { } });
-
-            // Edit operations
-            items.push({
-                id: 'copy',
-                label: `Copy ${multipleSelection ? `${selectedItems.length} items` : `"${selectedItems[0].name}"`}`,
-                icon: <FaCopy />,
-                action: handleCopy,
-                shortcut: 'Ctrl+C'
-            });
-
-            items.push({
-                id: 'cut',
-                label: `Cut ${multipleSelection ? `${selectedItems.length} items` : `"${selectedItems[0].name}"`}`,
-                icon: <FaCut />,
-                action: handleCut,
-                shortcut: 'Ctrl+X'
-            });
-
-            items.push({ id: 'sep2', label: '', separator: true, action: () => { } });
-
-            // File management
-            if (singleSelection) {
-                items.push({
-                    id: 'rename',
-                    label: 'Rename',
-                    icon: <FaEdit />,
-                    action: handleRename,
-                    shortcut: 'F2'
-                });
-            }
-
-            items.push({
-                id: 'delete',
-                label: `Delete ${multipleSelection ? `${selectedItems.length} items` : `"${selectedItems[0].name}"`}`,
-                icon: <FaTrash />,
-                action: handleDelete,
-                shortcut: 'Delete'
-            });
-
-            items.push({ id: 'sep3', label: '', separator: true, action: () => { } });
-
-            // System integration
-            if (singleSelection) {
-                items.push({
-                    id: 'show-in-explorer',
-                    label: 'Show in File Explorer',
-                    icon: <FaFolder />,
-                    action: handleShowInExplorer
-                });
-            }
-
-            items.push({
-                id: 'properties',
-                label: 'Properties',
-                icon: <FaInfoCircle />,
-                action: handleProperties,
-                shortcut: 'Alt+Enter'
-            });
-        } else {
-            // No selection - background context menu
-            items.push({
-                id: 'new-folder',
-                label: 'New Folder',
-                icon: <FaFolderPlus />,
-                action: handleNewFolder,
-                shortcut: 'Ctrl+Shift+N'
-            });
-
-            items.push({ id: 'sep1', label: '', separator: true, action: () => { } });
-
-            items.push({
-                id: 'paste',
-                label: 'Paste',
-                icon: <FaPaste />,
-                action: handlePaste,
-                disabled: !clipboardHasFiles,
-                shortcut: 'Ctrl+V'
-            });
-
-            items.push({ id: 'sep2', label: '', separator: true, action: () => { } });
-
-            items.push({
-                id: 'refresh',
-                label: 'Refresh',
-                icon: <FaUndo />,
-                action: () => {
-                    onRefresh?.();
-                    onClose();
-                },
-                shortcut: 'F5'
-            });
-        }
-
-        return items;
-    }, [
-        selectedItems,
-        clipboardHasFiles,
-        handleOpen,
-        handleOpenWith,
-        handleCopy,
-        handleCut,
-        handlePaste,
-        handleRename,
-        handleDelete,
-        handleNewFolder,
-        handleProperties,
-        handleShowInExplorer,
-        onRefresh,
-        onClose
-    ]);
+        return generateContextMenuItems(selectedItems, fileExplorer.clipboardState, handlers);
+    }, [selectedItems, fileExplorer.clipboardState, fileExplorer, onRefresh, onClose]);
 
     if (!isVisible) return null;
-
-    const [adjustedPosition, setAdjustedPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-
-    // Initialize position
-    useEffect(() => {
-        setAdjustedPosition(getAdjustedPosition());
-    }, [getAdjustedPosition]);
-
-    // Refine position after menu renders with actual dimensions
-    useEffect(() => {
-        if (menuRef.current && isVisible) {
-            const rect = menuRef.current.getBoundingClientRect();
-            const actualWidth = rect.width;
-            const actualHeight = rect.height;
-
-            // Only recalculate if there's a significant difference from estimates
-            const estimatedWidth = 300;
-            const estimatedHeight = Math.min((selectedItems.length > 0 ? 12 : 8) * 35 + 60, 400);
-
-            const widthDiff = Math.abs(actualWidth - estimatedWidth);
-            const heightDiff = Math.abs(actualHeight - estimatedHeight);
-
-            // Only reposition if the actual size is significantly different from estimate
-            if (widthDiff > 50 || heightDiff > 50) {
-                let { x, y } = position;
-                x -= 290;
-                y -= 200;
-
-                const viewport = {
-                    width: window.innerWidth - 20,
-                    height: window.innerHeight - 20
-                };
-
-                // Re-calculate with actual dimensions
-                if (x + actualWidth > viewport.width) {
-                    x = position.x - actualWidth + 290;
-                }
-                if (x < 10) x = 10;
-
-                if (y + actualHeight > viewport.height) {
-                    y = position.y - actualHeight + 200;
-                }
-                if (y < 10) y = 10;
-
-                // Final bounds check
-                if (x + actualWidth > viewport.width) {
-                    x = viewport.width - actualWidth;
-                }
-                if (y + actualHeight > viewport.height) {
-                    y = viewport.height - actualHeight;
-                }
-
-                setAdjustedPosition({ x, y });
-            }
-        }
-    }, [position, selectedItems.length, isVisible]);
-    const menuItems = getMenuItems();
+    const adjustedPosition = React.useMemo(() => getAdjustedPosition(), [getAdjustedPosition]);
 
     return (
         <div
@@ -484,30 +201,19 @@ export const EnhancedContextMenu: React.FC<EnhancedContextMenuProps> = ({
             )}
 
             {menuItems.map((item, index) => {
-                if (item.separator) {
-                    return <div key={item.id} className="context-menu-separator" />;
+                if ((item as any).type === 'separator') {
+                    return <div key={`sep-${index}`} className="context-menu-separator" />;
                 }
-
+                const entry = item as any as { label: string; action: () => void; shortcut?: string };
                 return (
                     <div
-                        key={item.id}
-                        className={`context-menu-item ${item.disabled ? 'disabled' : ''}`}
-                        onClick={() => {
-                            if (!item.disabled) {
-                                item.action();
-                            }
-                        }}
+                        key={`item-${index}`}
+                        className="context-menu-item"
+                        onClick={() => entry.action()}
                     >
-                        <div className="context-menu-icon">
-                            {item.icon}
-                        </div>
-                        <div className="context-menu-label">
-                            {item.label}
-                        </div>
-                        {item.shortcut && (
-                            <div className="context-menu-shortcut">
-                                {item.shortcut}
-                            </div>
+                        <div className="context-menu-label">{entry.label}</div>
+                        {entry.shortcut && (
+                            <div className="context-menu-shortcut">{entry.shortcut}</div>
                         )}
                     </div>
                 );

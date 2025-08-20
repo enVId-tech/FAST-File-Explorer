@@ -954,7 +954,6 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
                         isVisible={contextMenu.visible}
                         position={{ x: contextMenu.x, y: contextMenu.y }}
                         selectedItems={contextMenu.selectedItems}
-                        currentPath={currentPath}
                         onClose={handleCloseContextMenu}
                         onNavigate={onNavigate}
                     />
@@ -993,7 +992,6 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
                     isVisible={contextMenu.visible}
                     position={{ x: contextMenu.x, y: contextMenu.y }}
                     selectedItems={contextMenu.selectedItems}
-                    currentPath={currentPath}
                     onClose={handleCloseContextMenu}
                     onNavigate={onNavigate}
                 />

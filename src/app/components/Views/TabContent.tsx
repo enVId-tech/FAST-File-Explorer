@@ -9,7 +9,6 @@ import { SettingsMenu } from '../SettingsMenu/SettingsMenu';
 import { Drive, FileItem } from 'shared/file-data';
 import { FileSystemItem } from '../../../shared/ipc-channels';
 import { useFileExplorerUI, NavigationUtils } from '../../utils';
-import { useNavigation } from '../../contexts/NavigationContext';
 import './RecentsThisPCStyles.scss';
 
 interface TabContentProps {
@@ -32,8 +31,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
     const [activeRibbonTab, setActiveRibbonTab] = useState<'home' | 'share' | 'view' | 'manage' | 'organize' | 'tools' | 'help'>('home');
     const [showSettingsMenu, setShowSettingsMenu] = useState(false);
 
-    // Navigation from context
-    const { currentPath, currentView, setCurrentView } = useNavigation();
+    // Navigation and state come from the unified fileExplorer hook
 
     // File list refresh trigger
     const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -160,7 +158,6 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
     const handleFileNavigation = (path: string) => {
         fileExplorer.navigateToPath(path);
         console.log("Navigated to folder:", path);
-        setCurrentView('folder');
     };
 
     const handleFileSelect = (files: FileSystemItem | FileSystemItem[]) => {
@@ -175,19 +172,17 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
 
     const handleDirectorySelect = (directory: FileSystemItem) => {
         fileExplorer.navigateToPath(directory.path);
-        setCurrentView('folder');
         console.log('Directory selected:', directory);
     };
 
     const handleSidebarNavigation = async (view: string, itemName: string) => {
         if (view === 'thispc') {
-            setCurrentView('thispc');
+            fileExplorer.navigateToThisPC();
             fileExplorer.clearSelection();
         } else if (view === 'recents') {
-            setCurrentView('recents');
+            fileExplorer.navigateToRecents();
             fileExplorer.clearSelection();
         } else {
-            setCurrentView('folder');
             // Navigate to the selected folder using utility
             try {
                 let success = false;
@@ -224,7 +219,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
 
     // Generate breadcrumbs from current path
     const generateBreadcrumbs = () => {
-        return NavigationUtils.generateBreadcrumbs(currentPath);
+        return NavigationUtils.generateBreadcrumbs(fileExplorer.currentPath);
     };
 
     const fileItems: FileItem[] = [
@@ -393,16 +388,16 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
         {
             title: 'Quick Access',
             items: [
-                { name: 'Recents', icon: <FaClock />, active: currentView === 'recents', view: 'recents' },
+                { name: 'Recents', icon: <FaClock />, active: fileExplorer.currentView === 'recents', view: 'recents' },
                 { name: 'Downloads', icon: <FaDownload />, active: false, view: 'folder' },
-                { name: 'Documents', icon: <FaFolder />, active: currentView === 'folder' && selectedItem?.name === 'Documents', view: 'folder' },
+                { name: 'Documents', icon: <FaFolder />, active: fileExplorer.currentView === 'folder' && selectedItem?.name === 'Documents', view: 'folder' },
                 { name: 'Pictures', icon: <FaFileImage />, active: false, view: 'folder' },
             ]
         },
         {
             title: 'This PC',
             items: [
-                { name: 'This PC', icon: <FaDesktop />, active: currentView === 'thispc', view: 'thispc' },
+                { name: 'This PC', icon: <FaDesktop />, active: fileExplorer.currentView === 'thispc', view: 'thispc' },
             ],
             drives: localDrives // Local drives only
         },
@@ -489,7 +484,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                         <button
                             className="toolbar-button"
                             onClick={() => {
-                                setCurrentView('thispc');
+                                fileExplorer.navigateToThisPC();
                                 fileExplorer.clearSelection();
                             }}
                             title="Home"
@@ -499,13 +494,13 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                     </div>
                     <div className="address-bar-container">
                         <div className="address-bar">
-                            {currentView === 'thispc' && (
+                            {fileExplorer.currentView === 'thispc' && (
                                 <span className="path-segment active">This PC</span>
                             )}
-                            {currentView === 'recents' && (
+                            {fileExplorer.currentView === 'recents' && (
                                 <span className="path-segment active">Recent Files</span>
                             )}
-                            {currentView === 'folder' && generateBreadcrumbs().length > 0 && (
+                            {fileExplorer.currentView === 'folder' && generateBreadcrumbs().length > 0 && (
                                 <>
                                     {generateBreadcrumbs().map((breadcrumb: { name: string; path: string }, index: number) => (
                                         <React.Fragment key={breadcrumb.path}>
@@ -576,7 +571,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                                                             checked={searchScope === 'global'}
                                                             onChange={(e) => setSearchScope(e.target.value as 'current' | 'global')}
                                                         />
-                                                        Entire drive ({currentPath ? currentPath.split(':')[0] + ':' : 'All drives'})
+                                                        Entire drive ({fileExplorer.currentPath ? fileExplorer.currentPath.split(':')[0] + ':' : 'All drives'})
                                                     </label>
                                                 </div>
                                             </div>
@@ -1048,7 +1043,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                                         <DriveItem
                                             key={`drive-${driveIndex}`}
                                             drive={drive}
-                                            active={currentView === 'folder' && selectedItem?.name === drive.driveName}
+                                            active={fileExplorer.currentView === 'folder' && selectedItem?.name === drive.driveName}
                                             onClick={() => handleSidebarNavigation('folder', drive.driveName)}
                                             onHover={handleDriveHover}
                                         />
@@ -1079,7 +1074,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
 
                     {/* File Area */}
                     <div className="file-area">
-                        {currentView === 'thispc' && (
+                        {fileExplorer.currentView === 'thispc' && (
                             <ThisPCView
                                 viewMode={viewMode}
                                 onDriveHover={handleDriveHover}
@@ -1092,13 +1087,13 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                             />
                         )}
 
-                        {currentView === 'recents' && (
+                        {fileExplorer.currentView === 'recents' && (
                             <RecentsView viewMode={viewMode} />
                         )}
 
-                        {currentView === 'folder' && (
+                        {fileExplorer.currentView === 'folder' && (
                             <FileList
-                                currentPath={currentPath}
+                                currentPath={fileExplorer.currentPath}
                                 viewMode={viewMode as 'list' | 'grid'}
                                 onNavigate={handleFileNavigation}
                                 onFileSelect={handleFileSelect}

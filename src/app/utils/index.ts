@@ -29,9 +29,7 @@ export {
     type UIOperationHandlers
 } from './UIUtils';
 
-// Modern components
-export { default as ModernFileList } from '../components/FileUtils/ModernFileList';
-export { default as TabContentModern } from '../components/Views/TabContentModern';
+// Modern components (removed: unused experimental components)
 
 // Re-export commonly used types
 export type { FileSystemItem, DirectoryContents } from '../../shared/ipc-channels';
