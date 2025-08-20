@@ -3,7 +3,7 @@ import { FaFolder, FaFileExcel, FaFilePowerpoint, FaFileWord, FaFileImage, FaFil
 import { DetailsPanel } from '../DetailsPanel';
 import { RecentsView } from './RecentsView';
 import { ThisPCView } from './ThisPCView';
-import { FileList } from './FileList';
+import { FileList } from '../FileUtils/FileList';
 import { DriveItem } from './DriveItem';
 import { SettingsMenu } from '../SettingsMenu/SettingsMenu';
 import { Drive, FileItem } from 'shared/file-data';

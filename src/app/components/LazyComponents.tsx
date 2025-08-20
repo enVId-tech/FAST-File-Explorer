@@ -14,7 +14,7 @@ export const LazyTabContent = React.lazy(() =>
 );
 
 export const LazyFileList = React.lazy(() =>
-  import('./Views/FileList').then(module => ({ default: module.FileList }))
+  import('./FileUtils/FileList').then(module => ({ default: module.FileList }))
 );
 
 export const LazyDetailsPanel = React.lazy(() =>

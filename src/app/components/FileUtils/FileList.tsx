@@ -29,8 +29,8 @@ import { formatFileSize } from '../../../shared/fileSizeUtils';
 import { useSettings } from '../../contexts/SettingsContext';
 import { useDebounce, useThrottle } from '../../hooks/usePerformance';
 import { EnhancedContextMenu } from '../EnhancedContextMenu/EnhancedContextMenu';
-import { FileItem } from './FileItem';
-import { windowsNaturalSort, SortField, SortDirection, SortState } from '../FileUtils/fileUtils';
+import { FileItem } from '../Views/FileItem';
+import { windowsNaturalSort, SortField, SortDirection, SortState } from './fileUtils';
 import './FileList.scss';
 import { VirtualizedList } from '../VirtualizedList/VirtualizedList';
 
