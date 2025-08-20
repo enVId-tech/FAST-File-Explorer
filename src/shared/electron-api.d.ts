@@ -47,6 +47,14 @@ declare global {
         getParentDirectory: (dirPath: string) => Promise<string | null>;
         getFolderMetadata: (folderPath: string) => Promise<FolderMetadata>;
       },
+      // Navigation utilities
+      navigation: {
+        navigateToPath: (path: string) => Promise<{ success: boolean; path?: string; error?: string }>;
+        navigateToKnownFolder: (folderType: string) => Promise<{ success: boolean; path?: string; error?: string }>;
+        navigateUp: (currentPath: string) => Promise<{ success: boolean; path?: string; error?: string }>;
+        validatePath: (path: string) => Promise<boolean>;
+        generateBreadcrumbs: (path: string) => Promise<{ name: string; path: string }[]>;
+      },
       // System operations
       system: {
         platform: string;

@@ -338,6 +338,8 @@ export const ThisPCView = React.memo<ThisPCViewProps>(({
     const handleQuickAccessClick = (item: QuickAccessItem) => {
         console.log('Quick Access clicked:', item);
         // TODO: Implement navigation to folder
+        const link = item.path;
+
     };
 
     const handleDriveClick = (drive: DriveInfo) => {

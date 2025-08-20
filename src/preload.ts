@@ -63,6 +63,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
         getFolderMetadata: (folderPath: string) =>
             ipcRenderer.invoke('fs-get-folder-metadata', folderPath),
     },
+    // Navigation utilities
+    navigation: {
+        navigateToPath: (path: string) =>
+            ipcRenderer.invoke('navigation-to-path', path),
+        navigateToKnownFolder: (folderType: string) =>
+            ipcRenderer.invoke('navigation-to-known-folder', folderType),
+        navigateUp: (currentPath: string) =>
+            ipcRenderer.invoke('navigation-up', currentPath),
+        validatePath: (path: string) =>
+            ipcRenderer.invoke('navigation-validate-path', path),
+        generateBreadcrumbs: (path: string) =>
+            ipcRenderer.invoke('navigation-generate-breadcrumbs', path),
+    },
     // File operations
     files: {
         copy: (sources: string[], destination: string) =>

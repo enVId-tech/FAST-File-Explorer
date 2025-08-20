@@ -3,6 +3,7 @@ import { registerFileOperationsHandlers } from './fileOperationsHandlers';
 import { registerClipboardHandlers } from './clipboardHandlers';
 import { registerSystemHandlers } from './systemHandlers';
 import { registerDriveHandlers } from './driveHandlers';
+import { registerNavigationHandlers } from './navigationHandlers';
 
 /**
  * Initialize all data handlers for the IPC communication
@@ -17,6 +18,7 @@ export default function initializeDataHandlers(): void {
     registerClipboardHandlers();
     registerSystemHandlers();
     registerDriveHandlers();
+    registerNavigationHandlers();
 
     console.log('All data handlers initialized successfully');
 }
