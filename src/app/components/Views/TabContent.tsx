@@ -9,6 +9,7 @@ import { SettingsMenu } from '../SettingsMenu/SettingsMenu';
 import { Drive, FileItem } from 'shared/file-data';
 import { FileSystemItem } from '../../../shared/ipc-channels';
 import { useFileExplorerUI, NavigationUtils } from '../../utils';
+import { useNavigation } from '../../contexts/NavigationContext';
 import './RecentsThisPCStyles.scss';
 
 interface TabContentProps {
@@ -28,9 +29,11 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
     const [showDetailsPanel, setShowDetailsPanel] = useState(true);
     const [sortBy, setSortBy] = useState<'name' | 'size' | 'date' | 'type'>('name');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-    const [currentView, setCurrentView] = useState<'thispc' | 'recents' | 'folder'>('thispc');
     const [activeRibbonTab, setActiveRibbonTab] = useState<'home' | 'share' | 'view' | 'manage' | 'organize' | 'tools' | 'help'>('home');
     const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+
+    // Navigation from context
+    const { currentPath, currentView, setCurrentView } = useNavigation();
 
     // File list refresh trigger
     const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -42,7 +45,6 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
 
     // Use utilities from centralized hook
     const { 
-        currentPath,
         selectedFiles,
         clipboardState
     } = fileExplorer;
@@ -219,19 +221,6 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
             }
         }
     };
-
-    // Navigation callback for ThisPCView
-    const handleNavigateToPath = useCallback(async (path: string) => {
-        try {
-            setCurrentView('folder');
-            const success = await fileExplorer.navigateToPath(path);
-            if (!success) {
-                console.error('Failed to navigate to:', path);
-            }
-        } catch (error) {
-            console.error('Navigation failed:', error);
-        }
-    }, [fileExplorer]);
 
     // Generate breadcrumbs from current path
     const generateBreadcrumbs = () => {
@@ -1100,7 +1089,6 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                                 onRefreshDrives={onRefreshDrives}
                                 quickAccessItems={undefined}
                                 networkDevices={networkDevices}
-                                onNavigate={handleNavigateToPath}
                             />
                         )}
 

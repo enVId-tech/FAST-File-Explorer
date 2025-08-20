@@ -13,6 +13,7 @@ import { SetupWizard } from './components/SetupWizard/SetupWizard';
 import { FileTransferUI } from './components/FileTransferUI/FileTransferUI';
 import { Drive } from 'shared/file-data';
 import { SettingsProvider, useSettings } from './contexts/SettingsContext';
+import { NavigationProvider } from './contexts/NavigationContext';
 import { ComponentLoader, LazyComponentErrorBoundary } from './components/LazyComponents';
 
 // Lazy load the heavy TabContent component
@@ -722,8 +723,9 @@ const Main = React.memo(function Main(): React.JSX.Element {
     // UI is always ready immediately - drives load in background
     return (
         <SettingsProvider>
-            <AnimationController />
-            <div className="file-explorer">
+            <NavigationProvider>
+                <AnimationController />
+                <div className="file-explorer">
                 {/* Tab Bar replaces Title Bar */}
                 <TabBar
                     tabs={tabs}
@@ -783,6 +785,7 @@ const Main = React.memo(function Main(): React.JSX.Element {
                     fileSizeUnit={'decimal'}
                 />
             </div>
+            </NavigationProvider>
         </SettingsProvider>
     );
 });

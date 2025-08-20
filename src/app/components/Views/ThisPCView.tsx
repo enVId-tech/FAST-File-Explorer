@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { FaHdd, FaDesktop, FaFolder, FaDownload, FaMusic, FaVideo, FaFileImage, FaSdCard, FaUsb, FaServer, FaCloud, FaNetworkWired, FaCog, FaBars, FaThLarge, FaExternalLinkAlt, FaGamepad, FaDatabase, FaTimes, FaChartPie, FaArchive, FaHardHat, FaSync } from 'react-icons/fa';
 import { useSettings } from '../../contexts/SettingsContext';
+import { useNavigation } from '../../contexts/NavigationContext';
 import { formatFileSize } from '../../../shared/fileSizeUtils';
-import { useFileExplorerUI } from '../../../app/utils';
 
 interface Section {
     id: string;
@@ -56,7 +56,6 @@ interface ThisPCViewProps {
     onRefreshDrives?: () => Promise<void>;
     quickAccessItems?: QuickAccessItem[]; // Custom quick access items
     networkDevices?: NetworkDevice[]; // Network devices data
-    onNavigate?: (path: string) => void; // Navigation callback
 }
 
 export const ThisPCView = React.memo<ThisPCViewProps>(({
@@ -67,12 +66,11 @@ export const ThisPCView = React.memo<ThisPCViewProps>(({
     drivesError = null,
     onRefreshDrives,
     quickAccessItems: propQuickAccess,
-    networkDevices: propNetworkDevices,
-    onNavigate
+    networkDevices: propNetworkDevices
 }) => {
     const { settings } = useSettings();
+    const { navigateToPath } = useNavigation();
     const [selectedDrive, setSelectedDrive] = useState<string | null>(null);
-    const fileExplorer = useFileExplorerUI();
 
     // Use known folder paths directly from settings context
     const knownFolderPaths = useMemo(() => {
@@ -339,39 +337,14 @@ export const ThisPCView = React.memo<ThisPCViewProps>(({
         }
     };
 
-    const handleQuickAccessClick = async (link: string) => {
+    const handleQuickAccessClick = (link: string) => {
         console.log('Quick Access clicked:', link);
-        console.log('Navigating to path:', link);
-        try {
-            if (onNavigate) {
-                onNavigate(link);
-            } else {
-                // Fallback to direct navigation if no callback provided
-                const success = await fileExplorer.navigateToPath(link);
-                if (!success) {
-                    console.error('Navigation failed for:', link);
-                }
-            }
-        } catch (error) {
-            console.error('Navigation failed:', error);
-        }
+        navigateToPath(link);
     };
 
-    const handleDriveClick = async (drive: DriveInfo) => {
+    const handleDriveClick = (drive: DriveInfo) => {
         console.log('Drive clicked:', drive);
-        try {
-            if (onNavigate) {
-                onNavigate(drive.letter);
-            } else {
-                // Fallback to direct navigation if no callback provided
-                const success = await fileExplorer.navigateToPath(drive.letter);
-                if (!success) {
-                    console.error('Drive navigation failed for:', drive.letter);
-                }
-            }
-        } catch (error) {
-            console.error('Drive navigation failed:', error);
-        }
+        navigateToPath(drive.letter);
     };
 
     // Icon selection options
