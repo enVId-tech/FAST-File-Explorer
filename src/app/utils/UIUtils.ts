@@ -1,7 +1,8 @@
 import React from 'react';
 import { FileSystemItem } from '../../shared/ipc-channels';
 import { FileOperations, useFileOperations } from './FileOperations';
-import { NavigationUtils, useNavigation } from './NavigationUtils';
+import { NavigationUtils } from './NavigationUtils';
+import { useNavigation } from '../contexts/NavigationContext';
 
 /**
  * Combined UI utilities for file explorer components

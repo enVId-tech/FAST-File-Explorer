@@ -4,10 +4,11 @@
 // Navigation utilities
 export {
     NavigationUtils,
-    useNavigation,
     type NavigationOptions,
     type NavigationState
 } from './NavigationUtils';
+// Re-export the context-based hook so consumers use the shared navigation state
+export { useNavigation } from '../contexts/NavigationContext';
 
 // File operation utilities
 export {

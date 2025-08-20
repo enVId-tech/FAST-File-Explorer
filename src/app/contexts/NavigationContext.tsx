@@ -1,35 +1,18 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext } from 'react';
+import { useNavigation as useNavigationInternal } from '../utils/NavigationUtils';
 
-interface NavigationState {
-    currentPath: string;
-    currentView: 'thispc' | 'recents' | 'folder';
-}
+// Provide a single shared navigation state across the app by wrapping the
+// richer navigation hook from utils in a React context.
 
-interface NavigationContextType extends NavigationState {
-    navigateToPath: (path: string) => void;
-    setCurrentView: (view: 'thispc' | 'recents' | 'folder') => void;
-}
+type NavigationContextType = ReturnType<typeof useNavigationInternal>;
 
 const NavigationContext = createContext<NavigationContextType | undefined>(undefined);
 
 export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [currentPath, setCurrentPath] = useState<string>('');
-    const [currentView, setCurrentView] = useState<'thispc' | 'recents' | 'folder'>('thispc');
-
-    const navigateToPath = useCallback((path: string) => {
-        setCurrentPath(path);
-        setCurrentView('folder');
-    }, []);
-
-    const value: NavigationContextType = {
-        currentPath,
-        currentView,
-        navigateToPath,
-        setCurrentView
-    };
+    const navigation = useNavigationInternal();
 
     return (
-        <NavigationContext.Provider value={value}>
+        <NavigationContext.Provider value={navigation}>
             {children}
         </NavigationContext.Provider>
     );
