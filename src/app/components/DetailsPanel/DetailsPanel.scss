@@ -317,7 +317,7 @@
       align-items: center;
       padding: 8px 12px;
       margin-bottom: 4px;
-      background: rgba(var(--surface-bg-rgb, 248, 250, 252), 0.6);
+      background: var(--hover-bg);
       border-radius: 6px;
       transition: all 0.2s ease;
 
@@ -411,7 +411,8 @@
       max-height: 160px;
       overflow-y: auto;
       border-radius: 6px;
-      background: rgba(var(--surface-bg-rgb, 248, 250, 252), 0.5);
+      border: 1px solid rgba(var(--border-color-rgb, 229, 231, 235), 0.2);
+      background: rgba(var(--hover-bg, 248, 250, 252), 0.5);
 
       &::-webkit-scrollbar {
         width: 4px;
