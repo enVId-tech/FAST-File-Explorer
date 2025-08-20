@@ -157,6 +157,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
     // File browser handlers using utility functions
     const handleFileNavigation = (path: string) => {
         fileExplorer.navigateToPath(path);
+        console.log("Navigated to folder:", path);
         setCurrentView('folder');
     };
 
@@ -218,6 +219,19 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
             }
         }
     };
+
+    // Navigation callback for ThisPCView
+    const handleNavigateToPath = useCallback(async (path: string) => {
+        try {
+            setCurrentView('folder');
+            const success = await fileExplorer.navigateToPath(path);
+            if (!success) {
+                console.error('Failed to navigate to:', path);
+            }
+        } catch (error) {
+            console.error('Navigation failed:', error);
+        }
+    }, [fileExplorer]);
 
     // Generate breadcrumbs from current path
     const generateBreadcrumbs = () => {
@@ -1086,6 +1100,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                                 onRefreshDrives={onRefreshDrives}
                                 quickAccessItems={undefined}
                                 networkDevices={networkDevices}
+                                onNavigate={handleNavigateToPath}
                             />
                         )}
 

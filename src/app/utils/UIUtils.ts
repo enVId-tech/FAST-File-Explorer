@@ -241,7 +241,7 @@ export function useFileExplorerUI(onRefresh?: () => void) {
 
     const handleItemDoubleClick = React.useCallback((item: FileSystemItem) => {
         if (item.type === 'directory') {
-            navigation.navigateToPath(item.path);
+            navigation.navigateToPath(item.path, { validatePath: true });
         } else {
             fileOps.openFile(item);
         }
