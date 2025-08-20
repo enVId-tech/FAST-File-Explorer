@@ -467,19 +467,19 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
             try {
                 let path = '';
                 if (itemName === 'Documents') {
-                    path = await window.electronAPI.fs.getKnownFolder('documents');
+                    path = await window.electronAPI.settings.getKnownFolder('documents');
                 } else if (itemName === 'Downloads') {
-                    path = await window.electronAPI.fs.getKnownFolder('downloads');
+                    path = await window.electronAPI.settings.getKnownFolder('downloads');
                 } else if (itemName === 'Desktop') {
-                    path = await window.electronAPI.fs.getKnownFolder('desktop');
+                    path = await window.electronAPI.settings.getKnownFolder('desktop');
                 } else if (itemName === 'Pictures') {
-                    path = await window.electronAPI.fs.getKnownFolder('pictures');
+                    path = await window.electronAPI.settings.getKnownFolder('pictures');
                 } else if (itemName === 'Music') {
-                    path = await window.electronAPI.fs.getKnownFolder('music');
+                    path = await window.electronAPI.settings.getKnownFolder('music');
                 } else if (itemName === 'Videos') {
-                    path = await window.electronAPI.fs.getKnownFolder('videos');
+                    path = await window.electronAPI.settings.getKnownFolder('videos');
                 } else if (itemName === 'Home') {
-                    path = await window.electronAPI.fs.getKnownFolder('home');
+                    path = await window.electronAPI.settings.getKnownFolder('home');
                 } else {
                     // Handle drive navigation
                     const selectedDrive = drives.find(drive => drive.driveName === itemName);
@@ -487,6 +487,8 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                         path = selectedDrive.drivePath;
                     }
                 }
+
+                console.log(path);
 
                 if (path) {
                     setCurrentPath(path);

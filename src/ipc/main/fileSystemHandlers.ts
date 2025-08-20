@@ -61,19 +61,4 @@ export function registerFileSystemHandlers(): void {
             };
         }
     });
-
-    // Get known folder paths
-    ipcMain.handle('fs-get-known-folder', async (event, folderType: string) => {
-        const homeDir = os.homedir();
-        switch (folderType) {
-            case 'home': return homeDir;
-            case 'documents': return path.join(homeDir, 'Documents');
-            case 'downloads': return path.join(homeDir, 'Downloads');
-            case 'desktop': return path.join(homeDir, 'Desktop');
-            case 'pictures': return path.join(homeDir, 'Pictures');
-            case 'music': return path.join(homeDir, 'Music');
-            case 'videos': return path.join(homeDir, 'Videos');
-            default: throw new Error(`Unknown folder type: ${folderType}`);
-        }
-    });
 }

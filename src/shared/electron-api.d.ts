@@ -45,7 +45,6 @@ declare global {
         getDirectoryContents: (dirPath: string, options?: DirectoryListOptions) => Promise<DirectoryContents>;
         directoryExists: (dirPath: string) => Promise<boolean>;
         getParentDirectory: (dirPath: string) => Promise<string | null>;
-        getKnownFolder: (folderType: string) => Promise<string>;
         getFolderMetadata: (folderPath: string) => Promise<FolderMetadata>;
       },
       // System operations
