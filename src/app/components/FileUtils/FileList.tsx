@@ -31,6 +31,7 @@ import { useDebounce, useThrottle } from '../../hooks/usePerformance';
 import { EnhancedContextMenu } from '../EnhancedContextMenu/EnhancedContextMenu';
 import { FileItem } from '../Views/FileItem';
 import { windowsNaturalSort, SortField, SortDirection, SortState } from './fileUtils';
+import { useFileExplorerUI } from '../../utils';
 import './FileList.scss';
 import { VirtualizedList } from '../VirtualizedList/VirtualizedList';
 
@@ -58,6 +59,14 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
         nameContains: ''
     });
 
+    // Initialize file explorer utilities with refresh callback
+    const fileExplorer = useFileExplorerUI(() => {
+        loadDirectory(currentPath);
+    });
+
+    // Use clipboard state from utilities
+    const { clipboardState } = fileExplorer;
+
     // Debounced filter values for performance optimization
     const debouncedSearchTerm = useDebounce(searchTerm, 300);
     const debouncedFilters = useDebounce(filters, 300);
@@ -80,12 +89,6 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
         y: 0,
         selectedItems: [],
     });
-
-    // Clipboard state for visual indicators
-    const [clipboardState, setClipboardState] = useState<{
-        operation: 'copy' | 'cut' | null;
-        files: string[];
-    }>({ operation: null, files: [] });
 
     // Sortable header component
     const SortableHeader = ({ field, children }: { field: SortField; children: React.ReactNode }) => {
@@ -464,35 +467,6 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
         return () => document.removeEventListener('click', handleClickOutside);
     }, [contextMenu.visible, handleCloseContextMenu]);
 
-    // Listen for clipboard changes and load initial clipboard state
-    useEffect(() => {
-        // Load initial clipboard state
-        const loadClipboardState = async () => {
-            try {
-                const state = await window.electronAPI.clipboard.getState();
-                setClipboardState(state);
-            } catch (error) {
-                console.error('Failed to load clipboard state:', error);
-            }
-        };
-
-        loadClipboardState();
-
-        // Listen for clipboard changes from context menu operations
-        const handleClipboardChange = (event: CustomEvent) => {
-            setClipboardState({
-                operation: event.detail.operation,
-                files: event.detail.files
-            });
-        };
-
-        window.addEventListener('clipboard-changed', handleClipboardChange as EventListener);
-
-        return () => {
-            window.removeEventListener('clipboard-changed', handleClipboardChange as EventListener);
-        };
-    }, []);
-
     // Load directory contents
     const loadDirectory = useCallback(async (path: string) => {
         if (!path) return;
@@ -718,165 +692,6 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
         return items;
     }, [directoryItems, debouncedSearchTerm, debouncedFilters, sortState]);
 
-    // Keyboard shortcut action handlers
-    const handleCopyFiles = useCallback(async () => {
-        if (selectedFiles.length === 0) return;
-        try {
-            const paths = selectedFiles.map(item => item.path);
-            await window.electronAPI.clipboard.copyFiles(paths);
-
-            setClipboardState({ operation: 'copy', files: paths });
-            window.dispatchEvent(new CustomEvent('clipboard-changed', {
-                detail: { operation: 'copy', files: paths }
-            }));
-        } catch (error) {
-            console.error('Failed to copy files:', error);
-        }
-    }, [selectedFiles]);
-
-    const handleCutFiles = useCallback(async () => {
-        if (selectedFiles.length === 0) return;
-        try {
-            const paths = selectedFiles.map(item => item.path);
-            await window.electronAPI.clipboard.cutFiles(paths);
-
-            setClipboardState({ operation: 'cut', files: paths });
-            window.dispatchEvent(new CustomEvent('clipboard-changed', {
-                detail: { operation: 'cut', files: paths }
-            }));
-        } catch (error) {
-            console.error('Failed to cut files:', error);
-        }
-    }, [selectedFiles]);
-
-    const handlePasteFiles = useCallback(async () => {
-        try {
-            const success = await window.electronAPI.clipboard.pasteFiles(currentPath);
-            if (success) {
-                // If it was a cut operation, clear the clipboard state
-                if (clipboardState.operation === 'cut') {
-                    setClipboardState({ operation: null, files: [] });
-                    window.dispatchEvent(new CustomEvent('clipboard-changed', {
-                        detail: { operation: null, files: [] }
-                    }));
-                }
-                loadDirectory(currentPath); // Refresh the directory
-            }
-        } catch (error) {
-            console.error('Failed to paste files:', error);
-        }
-    }, [currentPath, clipboardState.operation]);
-
-    const handleDeleteFiles = useCallback(async () => {
-        if (selectedFiles.length === 0) return;
-        try {
-            const paths = selectedFiles.map(item => item.path);
-            const itemNames = selectedFiles.map(item => item.name);
-
-            let confirmMessage: string;
-            if (paths.length === 1) {
-                confirmMessage = `Are you sure you want to permanently delete "${itemNames[0]}"?\n\nThis action cannot be undone.`;
-            } else {
-                confirmMessage = `Are you sure you want to permanently delete these ${paths.length} items?\n\n${itemNames.slice(0, 3).join('\n')}${paths.length > 3 ? `\n... and ${paths.length - 3} more` : ''}\n\nThis action cannot be undone.`;
-            }
-
-            const confirmed = window.confirm(confirmMessage);
-            if (confirmed) {
-                await window.electronAPI.files.delete(paths);
-
-                // Clear clipboard if deleted files were in clipboard
-                if (clipboardState.files.some(file => paths.includes(file))) {
-                    await window.electronAPI.clipboard.clear();
-                    setClipboardState({ operation: null, files: [] });
-                    window.dispatchEvent(new CustomEvent('clipboard-changed', {
-                        detail: { operation: null, files: [] }
-                    }));
-                }
-
-                onSelectionChange?.([]);
-                loadDirectory(currentPath); // Refresh the directory
-            }
-        } catch (error) {
-            console.error('Failed to delete files:', error);
-        }
-    }, [selectedFiles, clipboardState.files, currentPath, onSelectionChange]);
-
-    const handleRenameFile = useCallback(async () => {
-        if (selectedFiles.length !== 1) return;
-        try {
-            const item = selectedFiles[0];
-            const isDirectory = item.type === 'directory';
-
-            let defaultName = item.name;
-            if (!isDirectory && item.name.includes('.')) {
-                const lastDotIndex = item.name.lastIndexOf('.');
-                defaultName = item.name.substring(0, lastDotIndex);
-            }
-
-            const newName = window.prompt(
-                `Rename ${isDirectory ? 'folder' : 'file'}:`,
-                defaultName
-            );
-
-            if (newName && newName.trim() !== '') {
-                const trimmedName = newName.trim();
-
-                let finalName = trimmedName;
-                if (!isDirectory && !trimmedName.includes('.') && item.name.includes('.')) {
-                    const extension = item.name.substring(item.name.lastIndexOf('.'));
-                    finalName = trimmedName + extension;
-                }
-
-                if (finalName !== item.name) {
-                    await window.electronAPI.files.rename(item.path, finalName);
-
-                    // Update clipboard state if renamed file was in clipboard
-                    if (clipboardState.files.includes(item.path)) {
-                        const newPath = item.path.replace(item.name, finalName);
-                        const updatedFiles = clipboardState.files.map(file =>
-                            file === item.path ? newPath : file
-                        );
-                        setClipboardState({ ...clipboardState, files: updatedFiles });
-                        window.dispatchEvent(new CustomEvent('clipboard-changed', {
-                            detail: { operation: clipboardState.operation, files: updatedFiles }
-                        }));
-                    }
-
-                    loadDirectory(currentPath); // Refresh the directory
-                }
-            }
-        } catch (error) {
-            console.error('Failed to rename file:', error);
-        }
-    }, [selectedFiles, clipboardState, currentPath]);
-
-    const handleNewFolder = useCallback(async () => {
-        try {
-            const name = window.prompt('Enter folder name:', 'New Folder');
-            if (name && name.trim()) {
-                await window.electronAPI.files.createFolder(currentPath, name.trim());
-                loadDirectory(currentPath); // Refresh the directory
-            }
-        } catch (error) {
-            console.error('Failed to create folder:', error);
-        }
-    }, [currentPath]);
-
-    const handleOpenFiles = useCallback(async () => {
-        if (selectedFiles.length === 0) return;
-        try {
-            for (const item of selectedFiles) {
-                if (item.type === 'directory') {
-                    onNavigate?.(item.path);
-                } else {
-                    await window.electronAPI.system.openFileFast(item.path);
-                }
-            }
-        } catch (error) {
-            console.error('Failed to open files:', error);
-        }
-    }, [selectedFiles, onNavigate]);
-
     // Clear selection when clicking on empty space
     const handleBackgroundClick = useCallback((event: React.MouseEvent) => {
         if (event.target === event.currentTarget) {
@@ -915,42 +730,42 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
             // Ctrl+C - Copy
             if (isCtrl && key === 'c' && selectedFiles.length > 0) {
                 event.preventDefault();
-                handleCopyFiles();
+                fileExplorer.handleCopy();
                 return;
             }
 
             // Ctrl+X - Cut
             if (isCtrl && key === 'x' && selectedFiles.length > 0) {
                 event.preventDefault();
-                handleCutFiles();
+                fileExplorer.handleCut();
                 return;
             }
 
             // Ctrl+V - Paste
             if (isCtrl && key === 'v') {
                 event.preventDefault();
-                handlePasteFiles();
+                fileExplorer.handlePaste();
                 return;
             }
 
             // Delete - Delete files
             if (key === 'delete' && selectedFiles.length > 0) {
                 event.preventDefault();
-                handleDeleteFiles();
+                fileExplorer.handleDelete();
                 return;
             }
 
             // F2 - Rename (single file only)
             if (key === 'f2' && selectedFiles.length === 1) {
                 event.preventDefault();
-                handleRenameFile();
+                fileExplorer.handleRename();
                 return;
             }
 
             // Ctrl+Shift+N - New folder
             if (isCtrl && isShift && key === 'n') {
                 event.preventDefault();
-                handleNewFolder();
+                fileExplorer.handleNewFolder();
                 return;
             }
 
@@ -964,14 +779,20 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
             // Enter - Open selected files
             if (key === 'enter' && selectedFiles.length > 0) {
                 event.preventDefault();
-                handleOpenFiles();
+                selectedFiles.forEach(item => {
+                    if (item.type === 'directory') {
+                        onNavigate?.(item.path);
+                    } else {
+                        fileExplorer.openFile(item);
+                    }
+                });
                 return;
             }
         };
 
         document.addEventListener('keydown', handleKeyDown);
         return () => document.removeEventListener('keydown', handleKeyDown);
-    }, [filteredItems, selectedFiles, currentPath, onSelectionChange, onFileSelect, handleCopyFiles, handleCutFiles, handlePasteFiles, handleDeleteFiles, handleRenameFile, handleNewFolder, handleOpenFiles, loadDirectory]);
+    }, [filteredItems, selectedFiles, currentPath, onSelectionChange, onFileSelect, fileExplorer, loadDirectory, onNavigate]);
 
     // Load directory when path or list options change
     useEffect(() => {

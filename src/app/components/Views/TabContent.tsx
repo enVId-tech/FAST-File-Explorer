@@ -8,6 +8,7 @@ import { DriveItem } from './DriveItem';
 import { SettingsMenu } from '../SettingsMenu/SettingsMenu';
 import { Drive, FileItem } from 'shared/file-data';
 import { FileSystemItem } from '../../../shared/ipc-channels';
+import { useFileExplorerUI, NavigationUtils } from '../../utils';
 import './RecentsThisPCStyles.scss';
 
 interface TabContentProps {
@@ -31,224 +32,23 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
     const [activeRibbonTab, setActiveRibbonTab] = useState<'home' | 'share' | 'view' | 'manage' | 'organize' | 'tools' | 'help'>('home');
     const [showSettingsMenu, setShowSettingsMenu] = useState(false);
 
-    // File browser state
-    const [currentPath, setCurrentPath] = useState<string>('');
-    const [selectedFiles, setSelectedFiles] = useState<FileSystemItem[]>([]);
-
-    // Clipboard state management
-    const [clipboardState, setClipboardState] = useState<{
-        operation: 'copy' | 'cut' | null;
-        files: string[];
-    }>({ operation: null, files: [] });
-
     // File list refresh trigger
     const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-    // Helper function to trigger file list refresh
-    const triggerRefresh = useCallback(() => {
+    // Initialize file explorer utilities with refresh callback
+    const fileExplorer = useFileExplorerUI(() => {
         setRefreshTrigger(prev => prev + 1);
-    }, []);
+    });
+
+    // Use utilities from centralized hook
+    const { 
+        currentPath,
+        selectedFiles,
+        clipboardState
+    } = fileExplorer;
 
     // Clipboard state computed values
     const clipboardHasFiles = clipboardState.files.length > 0;
-
-    // Sync clipboard state with the system clipboard
-    useEffect(() => {
-        const syncClipboardState = async () => {
-            try {
-                const hasFiles = await window.electronAPI.clipboard.hasFiles();
-                const state = await window.electronAPI.clipboard.getState();
-                setClipboardState(state);
-            } catch (error) {
-                console.error('Failed to sync clipboard state:', error);
-            }
-        };
-
-        // Initial sync
-        syncClipboardState();
-
-        // Listen for clipboard state changes
-        const handleClipboardStateChange = (event: CustomEvent) => {
-            const { operation, files } = event.detail;
-            setClipboardState({ operation, files });
-        };
-
-        document.addEventListener('clipboard-state-changed', handleClipboardStateChange as EventListener);
-
-        return () => {
-            document.removeEventListener('clipboard-state-changed', handleClipboardStateChange as EventListener);
-        };
-    }, []);
-
-    // Action handlers for context bar
-    const handleCopyFiles = useCallback(async () => {
-        if (selectedFiles.length === 0) return;
-
-        try {
-            const paths = selectedFiles.map(file => file.path);
-            await window.electronAPI.clipboard.copyFiles(paths);
-            setClipboardState({ operation: 'copy', files: paths });
-
-            // Broadcast clipboard state change
-            document.dispatchEvent(new CustomEvent('clipboard-state-changed', {
-                detail: { operation: 'copy', files: paths }
-            }));
-
-            console.log('Copied files:', paths);
-        } catch (error) {
-            console.error('Failed to copy files:', error);
-        }
-    }, [selectedFiles]);
-
-    const handleCutFiles = useCallback(async () => {
-        if (selectedFiles.length === 0) return;
-
-        try {
-            const paths = selectedFiles.map(file => file.path);
-            await window.electronAPI.clipboard.cutFiles(paths);
-            setClipboardState({ operation: 'cut', files: paths });
-
-            // Broadcast clipboard state change
-            document.dispatchEvent(new CustomEvent('clipboard-state-changed', {
-                detail: { operation: 'cut', files: paths }
-            }));
-
-            console.log('Cut files:', paths);
-        } catch (error) {
-            console.error('Failed to cut files:', error);
-        }
-    }, [selectedFiles]);
-
-    const handlePasteFiles = useCallback(async () => {
-        if (!clipboardHasFiles || !currentPath) return;
-
-        try {
-            await window.electronAPI.clipboard.pasteFiles(currentPath);
-            setClipboardState({ operation: null, files: [] });
-
-            // Broadcast clipboard state change (cleared)
-            document.dispatchEvent(new CustomEvent('clipboard-state-changed', {
-                detail: { operation: null, files: [] }
-            }));
-
-            // Trigger refresh after paste
-            triggerRefresh();
-
-            console.log('Pasted files to:', currentPath);
-        } catch (error) {
-            console.error('Failed to paste files:', error);
-        }
-    }, [clipboardHasFiles, currentPath, triggerRefresh]);
-
-    const handleDeleteFiles = useCallback(async () => {
-        if (selectedFiles.length === 0) return;
-
-        try {
-            const paths = selectedFiles.map(file => file.path);
-            await window.electronAPI.files.delete(paths);
-            setSelectedFiles([]);
-
-            // Trigger refresh after delete
-            triggerRefresh();
-
-            console.log('Deleted files:', paths);
-        } catch (error) {
-            console.error('Failed to delete files:', error);
-        }
-    }, [selectedFiles, triggerRefresh]);
-
-    const handleRenameFile = useCallback(async () => {
-        if (selectedFiles.length !== 1) return;
-
-        const file = selectedFiles[0];
-        const newName = prompt('Enter new name:', file.name);
-        if (!newName || newName === file.name) return;
-
-        try {
-            await window.electronAPI.files.rename(file.path, newName);
-
-            // Trigger refresh after rename
-            triggerRefresh();
-
-            console.log('Renamed file:', file.path, 'to', newName);
-        } catch (error) {
-            console.error('Failed to rename file:', error);
-        }
-    }, [selectedFiles, triggerRefresh]);
-
-    const handleNewFolder = useCallback(async () => {
-        if (!currentPath) return;
-
-        const folderName = prompt('Enter folder name:', 'New Folder');
-        if (!folderName) return;
-
-        try {
-            await window.electronAPI.files.createFolder(currentPath, folderName);
-
-            // Trigger refresh after creating folder
-            triggerRefresh();
-
-            console.log('Created folder:', folderName, 'in', currentPath);
-        } catch (error) {
-            console.error('Failed to create folder:', error);
-        }
-    }, [currentPath, triggerRefresh]);
-
-    // Select all files handler
-    const handleSelectAll = useCallback(() => {
-        // This would need to be implemented to select all files in the current directory
-        // For now, we'll just log it
-        console.log('Select all requested');
-        // TODO: Implement select all functionality
-    }, []);
-
-    // Keyboard shortcuts handler
-    const handleKeyDown = useCallback((event: KeyboardEvent) => {
-        if (event.ctrlKey && !event.shiftKey && !event.altKey) {
-            switch (event.key.toLowerCase()) {
-                case 'c':
-                    if (selectedFiles.length > 0) {
-                        event.preventDefault();
-                        handleCopyFiles();
-                    }
-                    break;
-                case 'x':
-                    if (selectedFiles.length > 0) {
-                        event.preventDefault();
-                        handleCutFiles();
-                    }
-                    break;
-                case 'v':
-                    if (clipboardState.files.length > 0) {
-                        event.preventDefault();
-                        handlePasteFiles();
-                    }
-                    break;
-                case 'a':
-                    event.preventDefault();
-                    handleSelectAll();
-                    break;
-            }
-        } else if (event.key === 'Delete' && selectedFiles.length > 0) {
-            event.preventDefault();
-            handleDeleteFiles();
-        } else if (event.key === 'F2' && selectedFiles.length === 1) {
-            event.preventDefault();
-            handleRenameFile();
-        }
-    }, [selectedFiles, clipboardState, handleCopyFiles, handleCutFiles, handlePasteFiles, handleDeleteFiles, handleRenameFile, handleSelectAll]);
-
-    // Add keyboard event listeners
-    useEffect(() => {
-        document.addEventListener('keydown', handleKeyDown);
-        return () => {
-            document.removeEventListener('keydown', handleKeyDown);
-        };
-    }, [handleKeyDown]);
-
-    // Navigation history
-    const [navigationHistory, setNavigationHistory] = useState<string[]>([]);
-    const [historyIndex, setHistoryIndex] = useState<number>(-1);
 
     // Search and filter state
     const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
@@ -354,150 +154,76 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
         document.addEventListener('mouseup', handleMouseUp);
     };
 
-    // Navigation functions
-    const navigateToPath = (path: string) => {
-        // Only add to history if we're not currently navigating through history
-        if (path !== currentPath) {
-            // If we're not at the end of history, slice off the future entries
-            const newHistory = [...navigationHistory.slice(0, historyIndex + 1), path];
-            setNavigationHistory(newHistory);
-            setHistoryIndex(newHistory.length - 1);
-        }
-
-        setCurrentPath(path);
-        setCurrentView('folder');
-    };
-
-    const navigateBack = () => {
-        if (historyIndex > 0) {
-            const newIndex = historyIndex - 1;
-            setHistoryIndex(newIndex);
-            setCurrentPath(navigationHistory[newIndex]);
-            setCurrentView('folder');
-        }
-    };
-
-    const navigateForward = () => {
-        if (historyIndex < navigationHistory.length - 1) {
-            const newIndex = historyIndex + 1;
-            setHistoryIndex(newIndex);
-            setCurrentPath(navigationHistory[newIndex]);
-            setCurrentView('folder');
-        }
-    };
-
-    const navigateHome = () => {
-        // Navigate to This PC view
-        setCurrentView('thispc');
-        setCurrentPath('');
-        // Add to history
-        const newHistory = [...navigationHistory.slice(0, historyIndex + 1), 'home'];
-        setNavigationHistory(newHistory);
-        setHistoryIndex(newHistory.length - 1);
-    };
-
-    const navigateUp = async () => {
-        if (currentPath) {
-            try {
-                const parentPath = await window.electronAPI.fs.getParentDirectory(currentPath);
-                if (parentPath) {
-                    navigateToPath(parentPath);
-                }
-            } catch (error) {
-                console.error('Failed to navigate up:', error);
-            }
-        }
-    };
-
-    // Generate breadcrumbs from current path
-    const generateBreadcrumbs = () => {
-        if (!currentPath) return [];
-
-        const parts = currentPath.split(/[\\\\/]/).filter(Boolean);
-        const breadcrumbs = [];
-
-        let currentPathBuild = '';
-        if (window.electronAPI.system.platform === 'win32' && parts[0]?.includes(':')) {
-            // Windows drive
-            currentPathBuild = parts[0] + '\\';
-            breadcrumbs.push({ name: parts[0], path: currentPathBuild });
-            parts.shift();
-        }
-
-        parts.forEach((part) => {
-            currentPathBuild = currentPathBuild.endsWith('/') || currentPathBuild.endsWith('\\')
-                ? currentPathBuild + part
-                : currentPathBuild + (window.electronAPI.system.platform === 'win32' ? '\\' : '/') + part;
-            breadcrumbs.push({ name: part, path: currentPathBuild });
-        });
-
-        return breadcrumbs;
-    };
-
-    // File browser handlers  
+    // File browser handlers using utility functions
     const handleFileNavigation = (path: string) => {
-        navigateToPath(path);
+        fileExplorer.navigateToPath(path);
+        setCurrentView('folder');
     };
 
     const handleFileSelect = (files: FileSystemItem | FileSystemItem[]) => {
         const fileArray = Array.isArray(files) ? files : [files];
-        setSelectedFiles(fileArray);
+        fileExplorer.selectFiles(fileArray);
         console.log('Files selected:', fileArray);
     };
 
     const handleSelectionChange = (files: FileSystemItem[]) => {
-        setSelectedFiles(files);
+        fileExplorer.selectFiles(files);
     };
 
     const handleDirectorySelect = (directory: FileSystemItem) => {
-        setCurrentPath(directory.path);
+        fileExplorer.navigateToPath(directory.path);
+        setCurrentView('folder');
         console.log('Directory selected:', directory);
     };
 
     const handleSidebarNavigation = async (view: string, itemName: string) => {
         if (view === 'thispc') {
             setCurrentView('thispc');
-            setSelectedFiles([]);
+            fileExplorer.clearSelection();
         } else if (view === 'recents') {
             setCurrentView('recents');
-            setSelectedFiles([]);
+            fileExplorer.clearSelection();
         } else {
             setCurrentView('folder');
-            // Navigate to the selected folder
+            // Navigate to the selected folder using utility
             try {
-                let path = '';
+                let success = false;
                 if (itemName === 'Documents') {
-                    path = await window.electronAPI.settings.getKnownFolder('documents');
+                    success = await fileExplorer.navigateToKnownFolder('documents');
                 } else if (itemName === 'Downloads') {
-                    path = await window.electronAPI.settings.getKnownFolder('downloads');
+                    success = await fileExplorer.navigateToKnownFolder('downloads');
                 } else if (itemName === 'Desktop') {
-                    path = await window.electronAPI.settings.getKnownFolder('desktop');
+                    success = await fileExplorer.navigateToKnownFolder('desktop');
                 } else if (itemName === 'Pictures') {
-                    path = await window.electronAPI.settings.getKnownFolder('pictures');
+                    success = await fileExplorer.navigateToKnownFolder('pictures');
                 } else if (itemName === 'Music') {
-                    path = await window.electronAPI.settings.getKnownFolder('music');
+                    success = await fileExplorer.navigateToKnownFolder('music');
                 } else if (itemName === 'Videos') {
-                    path = await window.electronAPI.settings.getKnownFolder('videos');
+                    success = await fileExplorer.navigateToKnownFolder('videos');
                 } else if (itemName === 'Home') {
-                    path = await window.electronAPI.settings.getKnownFolder('home');
+                    success = await fileExplorer.navigateToKnownFolder('home');
                 } else {
                     // Handle drive navigation
                     const selectedDrive = drives.find(drive => drive.driveName === itemName);
                     if (selectedDrive) {
-                        path = selectedDrive.drivePath;
+                        success = await fileExplorer.navigateToPath(selectedDrive.drivePath);
                     }
                 }
 
-                console.log(path);
-
-                if (path) {
-                    setCurrentPath(path);
+                if (!success) {
+                    console.error('Failed to navigate to:', itemName);
                 }
             } catch (error) {
                 console.error('Failed to navigate to folder:', error);
             }
         }
     };
+
+    // Generate breadcrumbs from current path
+    const generateBreadcrumbs = () => {
+        return NavigationUtils.generateBreadcrumbs(currentPath);
+    };
+
     const fileItems: FileItem[] = [
         {
             name: 'Desktop',
@@ -742,24 +468,27 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                 <div className="toolbar">
                     <div className="toolbar-section">
                         <button
-                            className={`toolbar-button ${historyIndex <= 0 ? 'disabled' : ''}`}
-                            onClick={navigateBack}
-                            disabled={historyIndex <= 0}
+                            className={`toolbar-button ${!fileExplorer.navigationState.canGoBack ? 'disabled' : ''}`}
+                            onClick={fileExplorer.navigateBack}
+                            disabled={!fileExplorer.navigationState.canGoBack}
                             title="Back"
                         >
                             <FaArrowLeft />
                         </button>
                         <button
-                            className={`toolbar-button ${historyIndex >= navigationHistory.length - 1 ? 'disabled' : ''}`}
-                            onClick={navigateForward}
-                            disabled={historyIndex >= navigationHistory.length - 1}
+                            className={`toolbar-button ${!fileExplorer.navigationState.canGoForward ? 'disabled' : ''}`}
+                            onClick={fileExplorer.navigateForward}
+                            disabled={!fileExplorer.navigationState.canGoForward}
                             title="Forward"
                         >
                             <FaArrowRight />
                         </button>
                         <button
                             className="toolbar-button"
-                            onClick={navigateHome}
+                            onClick={() => {
+                                setCurrentView('thispc');
+                                fileExplorer.clearSelection();
+                            }}
                             title="Home"
                         >
                             <FaHome />
@@ -775,12 +504,12 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                             )}
                             {currentView === 'folder' && generateBreadcrumbs().length > 0 && (
                                 <>
-                                    {generateBreadcrumbs().map((breadcrumb, index) => (
+                                    {generateBreadcrumbs().map((breadcrumb: { name: string; path: string }, index: number) => (
                                         <React.Fragment key={breadcrumb.path}>
                                             {index > 0 && <span className="path-separator">›</span>}
                                             <span
                                                 className={`path-segment ${index === generateBreadcrumbs().length - 1 ? 'active' : ''}`}
-                                                onClick={() => index < generateBreadcrumbs().length - 1 && navigateToPath(breadcrumb.path)}
+                                                onClick={() => index < generateBreadcrumbs().length - 1 && fileExplorer.navigateToPath(breadcrumb.path)}
                                                 style={{ cursor: index < generateBreadcrumbs().length - 1 ? 'pointer' : 'default' }}
                                             >
                                                 {breadcrumb.name}
@@ -1047,7 +776,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                                     <button
                                         className={`ribbon-button ${selectedFiles.length === 0 ? 'disabled' : ''}`}
                                         disabled={selectedFiles.length === 0}
-                                        onClick={handleCopyFiles}
+                                        onClick={fileExplorer.handleCopy}
                                         title="Copy selected files (Ctrl+C)"
                                     >
                                         <div className="ribbon-icon"><FaCopy /></div>
@@ -1056,7 +785,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                                     <button
                                         className={`ribbon-button ${selectedFiles.length === 0 ? 'disabled' : ''}`}
                                         disabled={selectedFiles.length === 0}
-                                        onClick={handleCutFiles}
+                                        onClick={fileExplorer.handleCut}
                                         title="Cut selected files (Ctrl+X)"
                                     >
                                         <div className="ribbon-icon"><FaCut /></div>
@@ -1065,7 +794,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                                     <button
                                         className={`ribbon-button ${!clipboardHasFiles ? 'disabled' : ''}`}
                                         disabled={!clipboardHasFiles}
-                                        onClick={handlePasteFiles}
+                                        onClick={fileExplorer.handlePaste}
                                         title="Paste files (Ctrl+V)"
                                     >
                                         <div className="ribbon-icon"><FaPaste /></div>
@@ -1077,7 +806,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                                     <button
                                         className={`ribbon-button ${selectedFiles.length === 0 ? 'disabled' : ''}`}
                                         disabled={selectedFiles.length === 0}
-                                        onClick={handleDeleteFiles}
+                                        onClick={fileExplorer.handleDelete}
                                         title="Delete selected files (Delete)"
                                     >
                                         <div className="ribbon-icon"><FaTrash /></div>
@@ -1086,7 +815,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                                     <button
                                         className={`ribbon-button ${selectedFiles.length !== 1 ? 'disabled' : ''}`}
                                         disabled={selectedFiles.length !== 1}
-                                        onClick={handleRenameFile}
+                                        onClick={fileExplorer.handleRename}
                                         title="Rename selected file (F2)"
                                     >
                                         <div className="ribbon-icon"><FaEdit /></div>
@@ -1097,7 +826,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                                     <div className="ribbon-group-label">New</div>
                                     <button
                                         className="ribbon-button"
-                                        onClick={handleNewFolder}
+                                        onClick={fileExplorer.handleNewFolder}
                                         title="Create new folder (Ctrl+Shift+N)"
                                     >
                                         <div className="ribbon-icon"><FaFolderPlus /></div>

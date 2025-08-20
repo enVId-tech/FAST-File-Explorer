@@ -13,6 +13,7 @@ import {
     FaUndo
 } from 'react-icons/fa';
 import { FileSystemItem } from '../../../shared/ipc-channels';
+import { useFileExplorerUI, useNavigation } from '../../utils';
 import './EnhancedContextMenu.scss';
 
 interface ContextMenuItem {
@@ -48,28 +49,12 @@ export const EnhancedContextMenu: React.FC<EnhancedContextMenuProps> = ({
     const menuRef = useRef<HTMLDivElement>(null);
     const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
     const [submenuPosition, setSubmenuPosition] = useState({ x: 0, y: 0 });
-    const [clipboardHasFiles, setClipboardHasFiles] = useState(false);
-    const [clipboardState, setClipboardState] = useState<{
-        operation: 'copy' | 'cut' | null;
-        files: string[];
-    }>({ operation: null, files: [] });
 
-    // Check clipboard state and track cut/copied files
-    useEffect(() => {
-        if (isVisible) {
-            // Check if clipboard has files
-            window.electronAPI.clipboard.hasFiles().then(setClipboardHasFiles).catch(() => setClipboardHasFiles(false));
-
-            // Get current clipboard state to track cut/copied files
-            window.electronAPI.clipboard.getState()
-                .then((state: { operation: 'copy' | 'cut' | null; files: string[] }) => {
-                    setClipboardState(state);
-                })
-                .catch(() => {
-                    setClipboardState({ operation: null, files: [] });
-                });
-        }
-    }, [isVisible]);
+    // Initialize file explorer utilities with refresh callback
+    const fileExplorer = useFileExplorerUI(onRefresh);
+    const navigationUtils = useNavigation();
+    const { clipboardState } = fileExplorer;
+    const clipboardHasFiles = clipboardState.files.length > 0;
 
     // Position menu to stay within viewport with intelligent positioning
     const getAdjustedPosition = useCallback(() => {
@@ -187,187 +172,49 @@ export const EnhancedContextMenu: React.FC<EnhancedContextMenuProps> = ({
 
     // Action handlers using system default behaviors
     const handleCopy = useCallback(async () => {
-        try {
-            const paths = selectedItems.map(item => item.path);
-            await window.electronAPI.clipboard.copyFiles(paths);
-
-            // Update local clipboard state for immediate UI feedback
-            setClipboardState({ operation: 'copy', files: paths });
-            setClipboardHasFiles(true);
-
-            // Broadcast clipboard change to refresh file list visuals
-            window.dispatchEvent(new CustomEvent('clipboard-changed', {
-                detail: { operation: 'copy', files: paths }
-            }));
-
-            onClose();
-        } catch (error) {
-            console.error('Failed to copy files:', error);
-        }
-    }, [selectedItems, onClose]);
+        await fileExplorer.handleCopy();
+        onClose();
+    }, [fileExplorer, onClose]);
 
     const handleCut = useCallback(async () => {
-        try {
-            const paths = selectedItems.map(item => item.path);
-            await window.electronAPI.clipboard.cutFiles(paths);
-
-            // Update local clipboard state for immediate UI feedback
-            setClipboardState({ operation: 'cut', files: paths });
-            setClipboardHasFiles(true);
-
-            // Broadcast clipboard change to refresh file list visuals
-            window.dispatchEvent(new CustomEvent('clipboard-changed', {
-                detail: { operation: 'cut', files: paths }
-            }));
-
-            onClose();
-        } catch (error) {
-            console.error('Failed to cut files:', error);
-        }
-    }, [selectedItems, onClose]);
+        await fileExplorer.handleCut();
+        onClose();
+    }, [fileExplorer, onClose]);
 
     const handlePaste = useCallback(async () => {
-        try {
-            const success = await window.electronAPI.clipboard.pasteFiles(currentPath);
-            if (success) {
-                // If it was a cut operation, clear the clipboard state
-                if (clipboardState.operation === 'cut') {
-                    setClipboardState({ operation: null, files: [] });
-                    setClipboardHasFiles(false);
-
-                    // Broadcast clipboard cleared to refresh file list visuals
-                    window.dispatchEvent(new CustomEvent('clipboard-changed', {
-                        detail: { operation: null, files: [] }
-                    }));
-                }
-
-                onRefresh?.();
-            }
-            onClose();
-        } catch (error) {
-            console.error('Failed to paste files:', error);
-        }
-    }, [currentPath, clipboardState.operation, onRefresh, onClose]);
+        await fileExplorer.handlePaste();
+        onRefresh?.();
+        onClose();
+    }, [fileExplorer, onRefresh, onClose]);
 
     const handleDelete = useCallback(async () => {
-        try {
-            const paths = selectedItems.map(item => item.path);
-            const itemNames = selectedItems.map(item => item.name);
-
-            let confirmMessage: string;
-            if (paths.length === 1) {
-                confirmMessage = `Are you sure you want to permanently delete "${itemNames[0]}"?\n\nThis action cannot be undone.`;
-            } else {
-                confirmMessage = `Are you sure you want to permanently delete these ${paths.length} items?\n\n${itemNames.slice(0, 3).join('\n')}${paths.length > 3 ? `\n... and ${paths.length - 3} more` : ''}\n\nThis action cannot be undone.`;
-            }
-
-            const confirmed = window.confirm(confirmMessage);
-            if (confirmed) {
-                await window.electronAPI.files.delete(paths);
-
-                // Clear clipboard if deleted files were in clipboard
-                if (clipboardState.files.some(file => paths.includes(file))) {
-                    await window.electronAPI.clipboard.clear();
-                    setClipboardState({ operation: null, files: [] });
-
-                    // Broadcast clipboard cleared
-                    window.dispatchEvent(new CustomEvent('clipboard-changed', {
-                        detail: { operation: null, files: [] }
-                    }));
-                }
-
-                onRefresh?.();
-            }
-            onClose();
-        } catch (error) {
-            console.error('Failed to delete files:', error);
-            alert('Failed to delete files. Please try again.');
-        }
-    }, [selectedItems, clipboardState.files, onRefresh, onClose]);
+        await fileExplorer.handleDelete();
+        onRefresh?.();
+        onClose();
+    }, [fileExplorer, onRefresh, onClose]);
 
     const handleRename = useCallback(async () => {
-        if (selectedItems.length !== 1) return;
-
-        try {
-            const item = selectedItems[0];
-            const isDirectory = item.type === 'directory';
-
-            // For files, pre-select the name without extension for easier renaming
-            let defaultName = item.name;
-            if (!isDirectory && item.name.includes('.')) {
-                const lastDotIndex = item.name.lastIndexOf('.');
-                defaultName = item.name.substring(0, lastDotIndex);
-            }
-
-            const newName = window.prompt(
-                `Rename ${isDirectory ? 'folder' : 'file'}:`,
-                defaultName
-            );
-
-            if (newName && newName.trim() !== '') {
-                const trimmedName = newName.trim();
-
-                // For files, add back the extension if not provided
-                let finalName = trimmedName;
-                if (!isDirectory && !trimmedName.includes('.') && item.name.includes('.')) {
-                    const extension = item.name.substring(item.name.lastIndexOf('.'));
-                    finalName = trimmedName + extension;
-                }
-
-                if (finalName !== item.name) {
-                    await window.electronAPI.files.rename(item.path, finalName);
-
-                    // Update clipboard state if renamed file was in clipboard
-                    if (clipboardState.files.includes(item.path)) {
-                        const newPath = item.path.replace(item.name, finalName);
-                        const updatedFiles = clipboardState.files.map(file =>
-                            file === item.path ? newPath : file
-                        );
-                        setClipboardState({ ...clipboardState, files: updatedFiles });
-
-                        // Broadcast clipboard update
-                        window.dispatchEvent(new CustomEvent('clipboard-changed', {
-                            detail: { operation: clipboardState.operation, files: updatedFiles }
-                        }));
-                    }
-
-                    onRefresh?.();
-                }
-            }
-            onClose();
-        } catch (error) {
-            console.error('Failed to rename file:', error);
-            alert('Failed to rename item. Please check if the name is valid.');
-        }
-    }, [selectedItems, clipboardState, onRefresh, onClose]);
+        await fileExplorer.handleRename();
+        onRefresh?.();
+        onClose();
+    }, [fileExplorer, onRefresh, onClose]);
 
     const handleNewFolder = useCallback(async () => {
-        try {
-            const name = window.prompt('Enter folder name:', 'New Folder');
-            if (name) {
-                await window.electronAPI.files.createFolder(currentPath, name);
-                onRefresh?.();
-            }
-            onClose();
-        } catch (error) {
-            console.error('Failed to create folder:', error);
-        }
-    }, [currentPath, onRefresh, onClose]);
+        await fileExplorer.handleNewFolder();
+        onRefresh?.();
+        onClose();
+    }, [fileExplorer, onRefresh, onClose]);
 
     const handleOpen = useCallback(async () => {
-        try {
-            for (const item of selectedItems) {
-                if (item.type === 'directory') {
-                    onNavigate?.(item.path);
-                } else {
-                    await window.electronAPI.system.openFileFast(item.path);
-                }
+        for (const item of selectedItems) {
+            if (item.type === 'directory') {
+                navigationUtils.navigateToPath(item.path);
+            } else {
+                await window.electronAPI.system.openFileFast(item.path);
             }
-            onClose();
-        } catch (error) {
-            console.error('Failed to open files:', error);
         }
-    }, [selectedItems, onNavigate, onClose]);
+        onClose();
+    }, [selectedItems, navigationUtils, onClose]);
 
     const handleOpenWith = useCallback(async () => {
         // This would require additional system integration
