@@ -39,7 +39,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
     // Initialize file explorer utilities with refresh callback
     const fileExplorer = useFileExplorerUI(() => {
         setRefreshTrigger(prev => prev + 1);
-    });
+    }, { enableShortcuts: isActive });
 
     // Use utilities from centralized hook
     const { 
@@ -107,6 +107,12 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
         setHoveredDrive(drive);
     };
 
+    // Guard to prevent updates after unmount during global mouse listeners
+    const isMountedRef = React.useRef(true);
+    React.useEffect(() => {
+        return () => { isMountedRef.current = false; };
+    }, []);
+
     // Resize handlers
     const handleSidebarResize = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -115,6 +121,11 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
         const startWidth = sidebarWidth;
 
         const handleMouseMove = (e: MouseEvent) => {
+            if (!isMountedRef.current) {
+                document.removeEventListener('mousemove', handleMouseMove);
+                document.removeEventListener('mouseup', handleMouseUp);
+                return;
+            }
             e.preventDefault();
             const diff = e.clientX - startX;
             const newWidth = Math.max(200, Math.min(500, startWidth + diff));
@@ -138,6 +149,11 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
         const startWidth = detailsPanelWidth;
 
         const handleMouseMove = (e: MouseEvent) => {
+            if (!isMountedRef.current) {
+                document.removeEventListener('mousemove', handleMouseMove);
+                document.removeEventListener('mouseup', handleMouseUp);
+                return;
+            }
             e.preventDefault();
             const diff = startX - e.clientX;
             const newWidth = Math.max(250, Math.min(600, startWidth + diff));

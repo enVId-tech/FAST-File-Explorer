@@ -476,54 +476,48 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
             // Load folder metadata asynchronously without blocking the UI
             const folderItems = contents.items.filter(item => item.type === 'directory');
             if (folderItems.length > 0) {
-                // Process folder metadata in batches to avoid overwhelming the system
-                const BATCH_SIZE = 5;
-                const batchPromises: Promise<unknown>[] = [];
-
-                for (let i = 0; i < folderItems.length; i += BATCH_SIZE) {
-                    const batch = folderItems.slice(i, i + BATCH_SIZE);
-                    
-                    const batchPromise = Promise.all(
-                        batch.map(async (item: FileSystemItem) => {
-                            try {
-                                const folderMetadata = await window.electronAPI.fs.getFolderMetadata(item.path);
-                                if (folderMetadata && typeof folderMetadata.totalSize === 'number') {
-                                    // Update the specific item with metadata
-                                    setDirectoryContents(prev => {
-                                        if (!prev) return prev;
-                                        const updatedItems = prev.items.map(prevItem => 
-                                            prevItem.path === item.path 
-                                                ? { ...prevItem, size: folderMetadata.totalSize }
-                                                : prevItem
-                                        );
-                                        return { ...prev, items: updatedItems };
-                                    });
-                                }
-                            } catch (error) {
-                                // Show placeholder size for folders that failed to load metadata
+                // Concurrency-limited processing to reduce memory/CPU spikes
+                const CONCURRENCY = 3;
+                let index = 0;
+                let cancelled = false;
+                const isMounted = { current: true };
+                // Ensure we don't update state after unmount or when path changes
+                const currentPathSnapshot = path;
+                const runNext = async () => {
+                    while (!cancelled && index < folderItems.length) {
+                        const item = folderItems[index++];
+                        try {
+                            const folderMetadata = await window.electronAPI.fs.getFolderMetadata(item.path);
+                            if (!isMounted.current || currentPath !== currentPathSnapshot) return;
+                            if (folderMetadata && typeof folderMetadata.totalSize === 'number') {
                                 setDirectoryContents(prev => {
                                     if (!prev) return prev;
-                                    const updatedItems = prev.items.map(prevItem => 
-                                        prevItem.path === item.path 
-                                            ? { ...prevItem, size: -1 } // -1 indicates loading failed
+                                    const updatedItems = prev.items.map(prevItem =>
+                                        prevItem.path === item.path
+                                            ? { ...prevItem, size: folderMetadata.totalSize }
                                             : prevItem
                                     );
                                     return { ...prev, items: updatedItems };
                                 });
                             }
-                        })
-                    ).then(() => {
-                        // Small delay between batches to prevent UI blocking
-                        return new Promise(resolve => setTimeout(resolve, 50));
-                    });
-
-                    batchPromises.push(batchPromise);
-                }
-
-                // Process all batches
-                Promise.all(batchPromises).catch(error => {
-                    console.warn('Some folder metadata could not be loaded:', error);
-                });
+                        } catch (error) {
+                            if (!isMounted.current || currentPath !== currentPathSnapshot) return;
+                            setDirectoryContents(prev => {
+                                if (!prev) return prev;
+                                const updatedItems = prev.items.map(prevItem =>
+                                    prevItem.path === item.path
+                                        ? { ...prevItem, size: -1 }
+                                        : prevItem
+                                );
+                                return { ...prev, items: updatedItems };
+                            });
+                        }
+                    }
+                };
+                const workers = Array.from({ length: Math.min(CONCURRENCY, folderItems.length) }, () => runNext());
+                Promise.all(workers).catch(err => console.warn('Some folder metadata tasks failed:', err));
+                // Cleanup function to cancel when unmounting or path changes
+                return () => { cancelled = true; isMounted.current = false; };
             }
 
         } catch (err) {

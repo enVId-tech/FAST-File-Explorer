@@ -35,7 +35,8 @@ export interface UIOperationHandlers {
  */
 export function useKeyboardShortcuts(
     selectedFiles: FileSystemItem[],
-    shortcuts: KeyboardShortcuts
+    shortcuts: KeyboardShortcuts,
+    enabled: boolean = true
 ) {
     const handleKeyDown = React.useCallback((event: KeyboardEvent) => {
         // Prevent shortcuts when typing in input fields
@@ -108,11 +109,12 @@ export function useKeyboardShortcuts(
     }, [selectedFiles, shortcuts]);
 
     React.useEffect(() => {
+        if (!enabled) return;
         document.addEventListener('keydown', handleKeyDown);
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
         };
-    }, [handleKeyDown]);
+    }, [handleKeyDown, enabled]);
 
     return { handleKeyDown };
 }
@@ -173,11 +175,12 @@ export function useFileSelection(onSelectionChange?: (files: FileSystemItem[]) =
 /**
  * Combined hook for all file explorer UI operations
  */
-export function useFileExplorerUI(onRefresh?: () => void) {
+export function useFileExplorerUI(onRefresh?: () => void, options?: { enableShortcuts?: boolean }) {
     // Hook into file operations and navigation
     const fileOps = useFileOperations(onRefresh);
     const navigation = useNavigation();
     const fileSelection = useFileSelection();
+    const enableShortcuts = options?.enableShortcuts ?? true;
 
     // File operation handlers with selection integration
     const handleCopy = React.useCallback(async () => {
@@ -268,7 +271,7 @@ export function useFileExplorerUI(onRefresh?: () => void) {
         onNavigateForward: navigation.navigateForward
     };
 
-    useKeyboardShortcuts(fileSelection.selectedFiles, keyboardShortcuts);
+    useKeyboardShortcuts(fileSelection.selectedFiles, keyboardShortcuts, enableShortcuts);
 
     return {
         // State

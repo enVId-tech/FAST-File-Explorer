@@ -48,7 +48,7 @@ export const TabContentModern: React.FC<TabContentModernProps> = React.memo(({
     }, []);
 
     // Use the comprehensive file explorer UI hook
-    const fileExplorer = useFileExplorerUI(triggerRefresh);
+    const fileExplorer = useFileExplorerUI(triggerRefresh, { enableShortcuts: isActive });
 
     // Context menu state
     const [contextMenu, setContextMenu] = useState<{
