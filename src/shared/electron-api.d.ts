@@ -131,4 +131,6 @@ interface AppSettings {
   enableFilePreview: boolean;
   maxPreviewFileSize: number;
   enableQuickSearch: boolean;
+  // Navigation/history
+  maxNavigationHistory: number;
 }

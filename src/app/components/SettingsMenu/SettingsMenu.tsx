@@ -3,6 +3,7 @@ import { FaCog, FaDesktop, FaSync, FaFolderOpen, FaInfoCircle, FaEdit, FaCheck, 
 import './SettingsMenu.scss';
 import { BUILD_VERSION, getBuildDateString, getVersionDisplayString } from '../../../version';
 import { useSettings, AppSettings } from '../../contexts/SettingsContext';
+import { useNavigation } from '../../contexts/NavigationContext';
 
 interface SettingsMenuProps {
     isOpen: boolean;
@@ -13,7 +14,8 @@ interface SettingsMenuProps {
 
 export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onShowSetup, onShowFileTransferUI }) => {
     const { settings, updateSetting, updateKnownFolder, loadSettings, isLoading } = useSettings();
-    const [activeCategory, setActiveCategory] = useState<'general' | 'appearance' | 'performance' | 'security' | 'folders' | 'setup' | 'developer' | 'about'>('general');
+    const navigation = useNavigation();
+    const [activeCategory, setActiveCategory] = useState<'general' | 'appearance' | 'performance' | 'history' | 'security' | 'folders' | 'setup' | 'developer' | 'about'>('general');
     const [editingFolder, setEditingFolder] = useState<string | null>(null);
     const [editValue, setEditValue] = useState<string>('');
     const [devFileTransferEnabled, setDevFileTransferEnabled] = useState(false);
@@ -156,6 +158,20 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
                     type: 'toggle',
                     value: settings.enableQuickSearch ?? true,
                     key: 'enableQuickSearch'
+                }
+            ]
+        },
+        {
+            id: 'history',
+            name: 'History',
+            icon: <FaSync />,
+            settings: [
+                {
+                    id: 'maxNavigationHistory',
+                    name: 'Max navigation history',
+                    type: 'number',
+                    value: settings.maxNavigationHistory || 50,
+                    key: 'maxNavigationHistory'
                 }
             ]
         },
@@ -320,6 +336,13 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
                             <span>Known Folders</span>
                         </button>
                         <button
+                            className={`settings-category ${activeCategory === 'history' ? 'active' : ''}`}
+                            onClick={() => setActiveCategory('history')}
+                        >
+                            <FaSync />
+                            <span>History</span>
+                        </button>
+                        <button
                             className={`settings-category ${activeCategory === 'setup' ? 'active' : ''}`}
                             onClick={() => setActiveCategory('setup')}
                         >
@@ -360,6 +383,21 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
                                                 </div>
                                             </div>
                                         ))}
+                                    {activeCategory === 'history' && (
+                                        <div className="setting-item">
+                                            <label className="setting-label">Clear navigation history</label>
+                                            <div className="setting-control">
+                                                <button
+                                                    className="modern-button danger"
+                                                    onClick={() => navigation.clearHistory()}
+                                                    disabled={isLoading}
+                                                >
+                                                    <FaUndo />
+                                                    Clear History
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </>
                         )}

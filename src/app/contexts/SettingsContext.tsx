@@ -34,6 +34,8 @@ export interface AppSettings {
     enableFilePreview: boolean;
     maxPreviewFileSize: number;
     enableQuickSearch: boolean;
+    // Navigation settings
+    maxNavigationHistory: number;
 }
 
 // Default settings (fallback values)
@@ -64,6 +66,7 @@ const defaultSettings: AppSettings = {
     enableFilePreview: true,
     maxPreviewFileSize: 10,
     enableQuickSearch: true,
+    maxNavigationHistory: 50,
 };
 
 // Settings context interface

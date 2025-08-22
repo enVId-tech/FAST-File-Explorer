@@ -31,4 +31,6 @@ export interface AppSettings {
     enableFilePreview: boolean;
     maxPreviewFileSize: number; // in MB
     enableQuickSearch: boolean;
+    // Navigation/history
+    maxNavigationHistory: number;
 }

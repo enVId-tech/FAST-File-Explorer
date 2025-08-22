@@ -44,6 +44,8 @@ class SettingsManager {
             enableFilePreview: true,
             maxPreviewFileSize: 10,
             enableQuickSearch: true,
+            // Navigation/history
+            maxNavigationHistory: 50,
         };
     }
 

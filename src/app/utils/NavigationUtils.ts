@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSettings } from '../contexts/SettingsContext';
 
 /**
  * Central navigation utilities for file explorer operations
@@ -156,18 +157,36 @@ export function useNavigation() {
     const [currentView, setCurrentView] = React.useState<'thispc' | 'recents' | 'folder'>('thispc');
     const [navigationHistory, setNavigationHistory] = React.useState<string[]>([]);
     const [historyIndex, setHistoryIndex] = React.useState<number>(-1);
+    const { settings } = useSettings();
+    const maxHistory = settings?.maxNavigationHistory ?? 50;
+
+    // Trim history if the max size is reduced
+    React.useEffect(() => {
+        if (navigationHistory.length > maxHistory) {
+            const overflow = navigationHistory.length - maxHistory;
+            const trimmed = navigationHistory.slice(overflow);
+            const newIndex = Math.max(-1, historyIndex - overflow);
+            setNavigationHistory(trimmed);
+            setHistoryIndex(newIndex);
+        }
+    }, [maxHistory]);
 
     const navigateToPath = React.useCallback(async (path: string, options?: NavigationOptions) => {
         const success = await NavigationUtils.navigateToPath(path, setCurrentPath, setCurrentView, options);
         
         if (success && options?.addToHistory !== false) {
-            const newHistory = [...navigationHistory.slice(0, historyIndex + 1), path];
-            setNavigationHistory(newHistory);
-            setHistoryIndex(newHistory.length - 1);
+        const base = navigationHistory.slice(0, historyIndex + 1);
+        const appended = [...base, path];
+        // Cap history according to settings
+        const capped = appended.length > maxHistory ? appended.slice(appended.length - maxHistory) : appended;
+        // Adjust index when trimming from the front
+        const trimmed = appended.length > maxHistory ? maxHistory - 1 : capped.length - 1;
+        setNavigationHistory(capped);
+        setHistoryIndex(trimmed);
         }
         
         return success;
-    }, [navigationHistory, historyIndex]);
+    }, [navigationHistory, historyIndex, maxHistory]);
 
     const navigateBack = React.useCallback(() => {
         if (historyIndex > 0) {
@@ -188,11 +207,40 @@ export function useNavigation() {
     }, [navigationHistory, historyIndex]);
 
     const navigateUp = React.useCallback(async () => {
-        return await NavigationUtils.navigateUp(currentPath, setCurrentPath, setCurrentView);
-    }, [currentPath]);
+        if (!currentPath) return false;
+        try {
+            const parentPath = await window.electronAPI.fs.getParentDirectory(currentPath);
+            if (parentPath) {
+                return await navigateToPath(parentPath, { addToHistory: true });
+            }
+            return false;
+        } catch (e) {
+            console.error('Failed to navigate up:', e);
+            return false;
+        }
+    }, [currentPath, navigateToPath]);
 
     const navigateToKnownFolder = React.useCallback(async (folderType: string) => {
-        return await NavigationUtils.navigateToKnownFolder(folderType, setCurrentPath, setCurrentView);
+        const path = await window.electronAPI.settings.getKnownFolder(folderType);
+        if (path) {
+            return await navigateToPath(path, { addToHistory: true });
+        }
+        return false;
+    }, [navigateToPath]);
+
+    const navigateToThisPC = React.useCallback(() => {
+        NavigationUtils.navigateToThisPC(setCurrentView, setCurrentPath);
+        // This is a view change, not a filesystem path; do not push to path history
+    }, []);
+
+    const navigateToRecents = React.useCallback(() => {
+        NavigationUtils.navigateToRecents(setCurrentView, setCurrentPath);
+        // Also a view change; not part of path history
+    }, []);
+
+    const clearHistory = React.useCallback(() => {
+        setNavigationHistory([]);
+        setHistoryIndex(-1);
     }, []);
 
     const navigationState: NavigationState = {
@@ -214,8 +262,9 @@ export function useNavigation() {
         navigateForward,
         navigateUp,
         navigateToKnownFolder,
-        navigateToThisPC: () => NavigationUtils.navigateToThisPC(setCurrentView, setCurrentPath),
-        navigateToRecents: () => NavigationUtils.navigateToRecents(setCurrentView, setCurrentPath),
+    navigateToThisPC,
+    navigateToRecents,
+    clearHistory,
         // Manual state setters (for advanced use cases)
         setCurrentPath,
         setCurrentView
