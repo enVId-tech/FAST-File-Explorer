@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron';
 import { KnownFolderSettings, AppSettings } from 'shared/settings';
-import { settingsManager } from '../functions/settingsManager';
+import { settingsManager } from '../../functions/settingsManager';
 
 /**
  * Initialize all settings-related IPC handlers

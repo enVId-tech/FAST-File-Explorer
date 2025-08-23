@@ -2,7 +2,7 @@ import { app, BrowserWindow } from 'electron';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
 import { initializeIpcHandlers } from './ipc/main/ipcSetup';
-import { setupWindowCleanup } from './ipc/main/windowHandlers';
+import { setupWindowCleanup } from './ipc/main/handlers/windowHandlers';
 import { getVersionDisplayString } from './version';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.

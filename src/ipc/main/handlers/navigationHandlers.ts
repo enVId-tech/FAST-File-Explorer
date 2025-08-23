@@ -1,7 +1,7 @@
 import { ipcMain } from 'electron';
 import path from 'path';
-import { settingsManager } from '../functions/settingsManager';
-import { dataExists } from '../functions/dataFuncs';
+import { settingsManager } from '../../functions/settingsManager';
+import { dataExists } from '../../functions/dataFuncs';
 
 /**
  * Navigation IPC handlers for centralized navigation operations
