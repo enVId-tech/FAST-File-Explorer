@@ -51,6 +51,48 @@
     }
 }
 
+// Settings subsections for consolidated tabs
+.settings-subsection {
+    margin-bottom: 32px;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+}
+
+.subsection-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 16px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--accent-color);
+    display: flex;
+    align-items: center;
+    
+    &::before {
+        content: '';
+        width: 4px;
+        height: 20px;
+        background: var(--accent-color);
+        margin-right: 12px;
+        border-radius: 2px;
+    }
+}
+
+// Developer action button styling
+.dev-action-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    font-size: 13px;
+    
+    svg {
+        font-size: 14px;
+    }
+}
+
 .settings-header {
     display: flex;
     align-items: center;

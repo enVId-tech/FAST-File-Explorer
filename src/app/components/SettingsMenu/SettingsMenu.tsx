@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FaCog, FaDesktop, FaSync, FaFolderOpen, FaInfoCircle, FaEdit, FaCheck, FaTimes, FaUndo, FaRocket, FaWrench } from 'react-icons/fa';
+import { FaCog, FaDesktop, FaSync, FaFolderOpen, FaInfoCircle, FaEdit, FaCheck, FaTimes, FaUndo, FaRocket, FaWrench, FaTerminal } from 'react-icons/fa';
 import './SettingsMenu.scss';
 import { BUILD_VERSION, getBuildDateString, getVersionDisplayString } from '../../../version';
 import { useSettings, AppSettings } from '../../contexts/SettingsContext';
 import { useNavigation } from '../../contexts/NavigationContext';
+import { DeveloperConsole } from '../DeveloperConsole/DeveloperConsole';
 
 interface SettingsMenuProps {
     isOpen: boolean;
@@ -15,10 +16,11 @@ interface SettingsMenuProps {
 export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onShowSetup, onShowFileTransferUI }) => {
     const { settings, updateSetting, updateKnownFolder, loadSettings, isLoading } = useSettings();
     const navigation = useNavigation();
-    const [activeCategory, setActiveCategory] = useState<'general' | 'appearance' | 'performance' | 'history' | 'security' | 'folders' | 'setup' | 'developer' | 'about'>('general');
+    const [activeCategory, setActiveCategory] = useState<'general' | 'performance' | 'folders' | 'setup' | 'developer' | 'about'>('general');
     const [editingFolder, setEditingFolder] = useState<string | null>(null);
     const [editValue, setEditValue] = useState<string>('');
     const [devFileTransferEnabled, setDevFileTransferEnabled] = useState(false);
+    const [showDeveloperConsole, setShowDeveloperConsole] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
     // Handle setting updates with immediate UI feedback
@@ -120,6 +122,13 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
         };
     }, [isOpen, onClose]);
 
+    // Reset console state when settings menu closes
+    useEffect(() => {
+        if (!isOpen) {
+            setShowDeveloperConsole(false);
+        }
+    }, [isOpen]);
+
     if (!isOpen) return null;
 
     const settingsCategories = [
@@ -127,103 +136,107 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
             id: 'general',
             name: 'General',
             icon: <FaCog />,
-            settings: [
+            subsections: [
                 {
-                    id: 'defaultSortBy',
-                    name: 'Default sort by',
-                    type: 'dropdown',
-                    value: settings.defaultSortBy || 'name',
-                    options: ['name', 'size', 'modified', 'type'],
-                    key: 'defaultSortBy'
+                    id: 'general-settings',
+                    name: 'General Settings',
+                    settings: [
+                        {
+                            id: 'defaultSortBy',
+                            name: 'Default sort by',
+                            type: 'dropdown',
+                            value: settings.defaultSortBy || 'name',
+                            options: ['name', 'size', 'modified', 'type'],
+                            key: 'defaultSortBy'
+                        },
+                        {
+                            id: 'defaultSortOrder',
+                            name: 'Default sort order',
+                            type: 'dropdown',
+                            value: settings.defaultSortOrder || 'asc',
+                            options: ['asc', 'desc'],
+                            optionLabels: ['Ascending', 'Descending'],
+                            key: 'defaultSortOrder'
+                        },
+                        {
+                            id: 'doubleClickToOpen',
+                            name: 'Double-click to open',
+                            type: 'toggle',
+                            value: settings.doubleClickToOpen ?? true,
+                            key: 'doubleClickToOpen'
+                        },
+                        {
+                            id: 'enableQuickSearch',
+                            name: 'Enable quick search',
+                            type: 'toggle',
+                            value: settings.enableQuickSearch ?? true,
+                            key: 'enableQuickSearch'
+                        }
+                    ]
                 },
                 {
-                    id: 'defaultSortOrder',
-                    name: 'Default sort order',
-                    type: 'dropdown',
-                    value: settings.defaultSortOrder || 'asc',
-                    options: ['asc', 'desc'],
-                    optionLabels: ['Ascending', 'Descending'],
-                    key: 'defaultSortOrder'
+                    id: 'history-settings',
+                    name: 'Navigation History',
+                    settings: [
+                        {
+                            id: 'maxNavigationHistory',
+                            name: 'Max navigation history',
+                            type: 'number',
+                            value: settings.maxNavigationHistory || 50,
+                            key: 'maxNavigationHistory'
+                        }
+                    ]
                 },
                 {
-                    id: 'doubleClickToOpen',
-                    name: 'Double-click to open',
-                    type: 'toggle',
-                    value: settings.doubleClickToOpen ?? true,
-                    key: 'doubleClickToOpen'
-                },
-                {
-                    id: 'enableQuickSearch',
-                    name: 'Enable quick search',
-                    type: 'toggle',
-                    value: settings.enableQuickSearch ?? true,
-                    key: 'enableQuickSearch'
-                }
-            ]
-        },
-        {
-            id: 'history',
-            name: 'History',
-            icon: <FaSync />,
-            settings: [
-                {
-                    id: 'maxNavigationHistory',
-                    name: 'Max navigation history',
-                    type: 'number',
-                    value: settings.maxNavigationHistory || 50,
-                    key: 'maxNavigationHistory'
-                }
-            ]
-        },
-        {
-            id: 'display',
-            name: 'Display',
-            icon: <FaDesktop />,
-            settings: [
-                {
-                    id: 'fileSizeUnit',
-                    name: 'File size units',
-                    type: 'dropdown',
-                    value: settings.fileSizeUnit || 'decimal',
-                    options: ['decimal', 'binary'],
-                    optionLabels: ['Decimal (GB, MB, TB)', 'Binary (GiB, MiB, TiB)'],
-                    key: 'fileSizeUnit'
-                },
-                {
-                    id: 'showHiddenFiles',
-                    name: 'Show hidden files',
-                    type: 'toggle',
-                    value: settings.showHiddenFiles ?? false,
-                    key: 'showHiddenFiles'
-                },
-                {
-                    id: 'showFileExtensions',
-                    name: 'Show file extensions',
-                    type: 'toggle',
-                    value: settings.showFileExtensions ?? true,
-                    key: 'showFileExtensions'
-                },
-                {
-                    id: 'showThumbnails',
-                    name: 'Show thumbnails',
-                    type: 'toggle',
-                    value: settings.showThumbnails ?? true,
-                    key: 'showThumbnails'
-                },
-                {
-                    id: 'thumbnailSize',
-                    name: 'Thumbnail size',
-                    type: 'dropdown',
-                    value: settings.thumbnailSize || 'medium',
-                    options: ['small', 'medium', 'large'],
-                    key: 'thumbnailSize'
-                },
-                {
-                    id: 'compactMode',
-                    name: 'Compact mode',
-                    type: 'toggle',
-                    value: settings.compactMode ?? false,
-                    key: 'compactMode'
+                    id: 'display-settings',
+                    name: 'Display Settings',
+                    settings: [
+                        {
+                            id: 'fileSizeUnit',
+                            name: 'File size units',
+                            type: 'dropdown',
+                            value: settings.fileSizeUnit || 'decimal',
+                            options: ['decimal', 'binary'],
+                            optionLabels: ['Decimal (GB, MB, TB)', 'Binary (GiB, MiB, TiB)'],
+                            key: 'fileSizeUnit'
+                        },
+                        {
+                            id: 'showHiddenFiles',
+                            name: 'Show hidden files',
+                            type: 'toggle',
+                            value: settings.showHiddenFiles ?? false,
+                            key: 'showHiddenFiles'
+                        },
+                        {
+                            id: 'showFileExtensions',
+                            name: 'Show file extensions',
+                            type: 'toggle',
+                            value: settings.showFileExtensions ?? true,
+                            key: 'showFileExtensions'
+                        },
+                        {
+                            id: 'showThumbnails',
+                            name: 'Show thumbnails',
+                            type: 'toggle',
+                            value: settings.showThumbnails ?? true,
+                            key: 'showThumbnails'
+                        },
+                        {
+                            id: 'thumbnailSize',
+                            name: 'Thumbnail size',
+                            type: 'dropdown',
+                            value: settings.thumbnailSize || 'medium',
+                            options: ['small', 'medium', 'large'],
+                            key: 'thumbnailSize'
+                        },
+                        {
+                            id: 'compactMode',
+                            name: 'Compact mode',
+                            type: 'toggle',
+                            value: settings.compactMode ?? false,
+                            key: 'compactMode'
+                        }
+                    ]
                 }
             ]
         },
@@ -336,13 +349,6 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
                             <span>Known Folders</span>
                         </button>
                         <button
-                            className={`settings-category ${activeCategory === 'history' ? 'active' : ''}`}
-                            onClick={() => setActiveCategory('history')}
-                        >
-                            <FaSync />
-                            <span>History</span>
-                        </button>
-                        <button
                             className={`settings-category ${activeCategory === 'setup' ? 'active' : ''}`}
                             onClick={() => setActiveCategory('setup')}
                         >
@@ -366,38 +372,64 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
                     </div>
 
                     <div className="settings-panel">
-                        {activeCategory !== 'folders' && activeCategory !== 'about' && activeCategory !== 'setup' && activeCategory !== 'developer' && (
+                        {activeCategory === 'general' && (
                             <>
                                 <div className="settings-panel-header">
-                                    <div className="panel-icon">{settingsCategories.find(cat => cat.id === activeCategory)?.icon}</div>
-                                    <h2>{settingsCategories.find(cat => cat.id === activeCategory)?.name}</h2>
+                                    <div className="panel-icon"><FaCog /></div>
+                                    <h2>General Settings</h2>
+                                </div>
+                                {settingsCategories
+                                    .find(cat => cat.id === 'general')
+                                    ?.subsections?.map((subsection) => (
+                                        <div key={subsection.id} className="settings-subsection">
+                                            <h3 className="subsection-title">{subsection.name}</h3>
+                                            <div className="settings-list">
+                                                {subsection.settings.map((setting) => (
+                                                    <div key={setting.id} className="setting-item">
+                                                        <label className="setting-label">{setting.name}</label>
+                                                        <div className="setting-control">
+                                                            {renderSetting(setting)}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                                {subsection.id === 'history-settings' && (
+                                                    <div className="setting-item">
+                                                        <label className="setting-label">Clear navigation history</label>
+                                                        <div className="setting-control">
+                                                            <button
+                                                                className="modern-button danger"
+                                                                onClick={() => navigation.clearHistory()}
+                                                                disabled={isLoading}
+                                                            >
+                                                                <FaUndo />
+                                                                Clear History
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                            </>
+                        )}
+
+                        {activeCategory === 'performance' && (
+                            <>
+                                <div className="settings-panel-header">
+                                    <div className="panel-icon"><FaSync /></div>
+                                    <h2>Performance</h2>
                                 </div>
                                 <div className="settings-list">
                                     {settingsCategories
-                                        .find(cat => cat.id === activeCategory)
-                                        ?.settings.map((setting) => (
+                                        .find(cat => cat.id === 'performance')
+                                        ?.settings?.map((setting) => (
                                             <div key={setting.id} className="setting-item">
                                                 <label className="setting-label">{setting.name}</label>
                                                 <div className="setting-control">
                                                     {renderSetting(setting)}
                                                 </div>
                                             </div>
-                                        ))}
-                                    {activeCategory === 'history' && (
-                                        <div className="setting-item">
-                                            <label className="setting-label">Clear navigation history</label>
-                                            <div className="setting-control">
-                                                <button
-                                                    className="modern-button danger"
-                                                    onClick={() => navigation.clearHistory()}
-                                                    disabled={isLoading}
-                                                >
-                                                    <FaUndo />
-                                                    Clear History
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
+                                        )) || []}
                                 </div>
                             </>
                         )}
@@ -524,6 +556,22 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
                                     <div className="developer-option">
                                         <div className="option-header">
                                             <div>
+                                                <h4>Developer Console</h4>
+                                                <p>Access the developer console with IPC, renderer, and combined process tabs</p>
+                                            </div>
+                                            <button
+                                                className="modern-button primary dev-action-button"
+                                                onClick={() => setShowDeveloperConsole(true)}
+                                            >
+                                                <FaTerminal />
+                                                Open Console
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className="developer-option">
+                                        <div className="option-header">
+                                            <div>
                                                 <h4>File Transfer UI Demo</h4>
                                                 <p>Show the experimental file transfer monitoring interface</p>
                                             </div>
@@ -636,6 +684,11 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
                     </div>
                 )}
             </div>
+
+            <DeveloperConsole
+                isOpen={showDeveloperConsole}
+                onClose={() => setShowDeveloperConsole(false)}
+            />
         </div>
     );
 };
