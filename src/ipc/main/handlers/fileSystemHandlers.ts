@@ -1,7 +1,7 @@
 import { ipcMain } from 'electron';
 import path from 'path';
 import os from 'os';
-import { getCachedResult, listDirectoryContents, setCachedResult, getFolderMetadata } from '../functions/dataFuncs';
+import { getCachedResult, listDirectoryContents, setCachedResult, getFolderMetadata } from '../../functions/dataFuncs';
 import { DirectoryContents } from 'shared/ipc-channels';
 
 /**

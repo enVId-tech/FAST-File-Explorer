@@ -6,8 +6,8 @@ import drivelist from 'drivelist';
 import os from 'os';
 import nodeDiskInfo from 'node-disk-info';
 import { Drive } from 'shared/file-data';
-import { settingsManager } from '../functions/settingsManager';
-import { getCachedResult, listDirectoryContents, setCachedResult, dataExists, getFolderContents, getMetadata, getFolderMetadata } from '../functions/dataFuncs';
+import { settingsManager } from '../../functions/settingsManager';
+import { getCachedResult, listDirectoryContents, setCachedResult, dataExists, getFolderContents, getMetadata, getFolderMetadata } from '../../functions/dataFuncs';
 import { DirectoryContents } from 'shared/ipc-channels';
 
 export default function initializeDataHandlers() {

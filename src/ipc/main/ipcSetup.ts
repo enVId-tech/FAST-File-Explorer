@@ -1,8 +1,8 @@
 import { BrowserWindow } from 'electron';
-import './windowHandlers';
-import { initializeTabHandlers } from './tabHandlers';
+import './handlers/windowHandlers';
+import { initializeTabHandlers } from './handlers/tabHandlers';
 import { initializeDataHandlers } from './index'; // Use new modular system
-import { initializeSettingsHandlers } from './settingsHandlers';
+import { initializeSettingsHandlers } from './handlers/settingsHandlers';
 
 // Initialize all IPC handlers with optimized modular architecture
 export const initializeIpcHandlers = (mainWindow: BrowserWindow) => {
