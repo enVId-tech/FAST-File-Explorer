@@ -28,7 +28,7 @@
   "license": "MIT",
   "dependencies": {
     "@electron-forge/plugin-vite": "^7.8.3",
-    "@types/react": "^19.1.10",
+    "@types/react": "^19.1.11",
     "@types/react-window": "^1.8.8",
     "drivelist": "^12.0.2",
     "electron-squirrel-startup": "^1.0.1",
@@ -52,7 +52,7 @@
     "@electron-forge/plugin-auto-unpack-natives": "^7.8.3",
     "@electron-forge/plugin-fuses": "^7.8.3",
     "@electron/fuses": "^2.0.0",
-    "@rollup/rollup-win32-x64-msvc": "^4.46.4",
+    "@rollup/rollup-win32-x64-msvc": "^4.48.1",
     "@types/electron-squirrel-startup": "^1.0.2",
     "@types/react-dom": "^19.1.7",
     "electron": "37.3.1"
