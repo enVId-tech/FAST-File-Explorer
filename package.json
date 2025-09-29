@@ -28,7 +28,7 @@
   "license": "MIT",
   "dependencies": {
     "@electron-forge/plugin-vite": "^7.9.0",
-    "@types/react": "^19.1.13",
+    "@types/react": "^19.1.15",
     "@types/react-window": "^2.0.0",
     "drivelist": "^12.0.2",
     "electron-squirrel-startup": "^1.0.1",
@@ -37,8 +37,8 @@
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-icons": "^5.5.0",
-    "react-window": "^2.1.1",
-    "sass": "^1.93.0",
+    "react-window": "^2.1.2",
+    "sass": "^1.93.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2",
     "vite": "^7.1.7"
@@ -52,9 +52,9 @@
     "@electron-forge/plugin-auto-unpack-natives": "^7.9.0",
     "@electron-forge/plugin-fuses": "^7.9.0",
     "@electron/fuses": "^2.0.0",
-    "@rollup/rollup-win32-x64-msvc": "^4.52.0",
+    "@rollup/rollup-win32-x64-msvc": "^4.52.3",
     "@types/electron-squirrel-startup": "^1.0.2",
     "@types/react-dom": "^19.1.9",
-    "electron": "38.1.2"
+    "electron": "38.2.0"
   }
 }
