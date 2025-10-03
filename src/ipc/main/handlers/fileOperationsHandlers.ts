@@ -2,6 +2,23 @@ import { ipcMain, shell } from 'electron';
 import path from 'path';
 import fs from 'fs/promises';
 
+// Dynamic import for fast-transferlib
+let UnifiedTransferManagerClass: any;
+let transferLibAvailable = false;
+
+async function loadTransferLib() {
+    if (!transferLibAvailable) {
+        try {
+            const lib = await import('fast-transferlib');
+            UnifiedTransferManagerClass = lib.UnifiedTransferManager;
+            transferLibAvailable = true;
+        } catch (error) {
+            console.warn('Fast-transferlib not available for file operations');
+        }
+    }
+    return transferLibAvailable;
+}
+
 /**
  * File operations IPC handlers for copy, move, delete, rename, create
  */
@@ -11,9 +28,42 @@ export function registerFileOperationsHandlers(): void {
     // Copy files
     ipcMain.handle('file-copy', async (event, sources: string[], destination: string) => {
         try {
+            // Try to use fast-transferlib for better performance
+            if (await loadTransferLib()) {
+                try {
+                    const manager = new UnifiedTransferManagerClass();
+                    await manager.initialize();
+
+                    const results = [];
+                    for (const source of sources) {
+                        const result = await manager.transfer(source, destination, {
+                            recursive: true,
+                            archive: true,
+                            forceNative: process.platform === 'win32'
+                        });
+                        results.push(result);
+                    }
+
+                    const allSuccessful = results.every(r => r.success);
+                    if (!allSuccessful) {
+                        throw new Error('Some files failed to copy');
+                    }
+                    return { success: true };
+                } catch (transferError) {
+                    console.warn('Transfer lib failed, using fallback:', transferError);
+                }
+            }
+
+            // Fallback to standard copy
             for (const source of sources) {
                 const destPath = path.join(destination, path.basename(source));
-                await fs.copyFile(source, destPath);
+                const stat = await fs.stat(source);
+                
+                if (stat.isDirectory()) {
+                    await copyDirectoryRecursive(source, destPath);
+                } else {
+                    await fs.copyFile(source, destPath);
+                }
             }
             return { success: true };
         } catch (error) {
@@ -25,10 +75,55 @@ export function registerFileOperationsHandlers(): void {
     // Cut files (copy then delete)
     ipcMain.handle('file-cut', async (event, sources: string[], destination: string) => {
         try {
+            // Try to use fast-transferlib for move operations
+            if (await loadTransferLib()) {
+                try {
+                    const manager = new UnifiedTransferManagerClass();
+                    await manager.initialize();
+
+                    const results = [];
+                    for (const source of sources) {
+                        // Copy first
+                        const result = await manager.transfer(source, destination, {
+                            recursive: true,
+                            archive: true,
+                            forceNative: process.platform === 'win32'
+                        });
+                        
+                        if (result.success) {
+                            // Delete source after successful copy
+                            const stat = await fs.stat(source);
+                            if (stat.isDirectory()) {
+                                await fs.rm(source, { recursive: true });
+                            } else {
+                                await fs.unlink(source);
+                            }
+                        }
+                        results.push(result);
+                    }
+
+                    const allSuccessful = results.every(r => r.success);
+                    if (!allSuccessful) {
+                        throw new Error('Some files failed to move');
+                    }
+                    return { success: true };
+                } catch (transferError) {
+                    console.warn('Transfer lib failed, using fallback:', transferError);
+                }
+            }
+
+            // Fallback to standard move
             for (const source of sources) {
                 const destPath = path.join(destination, path.basename(source));
-                await fs.copyFile(source, destPath);
-                await fs.unlink(source);
+                const stat = await fs.stat(source);
+                
+                if (stat.isDirectory()) {
+                    await copyDirectoryRecursive(source, destPath);
+                    await fs.rm(source, { recursive: true });
+                } else {
+                    await fs.copyFile(source, destPath);
+                    await fs.unlink(source);
+                }
             }
             return { success: true };
         } catch (error) {
@@ -113,4 +208,23 @@ export function registerFileOperationsHandlers(): void {
             throw error;
         }
     });
+}
+
+/**
+ * Recursively copy directory
+ */
+async function copyDirectoryRecursive(source: string, dest: string): Promise<void> {
+    await fs.mkdir(dest, { recursive: true });
+    const entries = await fs.readdir(source, { withFileTypes: true });
+
+    for (const entry of entries) {
+        const srcPath = path.join(source, entry.name);
+        const destPath = path.join(dest, entry.name);
+
+        if (entry.isDirectory()) {
+            await copyDirectoryRecursive(srcPath, destPath);
+        } else {
+            await fs.copyFile(srcPath, destPath);
+        }
+    }
 }

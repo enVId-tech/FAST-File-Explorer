@@ -16,8 +16,16 @@ export {
     useFileOperations,
     type FileOperationResult,
     type ClipboardState,
-    type FileOperationCallbacks
+    type FileOperationCallbacks,
+    type FileOperationOptions
 } from './FileOperations';
+
+// Advanced transfer operations (fast-transferlib integration)
+export {
+    TransferManager,
+    useTransferManager,
+    type TransferManagerCallbacks
+} from './TransferManager';
 
 // UI utilities and hooks
 export {
@@ -33,6 +41,7 @@ export {
 
 // Re-export commonly used types
 export type { FileSystemItem, DirectoryContents } from '../../shared/ipc-channels';
+export type { TransferProgress, TransferOptions, TransferResult, TransferInfo } from '../../shared/transfer-types';
 
 /**
  * Quick start examples:
@@ -48,6 +57,11 @@ export type { FileSystemItem, DirectoryContents } from '../../shared/ipc-channel
  * // For file operations only:
  * import { useFileOperations } from './utils';
  * const fileOps = useFileOperations(onRefresh);
+ * 
+ * // For advanced transfer with progress tracking:
+ * import { useTransferManager } from './utils';
+ * const { copyFiles, activeTransfers, isRsyncAvailable } = useTransferManager();
+```
  * 
  * // For static utilities:
  * import { NavigationUtils, FileOperations } from './utils';

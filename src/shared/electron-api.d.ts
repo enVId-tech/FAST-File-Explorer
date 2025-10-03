@@ -1,4 +1,5 @@
 import { DirectoryContents, DirectoryListOptions, FolderMetadata } from './ipc-channels';
+import { TransferProgress, TransferOptions, TransferResult, TransferInfo } from './transfer-types';
 
 export { };
 declare global {
@@ -92,6 +93,17 @@ declare global {
         validateFolder: (folderPath: string) => Promise<{ valid: boolean, error?: string }>;
         update: (key: keyof AppSettings, value: any) => Promise<{ success: boolean }>;
         getPath: () => Promise<string>;
+      },
+      // Advanced transfer operations using fast-transferlib
+      transfer: {
+        initialize: () => Promise<{ success: boolean; rsyncAvailable?: boolean; availableProviders?: string[]; error?: string }>;
+        start: (transferId: string, sources: string[], destination: string, options?: TransferOptions) => Promise<{ success: boolean; results: TransferResult[]; totalBytesTransferred: number; duration: number }>;
+        copy: (transferId: string, sources: string[], destination: string, options?: TransferOptions) => Promise<{ success: boolean; results: TransferResult[] }>;
+        move: (transferId: string, sources: string[], destination: string, options?: TransferOptions) => Promise<{ success: boolean; results: TransferResult[]; totalBytesTransferred: number }>;
+        sync: (transferId: string, source: string, destination: string, options?: TransferOptions) => Promise<{ success: boolean; result: TransferResult }>;
+        cancel: (transferId: string) => Promise<{ success: boolean; error?: string }>;
+        getActive: () => Promise<Array<{ id: string; source: string; destination: string; startTime: number }>>;
+        onProgress: (callback: (transferId: string, progress: TransferProgress) => void) => () => void;
       }
     };
   }

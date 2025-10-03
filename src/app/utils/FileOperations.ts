@@ -1,15 +1,18 @@
 import React from 'react';
 import { FileSystemItem } from '../../shared/ipc-channels';
+import { TransferManager, TransferManagerCallbacks } from './TransferManager';
 
 /**
  * Central file operations utilities
  * Provides consistent file operations across all components
+ * Now with optional fast-transferlib integration for better performance
  */
 
 export interface FileOperationResult {
     success: boolean;
     error?: string;
     affectedFiles?: string[];
+    transferId?: string; // Added for transfer tracking
 }
 
 export interface ClipboardState {
@@ -21,13 +24,19 @@ export interface FileOperationCallbacks {
     onSuccess?: (result: FileOperationResult) => void;
     onError?: (error: string) => void;
     onRefresh?: () => void;
+    onProgress?: (transferId: string, progress: any) => void; // Added for transfer progress
+}
+
+export interface FileOperationOptions {
+    useAdvancedTransfer?: boolean; // Use fast-transferlib if available
+    showProgress?: boolean; // Show progress UI
 }
 
 export class FileOperations {
     /**
      * Copy files to clipboard
      */
-    static async copyFiles(files: FileSystemItem[], callbacks?: FileOperationCallbacks): Promise<FileOperationResult> {
+    static async copyFiles(files: FileSystemItem[], callbacks?: FileOperationCallbacks, options?: FileOperationOptions): Promise<FileOperationResult> {
         try {
             const paths = files.map(file => file.path);
             await window.electronAPI.clipboard.copyFiles(paths);
@@ -79,8 +88,75 @@ export class FileOperations {
     /**
      * Paste files from clipboard to destination
      */
-    static async pasteFiles(destinationPath: string, callbacks?: FileOperationCallbacks): Promise<FileOperationResult> {
+    static async pasteFiles(destinationPath: string, callbacks?: FileOperationCallbacks, options?: FileOperationOptions): Promise<FileOperationResult> {
         try {
+            // Try to use advanced transfer if enabled
+            if (options?.useAdvancedTransfer) {
+                try {
+                    const transferManager = TransferManager.getInstance();
+                    await transferManager.initialize();
+
+                    // Get clipboard state to know what to paste
+                    const clipboardState = await window.electronAPI.clipboard.getState();
+                    
+                    if (clipboardState.files.length > 0) {
+                        const fileItems: FileSystemItem[] = clipboardState.files.map(path => ({
+                            path,
+                            name: path.split(/[/\\]/).pop() || '',
+                            type: 'file' as const,
+                            size: 0,
+                            modified: new Date(),
+                            created: new Date(),
+                            isHidden: false,
+                            isSystem: false,
+                            permissions: { read: true, write: true, execute: false }
+                        }));
+
+                        const transferCallbacks: TransferManagerCallbacks = {
+                            onProgress: callbacks?.onProgress,
+                            onComplete: (transferId, result) => {
+                                callbacks?.onSuccess?.({ success: result.success, transferId });
+                                callbacks?.onRefresh?.();
+                            },
+                            onError: (transferId, error) => {
+                                callbacks?.onError?.(error);
+                            }
+                        };
+
+                        if (clipboardState.operation === 'copy') {
+                            const result = await transferManager.copyFiles(fileItems, destinationPath, {}, transferCallbacks);
+                            
+                            if (result.success) {
+                                // Clear clipboard after successful paste
+                                await window.electronAPI.clipboard.clear();
+                            }
+                            
+                            return { 
+                                success: result.success, 
+                                transferId: result.transferId,
+                                affectedFiles: clipboardState.files 
+                            };
+                        } else if (clipboardState.operation === 'cut') {
+                            const result = await transferManager.moveFiles(fileItems, destinationPath, {}, transferCallbacks);
+                            
+                            if (result.success) {
+                                await window.electronAPI.clipboard.clear();
+                            }
+                            
+                            return { 
+                                success: result.success, 
+                                transferId: result.transferId,
+                                affectedFiles: clipboardState.files 
+                            };
+                        }
+                    }
+                } catch (transferError) {
+                    console.warn('Advanced transfer failed, falling back to standard paste:', transferError);
+                    // Fall through to standard paste
+                }
+            }
+
+            // Standard paste operation
             const success = await window.electronAPI.clipboard.pasteFiles(destinationPath);
             
             if (success) {

@@ -1,9 +1,9 @@
 // Auto-generated version file
 // Do not edit manually - this file is updated by scripts/generate-version.js
 
-export const BUILD_VERSION = '25.08.29-dev.1';
-export const BUILD_DATE = '2025-08-30T06:04:24.611Z';
-export const BUILD_TIMESTAMP = 1756533864611;
+export const BUILD_VERSION = '25.10.02-dev.1';
+export const BUILD_DATE = '2025-10-03T03:45:52.929Z';
+export const BUILD_TIMESTAMP = 1759463152929;
 export const BUILD_INFO = {
   version: BUILD_VERSION,
   date: BUILD_DATE,

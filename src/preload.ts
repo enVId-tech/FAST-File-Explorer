@@ -131,5 +131,33 @@ contextBridge.exposeInMainWorld('electronAPI', {
         pathSeparator: process.platform === 'win32' ? '\\' : '/',
         openFile: (filePath: string) => ipcRenderer.invoke('system-open-file', filePath),
         openFileFast: (filePath: string) => ipcRenderer.send('system-open-file-fast', filePath)
+    },
+
+    // Advanced transfer operations using fast-transferlib
+    transfer: {
+        initialize: () => ipcRenderer.invoke('transfer-initialize'),
+        start: (transferId: string, sources: string[], destination: string, options?: any) =>
+            ipcRenderer.invoke('transfer-start', transferId, sources, destination, options),
+        copy: (transferId: string, sources: string[], destination: string, options?: any) =>
+            ipcRenderer.invoke('transfer-copy', transferId, sources, destination, options),
+        move: (transferId: string, sources: string[], destination: string, options?: any) =>
+            ipcRenderer.invoke('transfer-move', transferId, sources, destination, options),
+        sync: (transferId: string, source: string, destination: string, options?: any) =>
+            ipcRenderer.invoke('transfer-sync', transferId, source, destination, options),
+        cancel: (transferId: string) =>
+            ipcRenderer.invoke('transfer-cancel', transferId),
+        getActive: () =>
+            ipcRenderer.invoke('transfer-get-active'),
+        onProgress: (callback: (transferId: string, progress: any) => void) => {
+            const handler = (_event: any, transferId: string, progress: any) => {
+                callback(transferId, progress);
+            };
+            ipcRenderer.on('transfer-progress', handler);
+            
+            // Return cleanup function
+            return () => {
+                ipcRenderer.removeListener('transfer-progress', handler);
+            };
+        }
     }
 });
