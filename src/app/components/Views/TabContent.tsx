@@ -8,6 +8,7 @@ import { DriveItem } from './DriveItem';
 import { SettingsMenu } from '../SettingsMenu/SettingsMenu';
 import { QuickAccessEditor } from '../QuickAccessEditor';
 import { SortPreferencesEditor } from '../SortPreferencesEditor';
+import { BatchRenameDialog } from '../BatchRenameDialog';
 import { quickAccessManager } from '../../utils/QuickAccessManager';
 import { Drive, FileItem } from 'shared/file-data';
 import { FileSystemItem } from '../../../shared/ipc-channels';
@@ -32,6 +33,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
     const [showDetailsPanel, setShowDetailsPanel] = useState(true);
     const [showQuickAccessEditor, setShowQuickAccessEditor] = useState(false);
     const [showSortPreferences, setShowSortPreferences] = useState(false);
+    const [showBatchRename, setShowBatchRename] = useState(false);
     const [sortBy, setSortBy] = useState<'name' | 'size' | 'date' | 'type'>('name');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
     const [activeRibbonTab, setActiveRibbonTab] = useState<'home' | 'share' | 'view' | 'manage' | 'organize' | 'tools' | 'help'>('home');
@@ -763,6 +765,14 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                         >
                             <FaSortAlphaDown /> Sort
                         </button>
+                        <button
+                            className="toolbar-button"
+                            onClick={() => setShowBatchRename(true)}
+                            title="Batch Rename Selected Items"
+                            disabled={selectedFiles.length === 0}
+                        >
+                            <FaEdit /> Batch Rename
+                        </button>
                     </div>
                 </div>
 
@@ -1201,6 +1211,18 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                 onClose={() => setShowSortPreferences(false)}
                 currentPath={fileExplorer.currentPath}
             />
+
+            {/* Batch Rename Dialog */}
+            {showBatchRename && selectedFiles.length > 0 && (
+                <BatchRenameDialog
+                    items={selectedFiles}
+                    onClose={() => setShowBatchRename(false)}
+                    onRename={() => {
+                        setRefreshTrigger(prev => prev + 1);
+                        fileExplorer.clearSelection();
+                    }}
+                />
+            )}
         </div>
     );
 });
