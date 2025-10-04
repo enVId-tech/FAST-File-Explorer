@@ -53,6 +53,10 @@ class SettingsManager {
             debounceDelay: 300,
             // Navigation/history
             maxNavigationHistory: 50,
+            // Developer settings
+            devFileTransferEnabled: false,
+            devCustomContextMenu: false,
+            devDebugMode: false,
         };
     }
 

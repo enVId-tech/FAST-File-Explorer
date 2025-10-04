@@ -43,6 +43,10 @@ export interface AppSettings {
     debounceDelay: number; // in ms
     // Navigation settings
     maxNavigationHistory: number;
+    // Developer settings
+    devFileTransferEnabled: boolean;
+    devCustomContextMenu: boolean;
+    devDebugMode: boolean;
 }
 
 // Default settings (fallback values)
@@ -81,6 +85,9 @@ const defaultSettings: AppSettings = {
     enableDebouncing: true,
     debounceDelay: 300,
     maxNavigationHistory: 50,
+    devFileTransferEnabled: false,
+    devCustomContextMenu: false,
+    devDebugMode: false,
 };
 
 // Settings context interface

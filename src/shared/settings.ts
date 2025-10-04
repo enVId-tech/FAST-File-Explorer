@@ -40,4 +40,8 @@ export interface AppSettings {
     debounceDelay: number; // in ms
     // Navigation/history
     maxNavigationHistory: number;
+    // Developer settings
+    devFileTransferEnabled: boolean;
+    devCustomContextMenu: boolean;
+    devDebugMode: boolean;
 }

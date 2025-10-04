@@ -184,4 +184,8 @@ interface AppSettings {
   debounceDelay: number;
   // Navigation/history
   maxNavigationHistory: number;
+  // Developer settings
+  devFileTransferEnabled: boolean;
+  devCustomContextMenu: boolean;
+  devDebugMode: boolean;
 }

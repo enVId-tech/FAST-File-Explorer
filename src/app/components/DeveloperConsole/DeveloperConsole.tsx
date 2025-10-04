@@ -14,7 +14,7 @@ interface ConsoleMessage {
 interface DeveloperConsoleProps {
     isOpen: boolean;
     onClose: () => void;
-    consoleRef?: React.RefObject<HTMLDivElement>;
+    consoleRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 export const DeveloperConsole: React.FC<DeveloperConsoleProps> = ({ isOpen, onClose, consoleRef: externalConsoleRef }) => {

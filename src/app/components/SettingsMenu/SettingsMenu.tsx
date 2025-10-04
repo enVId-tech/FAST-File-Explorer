@@ -20,8 +20,8 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
     const [activeCategory, setActiveCategory] = useState<'general' | 'performance' | 'folders' | 'setup' | 'developer' | 'about'>('general');
     const [editingFolder, setEditingFolder] = useState<string | null>(null);
     const [editValue, setEditValue] = useState<string>('');
-    const [devFileTransferEnabled, setDevFileTransferEnabled] = useState(false);
     const [showDeveloperConsole, setShowDeveloperConsole] = useState(false);
+    const [devFileTransferEnabled, setDevFileTransferEnabled] = useState(false);
     const [cacheStats, setCacheStats] = useState<any>(null);
     const menuRef = useRef<HTMLDivElement>(null);
     const consoleRef = useRef<HTMLDivElement | null>(null);
@@ -835,7 +835,8 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
                                             <label className="toggle-switch">
                                                 <input
                                                     type="checkbox"
-                                                    defaultChecked={false}
+                                                    checked={settings.devCustomContextMenu}
+                                                    onChange={(e) => handleSettingUpdate('devCustomContextMenu', e.target.checked)}
                                                     disabled
                                                 />
                                                 <span className="toggle-slider"></span>
@@ -853,7 +854,8 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
                                             <label className="toggle-switch">
                                                 <input
                                                     type="checkbox"
-                                                    defaultChecked={false}
+                                                    checked={settings.devDebugMode}
+                                                    onChange={(e) => handleSettingUpdate('devDebugMode', e.target.checked)}
                                                 />
                                                 <span className="toggle-slider"></span>
                                             </label>
