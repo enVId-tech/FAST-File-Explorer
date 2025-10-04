@@ -48,6 +48,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
         getDirectory: (folderPath: string) => ipcRenderer.invoke('data-get-directory', folderPath),
         getMetadata: (dataPath: string) => ipcRenderer.invoke('data-get-metadata', dataPath),
         getDrives: () => ipcRenderer.invoke('data-get-drives'),
+        renameDrive: (drivePath: string, newLabel: string) => ipcRenderer.invoke('data-rename-drive', drivePath, newLabel),
         getRecentFiles: () => ipcRenderer.invoke('data-get-recent-files'),
     },
     // Enhanced file system methods
@@ -130,7 +131,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
         platform: process.platform,
         pathSeparator: process.platform === 'win32' ? '\\' : '/',
         openFile: (filePath: string) => ipcRenderer.invoke('system-open-file', filePath),
-        openFileFast: (filePath: string) => ipcRenderer.send('system-open-file-fast', filePath)
+        openFileFast: (filePath: string) => ipcRenderer.send('system-open-file-fast', filePath),
+        isAdmin: () => ipcRenderer.invoke('system-is-admin'),
+        requestElevation: (reason: string) => ipcRenderer.invoke('system-request-elevation', reason)
     },
 
     // Advanced transfer operations using fast-transferlib

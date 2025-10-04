@@ -2,11 +2,92 @@ import { ipcMain } from 'electron';
 import drivelist from 'drivelist';
 import nodeDiskInfo from 'node-disk-info';
 import { Drive } from 'shared/file-data';
+import * as fs from 'fs';
+import * as path from 'path';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import { isRunningAsAdmin, ensureAdminPrivileges } from '../../../utils/elevation';
+
+const execAsync = promisify(exec);
 
 // Drive cache for performance optimization
 let driveCache: Drive[] = [];
 let drivesCacheTime = 0;
 const DRIVE_CACHE_TTL = 30000; // 30 seconds cache
+
+/**
+ * Get the volume label for a Windows drive
+ * @param drivePath - The drive path (e.g., "C:")
+ * @returns The volume label or null if not found/error
+ */
+async function getVolumeLabel(drivePath: string): Promise<string | null> {
+    try {
+        // Ensure drive path is in correct format (e.g., "C:")
+        const driveLetter = drivePath.replace(/[:\\\/]/g, '').toUpperCase();
+        
+        if (process.platform === 'win32') {
+            // Use Windows WMIC command to get volume label
+            const { stdout } = await execAsync(
+                `wmic logicaldisk where "DeviceID='${driveLetter}:'" get VolumeName /format:list`,
+                { timeout: 3000 }
+            );
+            
+            // Parse the output: "VolumeName=Label"
+            const match = stdout.match(/VolumeName=(.*)$/m);
+            if (match && match[1]) {
+                const label = match[1].trim();
+                return label || null;
+            }
+        } else {
+            // For Linux/Mac, try to read from mount point
+            // This is a fallback and may not work on all systems
+            try {
+                const mountPath = drivePath.endsWith(':') ? `${drivePath}\\` : drivePath;
+                // On Linux, volume labels are typically stored in /dev/disk/by-label/
+                // This is a simplified approach
+                return null;
+            } catch {
+                return null;
+            }
+        }
+    } catch (error) {
+        console.error(`Failed to get volume label for ${drivePath}:`, error);
+    }
+    return null;
+}
+
+/**
+ * Set the volume label for a Windows drive
+ * @param drivePath - The drive path (e.g., "C:")
+ * @param newLabel - The new volume label
+ * @returns Success status
+ */
+async function setVolumeLabel(drivePath: string, newLabel: string): Promise<boolean> {
+    try {
+        // Ensure drive path is in correct format (e.g., "C:")
+        const driveLetter = drivePath.replace(/[:\\\/]/g, '').toUpperCase();
+        
+        if (process.platform === 'win32') {
+            // Sanitize the label (remove invalid characters)
+            const sanitizedLabel = newLabel.replace(/[<>:"/\\|?*]/g, '').substring(0, 32);
+            
+            // Use Windows label command to set volume label
+            await execAsync(
+                `label ${driveLetter}: "${sanitizedLabel}"`,
+                { timeout: 5000 }
+            );
+            
+            // Clear drive cache to force refresh
+            driveCache = [];
+            drivesCacheTime = 0;
+            
+            return true;
+        }
+    } catch (error) {
+        console.error(`Failed to set volume label for ${drivePath}:`, error);
+    }
+    return false;
+}
 
 /**
  * Drive information IPC handlers with caching and timeout handling
@@ -47,7 +128,7 @@ export function registerDriveHandlers(): void {
             const driveDetails: Drive[] = [];
 
             // Match disk info with drive info for complete data
-            Object.values(diskInfo).forEach((disk: any) => {
+            const drivePromises = Object.values(diskInfo).map(async (disk: any) => {
                 let details: Drive = {
                     driveName: disk.filesystem,
                     drivePath: disk.mounted,
@@ -56,6 +137,14 @@ export function registerDriveHandlers(): void {
                     total: disk.blocks,
                     percentageUsed: disk.capacity,
                 };
+
+                // Get volume label for this drive
+                const volumeLabel = await getVolumeLabel(disk.mounted);
+                if (volumeLabel) {
+                    details.volumeLabel = volumeLabel;
+                    // Use volume label as the display name if available
+                    details.driveName = volumeLabel;
+                }
 
                 // Find matching drive for additional metadata
                 drives.forEach((drive) => {
@@ -79,8 +168,11 @@ export function registerDriveHandlers(): void {
                     }
                 });
 
-                driveDetails.push(details);
+                return details;
             });
+
+            const resolvedDrives = await Promise.all(drivePromises);
+            driveDetails.push(...resolvedDrives);
 
             // Filter out invalid drives and sort by drive path
             const validDrives = driveDetails
@@ -110,5 +202,43 @@ export function registerDriveHandlers(): void {
         driveCache = [];
         drivesCacheTime = 0;
         return ipcMain.emit('data-get-drives');
+    });
+
+    // Check if running as administrator
+    ipcMain.handle('system-is-admin', async () => {
+        return await isRunningAsAdmin();
+    });
+
+    // Request admin elevation for drive operations
+    ipcMain.handle('system-request-elevation', async (_event, reason: string) => {
+        return await ensureAdminPrivileges(reason);
+    });
+
+    // Rename drive (set volume label)
+    ipcMain.handle('data-rename-drive', async (_event, drivePath: string, newLabel: string) => {
+        try {
+            console.log(`Attempting to rename drive ${drivePath} to "${newLabel}"`);
+            
+            // Check if we have admin privileges
+            const isAdmin = await isRunningAsAdmin();
+            if (!isAdmin) {
+                console.log('Not running as admin, elevation needed');
+                return { success: false, needsElevation: true };
+            }
+            
+            const success = await setVolumeLabel(drivePath, newLabel);
+            
+            if (success) {
+                console.log(`Successfully renamed drive ${drivePath}`);
+                // Clear cache to force refresh
+                driveCache = [];
+                drivesCacheTime = 0;
+            }
+            
+            return { success, needsElevation: false };
+        } catch (error) {
+            console.error(`Error renaming drive ${drivePath}:`, error);
+            return { success: false, needsElevation: false, error: (error as Error).message };
+        }
     });
 }

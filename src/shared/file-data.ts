@@ -14,6 +14,7 @@ export interface Drive {
     description?: string;
     driveName: string;
     drivePath: string;
+    volumeLabel?: string; // Windows volume label (can be different from driveName)
     flags?: DriveFlags;
     logicalBlockSize?: number;
     partitionType?: "mbr" | "gpt" | null | undefined;

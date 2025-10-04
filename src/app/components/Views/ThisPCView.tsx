@@ -308,6 +308,96 @@ export const ThisPCView = React.memo<ThisPCViewProps>(({
     const [visualizationMode, setVisualizationMode] = useState<'bar' | 'pie'>('bar');
     const [driveViewMode, setDriveViewMode] = useState<'large' | 'medium' | 'small'>('large');
     const [showIconPicker, setShowIconPicker] = useState<{ driveIndex: number; show: boolean }>({ driveIndex: -1, show: false });
+    const [renamingDrive, setRenamingDrive] = useState<{ index: number; currentName: string } | null>(null);
+    const [renameInput, setRenameInput] = useState('');
+
+    // Handle drive rename
+    const handleDriveRename = async (driveIndex: number, driveLetter: string) => {
+        if (!renameInput.trim() || renameInput === renamingDrive?.currentName) {
+            setRenamingDrive(null);
+            setRenameInput('');
+            return;
+        }
+
+        const newLabel = renameInput.trim();
+
+        try {
+            const result = await window.electronAPI.data.renameDrive(driveLetter, newLabel);
+            
+            if (result.success) {
+                // Update local state immediately
+                const newDrives = [...actualDrives];
+                const drive = newDrives[driveIndex];
+                if (drive) {
+                    drive.name = newLabel;
+                }
+                setDrives(newDrives);
+                
+                // Trigger a refresh to sync with system
+                setTimeout(() => {
+                    if (onRefreshDrives) {
+                        onRefreshDrives();
+                    }
+                }, 500);
+                
+                console.log(`Drive ${driveLetter} renamed successfully`);
+                
+                // Success notification
+                alert(`Drive ${driveLetter} has been renamed to "${newLabel}" successfully!`);
+            } else if (result.needsElevation) {
+                // Request elevation via UAC
+                console.log('Requesting admin elevation...');
+                const elevated = await window.electronAPI.system.requestElevation(
+                    `Rename drive ${driveLetter} to "${newLabel}"`
+                );
+                
+                if (elevated) {
+                    // App will restart with admin privileges
+                    // The user will need to perform the rename again after restart
+                    console.log('Application restarting with administrator privileges...');
+                } else {
+                    // User declined elevation
+                    window.alert(
+                        `Administrator privileges are required to rename drive ${driveLetter}.\n\n` +
+                        `The application will now restart with elevated permissions. ` +
+                        `You may be prompted by User Account Control (UAC).\n\n` +
+                        `After restart, please try renaming the drive again.`
+                    );
+                }
+            } else {
+                // Other failure
+                const errorMsg = result.error || 'Unknown error';
+                console.error('Failed to rename drive:', errorMsg);
+                window.alert(
+                    `Failed to rename drive ${driveLetter}.\n\n` +
+                    `Error: ${errorMsg}\n\n` +
+                    `Please ensure:\n` +
+                    `• The drive is not write-protected\n` +
+                    `• The drive letter is correct\n` +
+                    `• No other application is accessing the drive`
+                );
+            }
+        } catch (error) {
+            console.error('Error renaming drive:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            window.alert(
+                `An error occurred while renaming the drive:\n\n${errorMessage}`
+            );
+        } finally {
+            setRenamingDrive(null);
+            setRenameInput('');
+        }
+    };
+
+    const startDriveRename = (driveIndex: number, currentName: string) => {
+        setRenamingDrive({ index: driveIndex, currentName });
+        setRenameInput(currentName);
+    };
+
+    const cancelDriveRename = () => {
+        setRenamingDrive(null);
+        setRenameInput('');
+    };
 
     // Convert DriveInfo to Drive format for details panel
     const convertDriveInfo = (driveInfo: DriveInfo) => {
@@ -721,8 +811,43 @@ export const ThisPCView = React.memo<ThisPCViewProps>(({
 
                                             <div className="drive-info">
                                                 <div className="drive-title">
-                                                    <h4 className="drive-name">{drive.name}</h4>
-                                                    <span className="drive-letter">({drive.letter})</span>
+                                                    {renamingDrive?.index === index ? (
+                                                        <div className="drive-rename-container">
+                                                            <input
+                                                                type="text"
+                                                                className="drive-rename-input"
+                                                                value={renameInput}
+                                                                onChange={(e) => setRenameInput(e.target.value)}
+                                                                onKeyDown={(e) => {
+                                                                    e.stopPropagation();
+                                                                    if (e.key === 'Enter') {
+                                                                        handleDriveRename(index, drive.letter);
+                                                                    } else if (e.key === 'Escape') {
+                                                                        cancelDriveRename();
+                                                                    }
+                                                                }}
+                                                                onBlur={() => handleDriveRename(index, drive.letter)}
+                                                                onClick={(e) => e.stopPropagation()}
+                                                                autoFocus
+                                                                maxLength={32}
+                                                            />
+                                                            <span className="drive-letter">({drive.letter})</span>
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <h4 
+                                                                className="drive-name"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    startDriveRename(index, drive.name);
+                                                                }}
+                                                                title="Click to rename"
+                                                            >
+                                                                {drive.name}
+                                                            </h4>
+                                                            <span className="drive-letter">({drive.letter})</span>
+                                                        </>
+                                                    )}
                                                 </div>
                                                 <div className="drive-type-badge">
                                                     {drive.type === 'local' && 'Local Disk'}

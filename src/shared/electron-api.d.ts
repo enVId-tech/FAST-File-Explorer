@@ -39,6 +39,7 @@ declare global {
         getDirectory: (folderPath: string) => Promise<{ folderName: string, name: string }[]>;
         getMetadata: (dataPath: string) => Promise<{ folderName: string, name: string } | null>;
         getDrives: () => Promise<{ name: string, path: string }[]>;
+        renameDrive: (drivePath: string, newLabel: string) => Promise<{ success: boolean; needsElevation?: boolean; error?: string }>;
         getRecentFiles: () => Promise<{ name: string, path: string, lastOpened: string, size?: string }[]>;
       },
       // Enhanced file system methods
@@ -62,6 +63,8 @@ declare global {
         pathSeparator: string;
         openFile: (filePath: string) => Promise<boolean>;
         openFileFast: (filePath: string) => void; // Fire-and-forget for maximum speed
+        isAdmin: () => Promise<boolean>;
+        requestElevation: (reason: string) => Promise<boolean>;
       },
       // File operations
       files: {

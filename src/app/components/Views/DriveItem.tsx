@@ -1,5 +1,5 @@
-import React, { useCallback, useMemo } from 'react';
-import { FaHdd } from 'react-icons/fa';
+import React, { useCallback, useMemo, useState } from 'react';
+import { FaHdd, FaPencilAlt } from 'react-icons/fa';
 import { Drive } from 'shared/file-data';
 
 interface DriveItemProps {
@@ -7,9 +7,13 @@ interface DriveItemProps {
     active: boolean;
     onClick: () => void;
     onHover: (drive: Drive) => void;
+    onRename?: (drivePath: string, newName: string) => Promise<boolean>;
 }
 
-export const DriveItem: React.FC<DriveItemProps> = React.memo(({ drive, active, onClick, onHover }) => {
+export const DriveItem: React.FC<DriveItemProps> = React.memo(({ drive, active, onClick, onHover, onRename }) => {
+    const [isRenaming, setIsRenaming] = useState(false);
+    const [renameValue, setRenameValue] = useState('');
+
     const formatBytes = useCallback((bytes: number): string => {
         if (bytes === 0) return '0 B';
         const k = 1024;
@@ -35,6 +39,31 @@ export const DriveItem: React.FC<DriveItemProps> = React.memo(({ drive, active, 
         onHover(drive);
     }, [drive, onHover]);
 
+    const startRename = useCallback((e: React.MouseEvent) => {
+        e.stopPropagation();
+        setIsRenaming(true);
+        setRenameValue(drive.driveName);
+    }, [drive.driveName]);
+
+    const handleRename = useCallback(async () => {
+        if (!renameValue.trim() || renameValue === drive.driveName) {
+            setIsRenaming(false);
+            return;
+        }
+
+        if (onRename) {
+            const success = await onRename(drive.drivePath, renameValue.trim());
+            if (success) {
+                setIsRenaming(false);
+            }
+        }
+    }, [renameValue, drive.driveName, drive.drivePath, onRename]);
+
+    const cancelRename = useCallback(() => {
+        setIsRenaming(false);
+        setRenameValue('');
+    }, []);
+
     return (
         <div
             className={`sidebar-item drive-item ${active ? 'active' : ''}`}
@@ -44,7 +73,44 @@ export const DriveItem: React.FC<DriveItemProps> = React.memo(({ drive, active, 
             <div className="drive-main">
                 <span className="sidebar-icon"><FaHdd /></span>
                 <div className="drive-info">
-                    <div className="drive-name">{drive.driveName} ({drive.drivePath})</div>
+                    {isRenaming ? (
+                        <div className="drive-rename-sidebar">
+                            <input
+                                type="text"
+                                className="drive-rename-input-sidebar"
+                                value={renameValue}
+                                onChange={(e) => setRenameValue(e.target.value)}
+                                onKeyDown={(e) => {
+                                    e.stopPropagation();
+                                    if (e.key === 'Enter') {
+                                        handleRename();
+                                    } else if (e.key === 'Escape') {
+                                        cancelRename();
+                                    }
+                                }}
+                                onBlur={handleRename}
+                                onClick={(e) => e.stopPropagation()}
+                                autoFocus
+                                maxLength={32}
+                            />
+                            <span className="drive-path-small">({drive.drivePath})</span>
+                        </div>
+                    ) : (
+                        <div className="drive-name-container">
+                            <div className="drive-name" title="Double-click to rename">
+                                {drive.driveName} ({drive.drivePath})
+                            </div>
+                            {onRename && (
+                                <button 
+                                    className="drive-rename-btn"
+                                    onClick={startRename}
+                                    title="Rename drive"
+                                >
+                                    <FaPencilAlt />
+                                </button>
+                            )}
+                        </div>
+                    )}
                     <div className="drive-usage">
                         <div className="usage-bar">
                             <div

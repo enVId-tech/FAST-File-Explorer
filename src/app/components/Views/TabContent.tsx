@@ -141,6 +141,66 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
         setHoveredDrive(drive);
     };
 
+    // Handle drive rename
+    const handleDriveRename = async (drivePath: string, newName: string): Promise<boolean> => {
+        try {
+            const result = await window.electronAPI.data.renameDrive(drivePath, newName);
+            
+            if (result.success) {
+                console.log(`Drive ${drivePath} renamed to "${newName}"`);
+                // Trigger drives refresh
+                if (onRefreshDrives) {
+                    await onRefreshDrives();
+                }
+                
+                // Success notification
+                alert(`Drive ${drivePath} has been renamed to "${newName}" successfully!`);
+                return true;
+            } else if (result.needsElevation) {
+                // Request elevation via UAC
+                console.log('Requesting admin elevation...');
+                const elevated = await window.electronAPI.system.requestElevation(
+                    `Rename drive ${drivePath} to "${newName}"`
+                );
+                
+                if (elevated) {
+                    // App will restart with admin privileges
+                    console.log('Application restarting with administrator privileges...');
+                    return false; // Don't keep dialog open since app is restarting
+                } else {
+                    // User declined elevation
+                    window.alert(
+                        `Administrator privileges are required to rename drive ${drivePath}.\n\n` +
+                        `The application will now restart with elevated permissions. ` +
+                        `You may be prompted by User Account Control (UAC).\n\n` +
+                        `After restart, please try renaming the drive again.`
+                    );
+                    return false;
+                }
+            } else {
+                // Other failure
+                const errorMsg = result.error || 'Unknown error';
+                console.error('Failed to rename drive:', errorMsg);
+                window.alert(
+                    `Failed to rename drive ${drivePath}.\n\n` +
+                    `Error: ${errorMsg}\n\n` +
+                    `Please ensure:\n` +
+                    `• The drive is not write-protected\n` +
+                    `• The drive letter is correct\n` +
+                    `• No other application is accessing the drive`
+                );
+                return false;
+            }
+        } catch (error) {
+            console.error('Error renaming drive:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            window.alert(
+                `An error occurred while renaming the drive:\n\n${errorMessage}`
+            );
+            return false;
+        }
+    };
+
     // Guard to prevent updates after unmount during global mouse listeners
     const isMountedRef = React.useRef(true);
     React.useEffect(() => {
@@ -1183,6 +1243,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                                             active={fileExplorer.currentView === 'folder' && selectedItem?.name === drive.driveName}
                                             onClick={() => handleSidebarNavigation('drive', drive.driveName, drive.drivePath)}
                                             onHover={handleDriveHover}
+                                            onRename={handleDriveRename}
                                         />
                                     ))}
                                 </div>
