@@ -29,13 +29,13 @@
 .settings-menu {
     background: var(--secondary-bg);
     border-radius: 16px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 8px 32px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 8px 32px rgba(0, 0, 0, 0.25);
     width: 900px;
     height: 650px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    border: 1px solid var(--border-color);
+    border: 2px solid var(--border-color);
     animation: menuSlideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
@@ -61,22 +61,24 @@
 }
 
 .subsection-title {
-    font-size: 16px;
-    font-weight: 600;
+    font-size: 17px;
+    font-weight: 700;
     color: var(--text-primary);
     margin: 0 0 16px 0;
     padding-bottom: 8px;
-    border-bottom: 2px solid var(--accent-color);
+    border-bottom: 3px solid var(--accent-color);
     display: flex;
     align-items: center;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     
     &::before {
         content: '';
-        width: 4px;
-        height: 20px;
+        width: 5px;
+        height: 24px;
         background: var(--accent-color);
         margin-right: 12px;
-        border-radius: 2px;
+        border-radius: 3px;
+        box-shadow: 0 2px 4px rgba(37, 99, 235, 0.4);
     }
 }
 
@@ -108,11 +110,12 @@
         font-size: 20px;
         font-weight: 700;
         color: var(--text-primary);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 
         svg {
             color: var(--accent-color);
             font-size: 24px;
-            filter: drop-shadow(0 2px 4px rgba(37, 99, 235, 0.3));
+            filter: drop-shadow(0 2px 6px rgba(37, 99, 235, 0.5));
         }
     }
 
@@ -167,12 +170,13 @@
         color: var(--text-primary);
         background-color: transparent;
         font-size: 15px;
-        font-weight: 500;
+        font-weight: 600;
         transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         margin: 0 12px 8px 12px;
         border-radius: 12px;
         position: relative;
         border-style: none;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 
         &::before {
             content: '';
@@ -198,11 +202,12 @@
         }
 
         &.active {
-            // background: linear-gradient(135deg, var(--accent-color) 0%, #3b82f6 100%);
+            background: linear-gradient(135deg, var(--accent-color) 0%, #3b82f6 100%);
             color: white;
-            font-weight: 600;
+            font-weight: 700;
             transform: translateX(8px);
-            box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
+            box-shadow: 0 4px 16px rgba(37, 99, 235, 0.5);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 
             &::before {
                 opacity: 1;
@@ -240,8 +245,9 @@
         font-size: 22px;
         font-weight: 700;
         color: var(--text-primary);
-        border-bottom: 1px solid var(--border-color);
+        border-bottom: 2px solid var(--border-color);
         background: linear-gradient(135deg, var(--surface-bg) 0%, var(--secondary-bg) 100%);
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 
         .panel-icon {
             font-size: 26px;
@@ -260,11 +266,12 @@
             align-items: flex-start;
             justify-content: space-between;
             padding: 20px 24px;
-            border-bottom: 1px solid var(--border-color);
+            border: 1px solid var(--border-color);
             border-radius: 12px;
             margin-bottom: 12px;
             background: var(--surface-bg);
             transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 
             &:last-child {
                 border-bottom: none;
@@ -288,14 +295,16 @@
             .setting-label {
                 font-size: 16px;
                 color: var(--text-primary);
-                font-weight: 600;
+                font-weight: 700;
+                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
             }
 
             .setting-description {
                 font-size: 13px;
                 color: var(--text-secondary);
                 margin: 0;
-                line-height: 1.5;
+                line-height: 1.6;
+                text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
             }
 
             .setting-control {
@@ -473,15 +482,17 @@
     }
 
     .slider-value {
-        font-size: 14px;
-        font-weight: 600;
+        font-size: 15px;
+        font-weight: 700;
         color: var(--text-primary);
         min-width: 50px;
         text-align: right;
-        padding: 6px 12px;
+        padding: 8px 14px;
         background: var(--surface-bg);
         border-radius: 8px;
-        border: 1px solid var(--border-color);
+        border: 2px solid var(--border-color);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
     }
 }
 
@@ -734,11 +745,12 @@
     border-radius: 12px;
     padding: 12px 16px;
     font-size: 15px;
-    font-weight: 500;
+    font-weight: 600;
     color: var(--input-text);
     min-width: 160px;
     transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
 
     &:focus {
         outline: none;
@@ -766,11 +778,12 @@
     border-radius: 12px;
     padding: 12px 16px;
     font-size: 15px;
-    font-weight: 500;
+    font-weight: 600;
     color: var(--input-text);
     width: 100px;
     transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
 
     &:focus {
         outline: none;
@@ -848,9 +861,11 @@
 
     p {
         color: var(--text-secondary);
-        font-size: 14px;
-        line-height: 1.5;
+        font-size: 15px;
+        font-weight: 500;
+        line-height: 1.6;
         margin: 0;
+        text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
     }
 }
 
@@ -881,9 +896,10 @@
 }
 
 .folder-name {
-    font-weight: 500;
+    font-weight: 700;
     color: var(--text-primary);
-    font-size: 14px;
+    font-size: 15px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
 .folder-path-container {
@@ -901,14 +917,17 @@
 
 .folder-path {
     flex: 1;
-    padding: 8px 12px;
+    padding: 10px 14px;
     background: var(--background-primary);
-    border: 1px solid var(--border-color-light);
-    border-radius: 6px;
+    border: 2px solid var(--border-color-light);
+    border-radius: 8px;
     font-family: 'Courier New', monospace;
-    font-size: 12px;
-    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
     word-break: break-all;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .folder-edit-btn {
@@ -941,13 +960,16 @@
 
 .folder-path-input {
     flex: 1;
-    padding: 8px 12px;
+    padding: 10px 14px;
     border: 2px solid var(--accent-color);
-    border-radius: 6px;
+    border-radius: 8px;
     font-family: 'Courier New', monospace;
-    font-size: 12px;
+    font-size: 13px;
+    font-weight: 600;
     background: var(--background-primary);
     color: var(--text-primary);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
 
     &:focus {
         outline: none;
@@ -1506,9 +1528,9 @@
     border: none;
     border-radius: 8px;
     color: white;
-    padding: 10px 16px;
-    font-size: 13px;
-    font-weight: 500;
+    padding: 12px 18px;
+    font-size: 14px;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
     display: inline-flex;
@@ -1516,6 +1538,8 @@
     gap: 8px;
     min-width: 100px;
     justify-content: center;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 
     &:hover {
         background: color-mix(in srgb, var(--accent-primary) 85%, white);
@@ -1543,12 +1567,15 @@
     &.secondary {
         background: var(--tertiary-bg, var(--secondary-bg));
         color: var(--text-primary);
-        border: 1px solid var(--border-color);
+        border: 2px solid var(--border-color);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
         &:hover {
-            background: var(--border-color);
+            background: var(--hover-bg);
             border-color: var(--accent-primary);
             color: var(--accent-primary);
+            box-shadow: 0 4px 8px rgba(37, 99, 235, 0.2);
         }
     }
 
@@ -1566,41 +1593,47 @@
 .modern-dropdown,
 select {
     background: var(--tertiary-bg, var(--secondary-bg));
-    border: 1px solid var(--border-color);
+    border: 2px solid var(--border-color);
     border-radius: 8px;
     color: var(--text-primary);
-    padding: 10px 12px;
-    font-size: 13px;
+    padding: 12px 14px;
+    font-size: 14px;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
     appearance: none;
     background-image: url("data:image/svg+xml;charset=UTF-8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><polyline points='6,9 12,15 18,9'></polyline></svg>");
     background-repeat: no-repeat;
-    background-position: right 8px center;
-    background-size: 16px;
-    padding-right: 32px;
+    background-position: right 10px center;
+    background-size: 18px;
+    padding-right: 36px;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
     &:hover {
         border-color: var(--accent-primary);
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15), 0 4px 8px rgba(0, 0, 0, 0.15);
     }
 
     &:focus {
         outline: none;
         border-color: var(--accent-primary);
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 
     option {
         background: var(--secondary-bg);
         color: var(--text-primary);
-        padding: 8px 12px;
+        padding: 10px 14px;
+        font-weight: 600;
     }
 }
 
 .loading-indicator {
     text-align: center;
-    padding: 20px;
+    padding: 24px;
     color: var(--text-secondary);
-    font-size: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }

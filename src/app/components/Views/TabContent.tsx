@@ -16,6 +16,7 @@ import { ArchiveDialog } from '../ArchiveDialog';
 import { CloudDialog } from '../CloudDialog';
 import { BackupDialog } from '../BackupDialog';
 import { PluginDialog } from '../PluginDialog';
+import { SetupWizard } from '../SetupWizard/SetupWizard';
 import { quickAccessManager } from '../../utils/QuickAccessManager';
 import { Drive, FileItem } from 'shared/file-data';
 import { FileSystemItem } from '../../../shared/ipc-channels';
@@ -47,6 +48,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
     const [showCloud, setShowCloud] = useState(false);
     const [showBackup, setShowBackup] = useState(false);
     const [showPlugin, setShowPlugin] = useState(false);
+    const [showSetup, setShowSetup] = useState(false);
     const [archiveMode, setArchiveMode] = useState<'create' | 'extract' | 'view'>('create');
     const [sortBy, setSortBy] = useState<'name' | 'size' | 'date' | 'type'>('name');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
@@ -1266,6 +1268,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
             <SettingsMenu
                 isOpen={showSettingsMenu}
                 onClose={() => setShowSettingsMenu(false)}
+                onShowSetup={() => setShowSetup(true)}
             />
 
             {/* Quick Access Editor */}
@@ -1343,6 +1346,13 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
             <PluginDialog
                 isOpen={showPlugin}
                 onClose={() => setShowPlugin(false)}
+            />
+
+            {/* Setup Wizard */}
+            <SetupWizard
+                isOpen={showSetup}
+                onComplete={() => setShowSetup(false)}
+                onSkip={() => setShowSetup(false)}
             />
         </div>
     );

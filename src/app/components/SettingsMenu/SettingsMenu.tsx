@@ -24,6 +24,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
     const [showDeveloperConsole, setShowDeveloperConsole] = useState(false);
     const [cacheStats, setCacheStats] = useState<any>(null);
     const menuRef = useRef<HTMLDivElement>(null);
+    const consoleRef = useRef<HTMLDivElement | null>(null);
 
     // Load cache statistics
     useEffect(() => {
@@ -130,29 +131,30 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
         }
     };
 
-    // Close menu when clicking outside
+    // Close menu when clicking outside and reset developer console state
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+            const target = event.target as Node;
+            // Don't close if clicking inside the menu or inside the developer console
+            const isInsideMenu = menuRef.current && menuRef.current.contains(target);
+            const isInsideConsole = consoleRef.current && consoleRef.current.contains(target);
+            
+            if (!isInsideMenu && !isInsideConsole) {
                 onClose();
             }
         };
 
         if (isOpen) {
             document.addEventListener('mousedown', handleClickOutside);
+        } else {
+            // Reset developer console when settings menu closes
+            setShowDeveloperConsole(false);
         }
 
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [isOpen, onClose]);
-
-    // Reset console state when settings menu closes
-    useEffect(() => {
-        if (!isOpen) {
-            setShowDeveloperConsole(false);
-        }
-    }, [isOpen]);
 
     if (!isOpen) return null;
 
@@ -780,7 +782,16 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
                                             </div>
                                             <button
                                                 className="modern-button primary dev-action-button"
-                                                onClick={() => setShowDeveloperConsole(true)}
+                                                onClick={() => {
+                                                    setShowDeveloperConsole(true);
+                                                    // Trigger some test console messages
+                                                    setTimeout(() => {
+                                                        console.log('Developer Console opened');
+                                                        console.info('Application version:', BUILD_VERSION);
+                                                        console.log('Settings:', settings);
+                                                        console.warn('This is a test warning message');
+                                                    }, 100);
+                                                }}
                                             >
                                                 <FaTerminal />
                                                 Open Console
@@ -907,6 +918,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
             <DeveloperConsole
                 isOpen={showDeveloperConsole}
                 onClose={() => setShowDeveloperConsole(false)}
+                consoleRef={consoleRef}
             />
         </div>
     );
