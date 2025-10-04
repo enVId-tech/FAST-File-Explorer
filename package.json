@@ -1,7 +1,7 @@
 {
   "name": "fast-file-explorer",
   "productName": "Fast File Explorer",
-  "version": "25.10.02-dev.3",
+  "version": "25.10.04-dev.1",
   "description": "Fast File Explorer is a powerful tool for quickly navigating and managing your file system.",
   "main": ".vite/build/main.js",
   "config": {
@@ -32,7 +32,7 @@
     "@types/react-window": "^2.0.0",
     "drivelist": "^12.0.2",
     "electron-squirrel-startup": "^1.0.1",
-    "fast-transferlib": "^25.10.2-release.5",
+    "fast-transferlib": "^25.10.2-release.6",
     "node-disk-info": "^1.3.0",
     "npm-check-updates": "^19.0.0",
     "react": "^19.1.1",

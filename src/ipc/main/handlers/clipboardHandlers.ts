@@ -70,6 +70,7 @@ export function registerClipboardHandlers(): void {
             }
 
             // Try to use fast-transferlib for better performance and reliability
+            // But only if it can successfully initialize with available providers
             const useTransferLib = await loadTransferLib();
             
             if (useTransferLib && transferLibAvailable) {
@@ -77,68 +78,83 @@ export function registerClipboardHandlers(): void {
                     const manager = new UnifiedTransferManagerClass();
                     await manager.initialize();
 
-                    const window = BrowserWindow.fromWebContents(event.sender);
-                    if (window) {
-                        manager.on('progress', (progress: any) => {
-                            window.webContents.send('transfer-progress', 'clipboard-paste', progress);
-                        });
-                    }
-
-                    const results = [];
-                    for (const sourcePath of clipboardState.files) {
-                        try {
-                            const result = await manager.transfer(sourcePath, destinationPath, {
-                                recursive: true,
-                                archive: true,
-                                progress: true,
-                                // Use native tools on Windows to handle locked files better
-                                forceNative: process.platform === 'win32',
-                                preferredMethod: process.platform === 'win32' ? 'robocopy' : undefined
+                    // Check if manager has available providers before attempting transfer
+                    const hasProviders = (manager as any).availableProviders?.size > 0;
+                    
+                    if (hasProviders) {
+                        console.log('Using fast-transferlib for clipboard paste');
+                        const window = BrowserWindow.fromWebContents(event.sender);
+                        if (window) {
+                            manager.on('progress', (progress: any) => {
+                                window.webContents.send('transfer-progress', 'clipboard-paste', progress);
                             });
-
-                            if (result.success && clipboardState.operation === 'cut') {
-                                // Delete source after successful copy for cut operation
-                                try {
-                                    const stat = await fs.stat(sourcePath);
-                                    if (stat.isDirectory()) {
-                                        await fs.rm(sourcePath, { recursive: true });
-                                    } else {
-                                        await fs.unlink(sourcePath);
-                                    }
-                                } catch (deleteError) {
-                                    console.error(`Failed to delete source ${sourcePath}:`, deleteError);
-                                }
-                            }
-
-                            results.push({ path: sourcePath, success: result.success });
-                        } catch (error: any) {
-                            console.error(`Failed to paste ${sourcePath}:`, error);
-                            results.push({ path: sourcePath, success: false, error: error.message });
                         }
-                    }
 
-                    // Clear clipboard state after cut operation
-                    if (clipboardState.operation === 'cut') {
-                        clipboardState = { operation: null, files: [] };
-                    }
+                        const results = [];
+                        for (const sourcePath of clipboardState.files) {
+                            try {
+                                // Try with minimal options first to maximize compatibility
+                                const result = await manager.transfer(sourcePath, destinationPath, {
+                                    recursive: true,
+                                    archive: true,
+                                    progress: false  // Disable progress to avoid issues
+                                });
 
-                    const allSuccessful = results.every(r => r.success);
-                    return { success: allSuccessful, results };
+                                if (result.success && clipboardState.operation === 'cut') {
+                                    // Delete source after successful copy for cut operation
+                                    try {
+                                        const stat = await fs.stat(sourcePath);
+                                        if (stat.isDirectory()) {
+                                            await fs.rm(sourcePath, { recursive: true });
+                                        } else {
+                                            await fs.unlink(sourcePath);
+                                        }
+                                    } catch (deleteError) {
+                                        console.error(`Failed to delete source ${sourcePath}:`, deleteError);
+                                    }
+                                }
+
+                                results.push({ path: sourcePath, success: result.success });
+                            } catch (error: any) {
+                                console.error(`Transfer failed for ${sourcePath}:`, error);
+                                // Don't throw, just mark as failed and continue
+                                results.push({ path: sourcePath, success: false, error: error.message });
+                            }
+                        }
+
+                        // Clear clipboard state after cut operation
+                        if (clipboardState.operation === 'cut') {
+                            clipboardState = { operation: null, files: [] };
+                        }
+
+                        const allSuccessful = results.every(r => r.success);
+                        if (allSuccessful) {
+                            return { success: true, results };
+                        } else {
+                            // If some failed with transferlib, try fallback for failed files
+                            console.warn('Some files failed with transferlib, falling back for failed files');
+                        }
+                    } else {
+                        console.warn('No transfer providers available, using fallback method');
+                    }
                 } catch (transferError) {
-                    console.warn('Transfer lib failed, falling back to standard copy:', transferError);
+                    console.warn('Transfer lib initialization failed, falling back to standard copy:', transferError);
                     // Fall through to standard method
                 }
             }
 
             // Fallback to standard fs operations
+            console.log('Using standard Node.js fs methods for clipboard paste');
             const results = [];
             for (const sourcePath of clipboardState.files) {
                 try {
                     const fileName = path.basename(sourcePath);
                     const destPath = path.join(destinationPath, fileName);
                     
-                    // Check if source is a directory
+                    // Check if source exists
                     const stat = await fs.stat(sourcePath);
+                    
+                    console.log(`Copying: ${sourcePath} -> ${destPath}`);
                     
                     if (stat.isDirectory()) {
                         // Copy directory recursively
@@ -148,8 +164,11 @@ export function registerClipboardHandlers(): void {
                         await copyFileWithRetry(sourcePath, destPath, 3, 1000);
                     }
                     
+                    console.log(`Successfully copied: ${fileName}`);
+                    
                     // Delete source if cut operation
                     if (clipboardState.operation === 'cut') {
+                        console.log(`Deleting source (cut operation): ${sourcePath}`);
                         if (stat.isDirectory()) {
                             await fs.rm(sourcePath, { recursive: true });
                         } else {
@@ -165,7 +184,11 @@ export function registerClipboardHandlers(): void {
                     // Show more helpful error message for busy files
                     if (error.code === 'EBUSY') {
                         console.error(`File is busy/locked: ${sourcePath}`);
-                        console.error('Try closing any programs using this file, or use the advanced transfer option');
+                        console.error('Suggestion: Close any programs using this file and try again');
+                    } else if (error.code === 'ENOENT') {
+                        console.error(`File not found: ${sourcePath}`);
+                    } else if (error.code === 'EACCES' || error.code === 'EPERM') {
+                        console.error(`Permission denied: ${sourcePath}`);
                     }
                 }
             }
@@ -205,36 +228,92 @@ export function registerClipboardHandlers(): void {
  * Copy file with retry logic for handling busy/locked files
  */
 async function copyFileWithRetry(source: string, dest: string, retries: number = 3, delay: number = 1000): Promise<void> {
+    let lastError: any;
+    
     for (let attempt = 1; attempt <= retries; attempt++) {
         try {
+            // Ensure destination directory exists
+            await fs.mkdir(path.dirname(dest), { recursive: true });
+            
+            // Try to copy the file
             await fs.copyFile(source, dest);
-            return;
+            
+            // Success! Copy file stats (permissions, timestamps)
+            try {
+                const stat = await fs.stat(source);
+                await fs.utimes(dest, stat.atime, stat.mtime);
+                await fs.chmod(dest, stat.mode);
+            } catch (statError) {
+                // Non-critical, just log
+                console.warn('Could not preserve file stats:', statError);
+            }
+            
+            return; // Success
         } catch (error: any) {
+            lastError = error;
+            
             if (error.code === 'EBUSY' && attempt < retries) {
                 console.log(`File busy, retrying in ${delay}ms (attempt ${attempt}/${retries})...`);
                 await new Promise(resolve => setTimeout(resolve, delay));
                 continue;
+            } else if (error.code === 'ENOENT' && error.path === source) {
+                // Source doesn't exist, no point retrying
+                throw error;
+            } else if (attempt < retries) {
+                // For other errors, still try to retry
+                console.log(`Copy failed, retrying in ${delay}ms (attempt ${attempt}/${retries})...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+                continue;
             }
-            throw error;
         }
     }
+    
+    // All retries exhausted
+    throw lastError;
 }
 
 /**
  * Recursively copy directory
  */
 async function copyDirectory(source: string, dest: string): Promise<void> {
+    // Create destination directory
     await fs.mkdir(dest, { recursive: true });
+    
+    // Copy directory stats
+    try {
+        const stat = await fs.stat(source);
+        await fs.chmod(dest, stat.mode);
+    } catch (statError) {
+        console.warn('Could not preserve directory stats:', statError);
+    }
+    
+    // Read directory contents
     const entries = await fs.readdir(source, { withFileTypes: true });
 
+    // Copy each entry
     for (const entry of entries) {
         const srcPath = path.join(source, entry.name);
         const destPath = path.join(dest, entry.name);
 
-        if (entry.isDirectory()) {
-            await copyDirectory(srcPath, destPath);
-        } else {
-            await copyFileWithRetry(srcPath, destPath);
+        try {
+            if (entry.isDirectory()) {
+                // Recursively copy subdirectory
+                await copyDirectory(srcPath, destPath);
+            } else if (entry.isFile()) {
+                // Copy file with retry logic
+                await copyFileWithRetry(srcPath, destPath);
+            } else if (entry.isSymbolicLink()) {
+                // Copy symlink
+                try {
+                    const linkTarget = await fs.readlink(srcPath);
+                    await fs.symlink(linkTarget, destPath);
+                } catch (symlinkError) {
+                    console.warn(`Could not copy symlink ${srcPath}:`, symlinkError);
+                }
+            }
+        } catch (entryError) {
+            console.error(`Failed to copy ${srcPath}:`, entryError);
+            // Continue with other entries
         }
     }
 }
