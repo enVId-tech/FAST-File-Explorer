@@ -117,7 +117,26 @@ declare global {
         cancel: (transferId: string) => Promise<{ success: boolean; error?: string }>;
         getActive: () => Promise<Array<{ id: string; source: string; destination: string; startTime: number }>>;
         onProgress: (callback: (transferId: string, progress: TransferProgress) => void) => () => void;
-      }
+      };
+      // Archive operations
+      archives: {
+        create: (options: any) => Promise<{ success: boolean; message?: string; archivePath?: string }>;
+        extract: (options: any) => Promise<{ success: boolean; message?: string; extractedFiles?: number }>;
+        getInfo: (options: any) => Promise<{ success: boolean; info?: any }>;
+        test: (options: any) => Promise<{ success: boolean; message?: string; errors?: string[] }>;
+        preview: (options: any) => Promise<{ success: boolean; preview?: any }>;
+        addFiles: (options: any) => Promise<{ success: boolean; message?: string }>;
+        removeFiles: (options: any) => Promise<{ success: boolean; message?: string }>;
+      };
+      // Cloud integration operations (mock implementation)
+      cloud: {
+        connect: (provider: string, config?: any) => Promise<{ success: boolean; message: string; account?: any }>;
+        disconnect: (accountId: string) => Promise<{ success: boolean; message: string }>;
+        listFiles: (accountId: string, folderPath: string) => Promise<any[]>;
+        uploadFile: (accountId: string, localPath: string, remotePath: string) => Promise<{ success: boolean; message: string; file?: any }>;
+        downloadFile: (accountId: string, fileId: string, localPath: string) => Promise<{ success: boolean; message: string }>;
+        syncFolder: (accountId: string, localFolder: string, remoteFolder: string) => Promise<{ success: boolean; message: string; stats?: any }>;
+      };
     };
   }
 }
