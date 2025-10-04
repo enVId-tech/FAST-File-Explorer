@@ -31,6 +31,13 @@ export interface AppSettings {
     enableFilePreview: boolean;
     maxPreviewFileSize: number; // in MB
     enableQuickSearch: boolean;
+    enableVirtualScrolling: boolean;
+    enableCaching: boolean;
+    cacheMaxSize: number; // in MB
+    cacheMaxAge: number; // in minutes
+    enableLazyLoading: boolean;
+    enableDebouncing: boolean;
+    debounceDelay: number; // in ms
     // Navigation/history
     maxNavigationHistory: number;
 }

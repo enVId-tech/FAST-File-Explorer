@@ -44,6 +44,7 @@ interface Tab {
     id: string;
     title: string;
     url: string;
+    currentPath?: string; // Track current directory path for title updates
     isActive: boolean;
 }
 
@@ -152,89 +153,23 @@ const Main = React.memo(function Main(): React.JSX.Element {
         }
     }, [viewMode]);
 
-    // Save zoom level to localStorage and apply to document - INSTANT with window resizing
+    // Save zoom level to localStorage and apply to document
     useEffect(() => {
         try {
             localStorage.setItem('fast-file-explorer-zoom-level', zoomLevel.toString());
 
-            // Use the native CSS zoom property for instant, no-animation scaling
+            // Apply zoom using CSS transform for better performance
             const rootElement = document.documentElement;
+            const bodyElement = document.body;
 
-            // Apply zoom immediately - this is instant with no animations
+            // Use CSS zoom property for instant scaling
             rootElement.style.zoom = `${zoomLevel}%`;
-
-            // Force immediate layout recalculation to prevent gaps
+            
+            // Ensure proper layout
             rootElement.style.minHeight = '100vh';
-            rootElement.style.height = 'auto';
-
-            // Force the body to fill the available space
-            document.body.style.minHeight = '100vh';
-            document.body.style.height = 'auto';
-
-            // INSTANT window resizing based on zoom level
-            const adjustWindowSizeInstantly = async () => {
-                if (window.electronAPI?.window) {
-                    try {
-                        const bounds = await window.electronAPI.window.getBounds();
-
-                        // Calculate zoom factor
-                        const zoomFactor = zoomLevel / 100;
-
-                        // Define base comfortable dimensions at 100% zoom
-                        const baseWidth = 1200;
-                        const baseHeight = 800;
-
-                        // Calculate new window size more intelligently
-                        // The goal: maintain comfortable usable area regardless of zoom
-                        let newWidth, newHeight;
-
-                        if (zoomLevel < 100) {
-                            // Zoomed out: increase window size moderately to maintain usability
-                            const expansionFactor = 1 + (100 - zoomLevel) / 300; // More conservative expansion
-                            newWidth = Math.min(Math.round(bounds.width * expansionFactor), 1400);
-                            newHeight = Math.min(Math.round(bounds.height * expansionFactor), 1000);
-                        } else if (zoomLevel > 100) {
-                            // Zoomed in: only resize for significant zoom levels
-                            if (zoomLevel >= 150) {
-                                const contractionFactor = 1 - (zoomLevel - 100) / 600; // Very conservative contraction
-                                newWidth = Math.max(Math.round(bounds.width * contractionFactor), 900);
-                                newHeight = Math.max(Math.round(bounds.height * contractionFactor), 700);
-                            } else {
-                                // For moderate zoom (100-150%), don't resize much
-                                newWidth = bounds.width;
-                                newHeight = bounds.height;
-                            }
-                        } else {
-                            // 100% zoom: keep current size
-                            newWidth = bounds.width;
-                            newHeight = bounds.height;
-                        }
-
-                        // Only resize if there's a meaningful difference (avoid micro-adjustments)
-                        const widthDiff = Math.abs(bounds.width - newWidth);
-                        const heightDiff = Math.abs(bounds.height - newHeight);
-
-                        if (widthDiff > 30 || heightDiff > 30) {
-                            // Center the window while resizing
-                            const newX = bounds.x + Math.round((bounds.width - newWidth) / 2);
-                            const newY = bounds.y + Math.round((bounds.height - newHeight) / 2);
-
-                            // Apply resize INSTANTLY - no animation
-                            await window.electronAPI.window.setBounds({
-                                x: newX,
-                                y: newY,
-                                width: newWidth,
-                                height: newHeight
-                            });
-                        }
-                    } catch (error) {
-                        console.warn('Failed to adjust window size:', error);
-                    }
-                }
-            };
-
-            // Execute window resize immediately - no setTimeout, no delays
-            adjustWindowSizeInstantly();
+            rootElement.style.height = '100vh';
+            bodyElement.style.minHeight = '100vh';
+            bodyElement.style.height = '100vh';
 
         } catch (error) {
             console.warn('Failed to save or apply zoom level:', error);
@@ -720,6 +655,15 @@ const Main = React.memo(function Main(): React.JSX.Element {
         await refreshDrives();
     }, [refreshDrives]);
 
+    // Tab title update handler
+    const handlePathChange = useCallback((tabId: string, path: string, title: string) => {
+        setTabs(prev => prev.map(tab => 
+            tab.id === tabId 
+                ? { ...tab, title, currentPath: path }
+                : tab
+        ));
+    }, []);
+
     // UI is always ready immediately - drives load in background
     return (
         <SettingsProvider>
@@ -760,6 +704,7 @@ const Main = React.memo(function Main(): React.JSX.Element {
                                 drivesLoading={drivesLoading}
                                 drivesError={drivesError}
                                 onRefreshDrives={handleRefreshDrives}
+                                onPathChange={(path, title) => handlePathChange(tab.id, path, title)}
                             />
                         </LazyComponentErrorBoundary>
                     </Suspense>

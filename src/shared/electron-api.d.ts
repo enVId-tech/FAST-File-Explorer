@@ -143,6 +143,13 @@ interface AppSettings {
   enableFilePreview: boolean;
   maxPreviewFileSize: number;
   enableQuickSearch: boolean;
+  enableVirtualScrolling: boolean;
+  enableCaching: boolean;
+  cacheMaxSize: number;
+  cacheMaxAge: number;
+  enableLazyLoading: boolean;
+  enableDebouncing: boolean;
+  debounceDelay: number;
   // Navigation/history
   maxNavigationHistory: number;
 }

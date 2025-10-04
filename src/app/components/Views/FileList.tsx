@@ -32,6 +32,8 @@ import { useFileExplorerUI } from '../../utils';
 import { EnhancedContextMenu } from '../EnhancedContextMenu/EnhancedContextMenu';
 import { FileItem } from './FileItem';
 import { windowsNaturalSort, SortField, SortDirection, SortState } from '../FileUtils/fileUtils';
+import { searchFilesByPrefix, debounce } from '../../utils/SearchUtils';
+import { recentFilesManager } from '../../utils/RecentFilesManager';
 import './FileList.scss';
 import { VirtualizedList } from '../VirtualizedList/VirtualizedList';
 
@@ -62,8 +64,9 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
     });
 
     // Debounced filter values for performance optimization
-    const debouncedSearchTerm = useDebounce(searchTerm, 300);
-    const debouncedFilters = useDebounce(filters, 300);
+    const debounceDelay = settings.enableDebouncing ? settings.debounceDelay : 0;
+    const debouncedSearchTerm = useDebounce(searchTerm, debounceDelay);
+    const debouncedFilters = useDebounce(filters, debounceDelay);
 
     // Sorting state - default to Windows File Explorer behavior (name, ascending)
     const [sortState, setSortState] = useState<SortState>({
@@ -291,6 +294,9 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
 
     // Handle item navigation (double click) - ultra-fast optimized version
     const handleItemNavigation = useCallback((item: FileSystemItem) => {
+        // Track the file/folder access in recent files
+        recentFilesManager.addEntry(item);
+
         if (item.type === 'directory') {
             onNavigate?.(item.path);
         } else {
@@ -549,13 +555,24 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
     const filteredItems = useMemo(() => {
         let items = directoryItems;
 
-        // Apply search term filter (using debounced value)
+        // Apply search term filter with optimized search when enabled
         if (debouncedSearchTerm.trim()) {
             const searchLower = debouncedSearchTerm.toLowerCase().trim();
-            items = items.filter(item =>
-                item.name.toLowerCase().includes(searchLower) ||
-                (item.extension && item.extension.toLowerCase().includes(searchLower))
-            );
+            
+            // Use optimized binary search for prefix matching when enabled
+            if (settings.enableDebouncing && items.length > 50) {
+                // Sort items by name first for binary search to work
+                const sortedItems = [...items].sort((a, b) => 
+                    a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+                );
+                items = searchFilesByPrefix(sortedItems, searchLower);
+            } else {
+                // Fallback to standard includes search for small lists or when optimization disabled
+                items = items.filter(item =>
+                    item.name.toLowerCase().includes(searchLower) ||
+                    (item.extension && item.extension.toLowerCase().includes(searchLower))
+                );
+            }
         }
 
         // Apply name contains filter (using debounced value)
@@ -714,6 +731,9 @@ export const FileList = React.memo<FileListProps>(({ currentPath, viewMode, onNa
         if (selectedFiles.length === 0) return;
         try {
             for (const item of selectedFiles) {
+                // Track in recent files
+                recentFilesManager.addEntry(item);
+
                 if (item.type === 'directory') {
                     onNavigate?.(item.path);
                 } else {

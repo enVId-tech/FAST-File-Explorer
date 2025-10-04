@@ -34,6 +34,13 @@ export interface AppSettings {
     enableFilePreview: boolean;
     maxPreviewFileSize: number;
     enableQuickSearch: boolean;
+    enableVirtualScrolling: boolean;
+    enableCaching: boolean;
+    cacheMaxSize: number; // in MB
+    cacheMaxAge: number; // in minutes
+    enableLazyLoading: boolean;
+    enableDebouncing: boolean;
+    debounceDelay: number; // in ms
     // Navigation settings
     maxNavigationHistory: number;
 }
@@ -66,6 +73,13 @@ const defaultSettings: AppSettings = {
     enableFilePreview: true,
     maxPreviewFileSize: 10,
     enableQuickSearch: true,
+    enableVirtualScrolling: true,
+    enableCaching: true,
+    cacheMaxSize: 100,
+    cacheMaxAge: 5,
+    enableLazyLoading: true,
+    enableDebouncing: true,
+    debounceDelay: 300,
     maxNavigationHistory: 50,
 };
 

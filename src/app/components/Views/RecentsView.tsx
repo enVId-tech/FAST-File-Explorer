@@ -1,111 +1,287 @@
 import React, { useState, useEffect } from 'react';
-import { FaFileExcel, FaFilePowerpoint, FaFileWord, FaFileImage, FaFileCode, FaFile, FaFilePdf, FaFolder, FaClock, FaStar, FaCalendarAlt } from 'react-icons/fa';
-
-interface RecentFile {
-    name: string;
-    path: string;
-    type: 'file' | 'folder';
-    size?: string;
-    lastOpened: string;
-    dateModified: string;
-    icon: React.ReactNode;
-    isFavorite?: boolean;
-}
+import { FaFileExcel, FaFilePowerpoint, FaFileWord, FaFileImage, FaFileCode, FaFile, FaFilePdf, FaFolder, FaClock, FaStar, FaCalendarAlt, FaFilter, FaSortAmountDown, FaSortAmountUp, FaTrash, FaFileDownload, FaSearch, FaTimes } from 'react-icons/fa';
+import { recentFilesManager, RecentFileEntry, SortField, SortDirection } from '../../utils/RecentFilesManager';
+import { formatFileSize } from '../../../shared/fileSizeUtils';
 
 interface RecentsViewProps {
     viewMode: string;
 }
 
 export const RecentsView: React.FC<RecentsViewProps> = ({ viewMode }) => {
-    const [recentFiles, setRecentFiles] = useState<RecentFile[]>([
-        {
-            name: 'Project Presentation.pptx',
-            path: 'C:\\Users\\Documents\\Project Presentation.pptx',
-            type: 'file',
-            size: '2.4 MB',
-            lastOpened: '2 hours ago',
-            dateModified: '2/5/2024 2:30 PM',
-            icon: <FaFilePowerpoint style={{ color: '#D24726' }} />,
-            isFavorite: true
-        },
-        {
-            name: 'Budget Analysis.xlsx',
-            path: 'C:\\Users\\Documents\\Budget Analysis.xlsx',
-            type: 'file',
-            size: '890 KB',
-            lastOpened: '4 hours ago',
-            dateModified: '2/5/2024 10:15 AM',
-            icon: <FaFileExcel style={{ color: '#207245' }} />,
-            isFavorite: false
-        },
-        {
-            name: 'Meeting Notes.docx',
-            path: 'C:\\Users\\Documents\\Meeting Notes.docx',
-            type: 'file',
-            size: '156 KB',
-            lastOpened: '6 hours ago',
-            dateModified: '2/4/2024 4:45 PM',
-            icon: <FaFileWord style={{ color: '#2B579A' }} />,
-            isFavorite: false
-        },
-        {
-            name: 'Design Assets',
-            path: 'C:\\Users\\Documents\\Design Assets',
-            type: 'folder',
-            lastOpened: '1 day ago',
-            dateModified: '2/4/2024 11:20 AM',
-            icon: <FaFolder style={{ color: '#FDB900' }} />,
-            isFavorite: true
-        },
-        {
-            name: 'Screenshot_2024-02-05.png',
-            path: 'C:\\Users\\Desktop\\Screenshot_2024-02-05.png',
-            type: 'file',
-            size: '1.2 MB',
-            lastOpened: '1 day ago',
-            dateModified: '2/4/2024 3:12 PM',
-            icon: <FaFileImage style={{ color: '#0078D4' }} />,
-            isFavorite: false
-        },
-        {
-            name: 'main.tsx',
-            path: 'C:\\Projects\\file-explorer\\src\\main.tsx',
-            type: 'file',
-            size: '45 KB',
-            lastOpened: '2 days ago',
-            dateModified: '2/3/2024 9:30 AM',
-            icon: <FaFileCode style={{ color: '#0078D4' }} />,
-            isFavorite: false
-        },
-        {
-            name: 'Annual Report.pdf',
-            path: 'C:\\Users\\Downloads\\Annual Report.pdf',
-            type: 'file',
-            size: '5.8 MB',
-            lastOpened: '3 days ago',
-            dateModified: '2/2/2024 1:15 PM',
-            icon: <FaFilePdf style={{ color: '#DC3545' }} />,
-            isFavorite: false
-        },
-        {
-            name: 'config.json',
-            path: 'C:\\Projects\\settings\\config.json',
-            type: 'file',
-            size: '12 KB',
-            lastOpened: '1 week ago',
-            dateModified: '1/29/2024 8:45 AM',
-            icon: <FaFileCode style={{ color: '#FDB900' }} />,
-            isFavorite: false
-        }
-    ]);
+    const [recentFiles, setRecentFiles] = useState<RecentFileEntry[]>([]);
+    const [filteredFiles, setFilteredFiles] = useState<RecentFileEntry[]>([]);
+    const [filterType, setFilterType] = useState<string>('all');
+    const [sortField, setSortField] = useState<SortField>('date');
+    const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+    const [searchQuery, setSearchQuery] = useState<string>('');
+    const [showFilters, setShowFilters] = useState<boolean>(false);
+    const [stats, setStats] = useState<any>(null);
 
-    const toggleFavorite = (index: number) => {
-        setRecentFiles(prev =>
-            prev.map((file, i) =>
-                i === index ? { ...file, isFavorite: !file.isFavorite } : file
-            )
-        );
+    // Load recent files on mount and subscribe to changes
+    useEffect(() => {
+        loadRecentFiles();
+        updateStats();
+
+        const unsubscribe = recentFilesManager.onChange(() => {
+            loadRecentFiles();
+            updateStats();
+        });
+
+        return unsubscribe;
+    }, []);
+
+    // Apply filters, search, and sorting when dependencies change
+    useEffect(() => {
+        applyFiltersAndSort();
+    }, [recentFiles, filterType, sortField, sortDirection, searchQuery]);
+
+    const loadRecentFiles = () => {
+        const files = recentFilesManager.getRecentFiles();
+        setRecentFiles(files);
     };
+
+    const updateStats = () => {
+        const statistics = recentFilesManager.getStats();
+        setStats(statistics);
+    };
+
+    const applyFiltersAndSort = () => {
+        let result = [...recentFiles];
+
+        // Apply type filter
+        if (filterType !== 'all') {
+            result = recentFilesManager.getByType(filterType);
+        }
+
+        // Apply search
+        if (searchQuery.trim()) {
+            result = result.filter(entry =>
+                entry.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                entry.path.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+        }
+
+        // Apply sorting
+        result = recentFilesManager.sortBy(sortField, sortDirection);
+
+        // If we had filters, re-apply them to sorted results
+        if (filterType !== 'all' || searchQuery.trim()) {
+            if (filterType !== 'all') {
+                result = result.filter(entry => {
+                    const typeFiltered = recentFilesManager.getByType(filterType);
+                    return typeFiltered.some(f => f.id === entry.id);
+                });
+            }
+            if (searchQuery.trim()) {
+                result = result.filter(entry =>
+                    entry.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    entry.path.toLowerCase().includes(searchQuery.toLowerCase())
+                );
+            }
+        }
+
+        setFilteredFiles(result);
+    };
+
+    const handleClearHistory = () => {
+        recentFilesManager.clearHistory();
+    };
+
+    const handleRemoveItem = (id: string) => {
+        recentFilesManager.removeEntry(id);
+    };
+
+    const handleExport = () => {
+        const json = recentFilesManager.export();
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `recent-files-${Date.now()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+
+    const handleImport = () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = (e: Event) => {
+            const file = (e.target as HTMLInputElement).files?.[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const json = e.target?.result as string;
+                    if (recentFilesManager.import(json)) {
+                        alert('Recent files imported successfully!');
+                    } else {
+                        alert('Failed to import recent files. Invalid format.');
+                    }
+                };
+                reader.readAsText(file);
+            }
+        };
+        input.click();
+    };
+
+    const toggleSort = (field: SortField) => {
+        if (sortField === field) {
+            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortField(field);
+            setSortDirection('desc');
+        }
+    };
+
+    const getFileIcon = (entry: RecentFileEntry): React.ReactNode => {
+        const ext = entry.extension.toLowerCase();
+        const category = recentFilesManager.getFileTypeCategory(entry);
+
+        if (entry.type === 'directory') return <FaFolder style={{ color: '#FDB900' }} />;
+
+        switch (category) {
+            case 'document':
+                if (['.xls', '.xlsx'].includes(ext)) return <FaFileExcel style={{ color: '#207245' }} />;
+                if (['.ppt', '.pptx'].includes(ext)) return <FaFilePowerpoint style={{ color: '#D24726' }} />;
+                if (['.doc', '.docx'].includes(ext)) return <FaFileWord style={{ color: '#2B579A' }} />;
+                if (ext === '.pdf') return <FaFilePdf style={{ color: '#DC3545' }} />;
+                return <FaFile style={{ color: '#6C757D' }} />;
+            case 'image':
+                return <FaFileImage style={{ color: '#0078D4' }} />;
+            case 'code':
+                return <FaFileCode style={{ color: '#0078D4' }} />;
+            default:
+                return <FaFile style={{ color: '#6C757D' }} />;
+        }
+    };
+
+    const formatDate = (timestamp: number): string => {
+        const date = new Date(timestamp);
+        const now = Date.now();
+        const diff = now - timestamp;
+
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
+
+        if (minutes < 1) return 'Just now';
+        if (minutes < 60) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+        if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+        if (days < 7) return `${days} day${days > 1 ? 's' : ''} ago`;
+        if (days < 30) return `${Math.floor(days / 7)} week${Math.floor(days / 7) > 1 ? 's' : ''} ago`;
+        return date.toLocaleDateString();
+    };
+
+    const getEmptyState = () => (
+        <div className="empty-state">
+            <FaClock className="empty-icon" />
+            <h3>No Recent Files</h3>
+            <p>Files you open will appear here</p>
+        </div>
+    );
+
+    const renderFilterBar = () => (
+        <div className={`filter-bar ${showFilters ? 'expanded' : ''}`}>
+            <div className="filter-controls">
+                <div className="search-box">
+                    <FaSearch className="search-icon" />
+                    <input
+                        type="text"
+                        placeholder="Search recent files..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                    {searchQuery && (
+                        <button className="clear-search" onClick={() => setSearchQuery('')}>
+                            <FaTimes />
+                        </button>
+                    )}
+                </div>
+
+                <button 
+                    className={`filter-toggle ${showFilters ? 'active' : ''}`}
+                    onClick={() => setShowFilters(!showFilters)}
+                >
+                    <FaFilter /> Filters
+                </button>
+
+                <div className="sort-controls">
+                    <label>Sort:</label>
+                    <select value={sortField} onChange={(e) => setSortField(e.target.value as SortField)}>
+                        <option value="date">Date</option>
+                        <option value="name">Name</option>
+                        <option value="type">Type</option>
+                        <option value="count">Access Count</option>
+                        <option value="size">Size</option>
+                    </select>
+                    <button onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}>
+                        {sortDirection === 'asc' ? <FaSortAmountUp /> : <FaSortAmountDown />}
+                    </button>
+                </div>
+
+                <button className="action-btn danger" onClick={handleClearHistory}>
+                    <FaTrash /> Clear All
+                </button>
+
+                <button className="action-btn" onClick={handleExport}>
+                    <FaFileDownload /> Export
+                </button>
+            </div>
+
+            {showFilters && (
+                <div className="filter-options">
+                    <button 
+                        className={`filter-chip ${filterType === 'all' ? 'active' : ''}`}
+                        onClick={() => setFilterType('all')}
+                    >
+                        All ({stats?.totalEntries || 0})
+                    </button>
+                    <button 
+                        className={`filter-chip ${filterType === 'folders' ? 'active' : ''}`}
+                        onClick={() => setFilterType('folders')}
+                    >
+                        <FaFolder /> Folders ({stats?.typeBreakdown?.folder || 0})
+                    </button>
+                    <button 
+                        className={`filter-chip ${filterType === 'documents' ? 'active' : ''}`}
+                        onClick={() => setFilterType('documents')}
+                    >
+                        <FaFile /> Documents ({stats?.typeBreakdown?.document || 0})
+                    </button>
+                    <button 
+                        className={`filter-chip ${filterType === 'images' ? 'active' : ''}`}
+                        onClick={() => setFilterType('images')}
+                    >
+                        <FaFileImage /> Images ({stats?.typeBreakdown?.image || 0})
+                    </button>
+                    <button 
+                        className={`filter-chip ${filterType === 'code' ? 'active' : ''}`}
+                        onClick={() => setFilterType('code')}
+                    >
+                        <FaFileCode /> Code ({stats?.typeBreakdown?.code || 0})
+                    </button>
+                    <button 
+                        className={`filter-chip ${filterType === 'videos' ? 'active' : ''}`}
+                        onClick={() => setFilterType('videos')}
+                    >
+                        Videos ({stats?.typeBreakdown?.video || 0})
+                    </button>
+                    <button 
+                        className={`filter-chip ${filterType === 'audio' ? 'active' : ''}`}
+                        onClick={() => setFilterType('audio')}
+                    >
+                        Audio ({stats?.typeBreakdown?.audio || 0})
+                    </button>
+                    <button 
+                        className={`filter-chip ${filterType === 'archives' ? 'active' : ''}`}
+                        onClick={() => setFilterType('archives')}
+                    >
+                        Archives ({stats?.typeBreakdown?.archive || 0})
+                    </button>
+                </div>
+            )}
+        </div>
+    );
 
     if (viewMode === 'grid') {
         return (
@@ -115,50 +291,57 @@ export const RecentsView: React.FC<RecentsViewProps> = ({ viewMode }) => {
                         <FaClock className="header-icon" />
                         <div className="header-text">
                             <h2>Recent Files</h2>
-                            <p>Files and folders you've recently opened</p>
+                            <p>{stats?.totalEntries || 0} items • {stats?.totalAccesses || 0} total accesses</p>
                         </div>
                     </div>
                 </div>
 
+                {renderFilterBar()}
+
                 <div className="recents-content">
-
-                    <div className="recents-grid">
-                        {recentFiles.map((file, index) => (
-                            <div key={index} className="recent-item-card">
-                                <div className="item-header">
-                                    <div className="item-icon">
-                                        {file.icon}
-                                    </div>
-                                    <button
-                                        className={`favorite-btn ${file.isFavorite ? 'active' : ''}`}
-                                        onClick={() => toggleFavorite(index)}
-                                    >
-                                        <FaStar />
-                                    </button>
-                                </div>
-
-                                <div className="item-content">
-                                    <h3 className="item-name" title={file.name}>
-                                        {file.name}
-                                    </h3>
-                                    <div className="item-details">
-                                        <div className="detail-row">
-                                            <FaClock className="detail-icon" />
-                                            <span>{file.lastOpened}</span>
+                    {filteredFiles.length === 0 ? getEmptyState() : (
+                        <div className="recents-grid">
+                            {filteredFiles.map((file) => (
+                                <div key={file.id} className="recent-item-card">
+                                    <div className="item-header">
+                                        <div className="item-icon">
+                                            {getFileIcon(file)}
                                         </div>
-                                        {file.size && (
-                                            <div className="detail-row">
-                                                <span className="file-size">{file.size}</span>
-                                            </div>
-                                        )}
+                                        <button
+                                            className="remove-btn"
+                                            onClick={() => handleRemoveItem(file.id)}
+                                            title="Remove from recent files"
+                                        >
+                                            <FaTimes />
+                                        </button>
                                     </div>
-                                    <div className="item-path" title={file.path}>
-                                        {file.path}
+
+                                    <div className="item-content">
+                                        <h3 className="item-name" title={file.name}>
+                                            {file.name}
+                                        </h3>
+                                        <div className="item-details">
+                                            <div className="detail-row">
+                                                <FaClock className="detail-icon" />
+                                                <span>{formatDate(file.lastAccessed)}</span>
+                                            </div>
+                                            {file.size && (
+                                                <div className="detail-row">
+                                                    <span className="file-size">{formatFileSize(file.size)}</span>
+                                                </div>
+                                            )}
+                                            <div className="detail-row">
+                                                <span className="access-count">Opened {file.accessCount}x</span>
+                                            </div>
+                                        </div>
+                                        <div className="item-path" title={file.path}>
+                                            {file.path}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         );
@@ -172,46 +355,67 @@ export const RecentsView: React.FC<RecentsViewProps> = ({ viewMode }) => {
                     <FaClock className="header-icon" />
                     <div className="header-text">
                         <h2>Recent Files</h2>
-                        <p>Files and folders you've recently opened</p>
+                        <p>{stats?.totalEntries || 0} items • {stats?.totalAccesses || 0} total accesses</p>
                     </div>
                 </div>
             </div>
 
-            <div className="recents-content">
-                <div className="recents-list">
-                    <div className="list-header">
-                        <div className="column-header name">Name</div>
-                        <div className="column-header last-opened">Last Opened</div>
-                        <div className="column-header size">Size</div>
-                        <div className="column-header modified">Date Modified</div>
-                        <div className="column-header path">Location</div>
-                    </div>
+            {renderFilterBar()}
 
-                    {recentFiles.map((file, index) => (
-                        <div key={index} className="recent-item-row">
-                            <div className="item-name-column">
-                                <div className="item-icon">
-                                    {file.icon}
-                                </div>
-                                <span className="item-name">{file.name}</span>
-                                <button
-                                    className={`favorite-btn ${file.isFavorite ? 'active' : ''}`}
-                                    onClick={() => toggleFavorite(index)}
-                                >
-                                    <FaStar />
-                                </button>
+            <div className="recents-content">
+                {filteredFiles.length === 0 ? getEmptyState() : (
+                    <div className="recents-list">
+                        <div className="list-header">
+                            <div className="column-header name" onClick={() => toggleSort('name')}>
+                                Name {sortField === 'name' && (sortDirection === 'asc' ? '▲' : '▼')}
                             </div>
-                            <div className="item-last-opened">
-                                <FaClock className="time-icon" />
-                                {file.lastOpened}
+                            <div className="column-header last-opened" onClick={() => toggleSort('date')}>
+                                Last Opened {sortField === 'date' && (sortDirection === 'asc' ? '▲' : '▼')}
                             </div>
-                            <div className="item-size">{file.size || '—'}</div>
-                            <div className="item-modified">{file.dateModified}</div>
-                            <div className="item-path" title={file.path}>{file.path}</div>
+                            <div className="column-header size" onClick={() => toggleSort('size')}>
+                                Size {sortField === 'size' && (sortDirection === 'asc' ? '▲' : '▼')}
+                            </div>
+                            <div className="column-header type" onClick={() => toggleSort('type')}>
+                                Type {sortField === 'type' && (sortDirection === 'asc' ? '▲' : '▼')}
+                            </div>
+                            <div className="column-header count" onClick={() => toggleSort('count')}>
+                                Count {sortField === 'count' && (sortDirection === 'asc' ? '▲' : '▼')}
+                            </div>
+                            <div className="column-header path">Location</div>
+                            <div className="column-header actions">Actions</div>
                         </div>
-                    ))}
-                </div>
+
+                        {filteredFiles.map((file) => (
+                            <div key={file.id} className="recent-item-row">
+                                <div className="item-name-column">
+                                    <div className="item-icon">
+                                        {getFileIcon(file)}
+                                    </div>
+                                    <span className="item-name">{file.name}</span>
+                                </div>
+                                <div className="item-last-opened">
+                                    <FaClock className="time-icon" />
+                                    {formatDate(file.lastAccessed)}
+                                </div>
+                                <div className="item-size">{file.size ? formatFileSize(file.size) : '—'}</div>
+                                <div className="item-type">{recentFilesManager.getFileTypeCategory(file)}</div>
+                                <div className="item-count">{file.accessCount}x</div>
+                                <div className="item-path" title={file.path}>{file.parentPath}</div>
+                                <div className="item-actions">
+                                    <button
+                                        className="remove-btn"
+                                        onClick={() => handleRemoveItem(file.id)}
+                                        title="Remove from recent files"
+                                    >
+                                        <FaTimes />
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );
 };
+

@@ -1,0 +1,1 @@
+export { QuickAccessEditor } from './QuickAccessEditor';

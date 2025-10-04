@@ -44,6 +44,13 @@ class SettingsManager {
             enableFilePreview: true,
             maxPreviewFileSize: 10,
             enableQuickSearch: true,
+            enableVirtualScrolling: true,
+            enableCaching: true,
+            cacheMaxSize: 100,
+            cacheMaxAge: 5,
+            enableLazyLoading: true,
+            enableDebouncing: true,
+            debounceDelay: 300,
             // Navigation/history
             maxNavigationHistory: 50,
         };

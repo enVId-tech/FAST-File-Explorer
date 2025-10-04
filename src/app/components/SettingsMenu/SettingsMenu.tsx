@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FaCog, FaDesktop, FaSync, FaFolderOpen, FaInfoCircle, FaEdit, FaCheck, FaTimes, FaUndo, FaRocket, FaWrench, FaTerminal } from 'react-icons/fa';
+import { FaCog, FaDesktop, FaSync, FaFolderOpen, FaInfoCircle, FaEdit, FaCheck, FaTimes, FaUndo, FaRocket, FaWrench, FaTerminal, FaTrash, FaDatabase } from 'react-icons/fa';
 import './SettingsMenu.scss';
 import { BUILD_VERSION, getBuildDateString, getVersionDisplayString } from '../../../version';
 import { useSettings, AppSettings } from '../../contexts/SettingsContext';
 import { useNavigation } from '../../contexts/NavigationContext';
 import { DeveloperConsole } from '../DeveloperConsole/DeveloperConsole';
+import { cacheManager } from '../../utils/CacheManager';
 
 interface SettingsMenuProps {
     isOpen: boolean;
@@ -21,7 +22,31 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
     const [editValue, setEditValue] = useState<string>('');
     const [devFileTransferEnabled, setDevFileTransferEnabled] = useState(false);
     const [showDeveloperConsole, setShowDeveloperConsole] = useState(false);
+    const [cacheStats, setCacheStats] = useState<any>(null);
     const menuRef = useRef<HTMLDivElement>(null);
+
+    // Load cache statistics
+    useEffect(() => {
+        if (activeCategory === 'performance') {
+            const stats = cacheManager.getStats();
+            setCacheStats(stats);
+        }
+    }, [activeCategory]);
+
+    // Handle cache clear
+    const handleClearCache = () => {
+        if (window.confirm('Are you sure you want to clear all cached data? This will temporarily slow down navigation until the cache is rebuilt.')) {
+            try {
+                cacheManager.clearAll();
+                setCacheStats(cacheManager.getStats());
+                console.log('Cache cleared successfully');
+                alert('Cache cleared successfully!');
+            } catch (error: any) {
+                console.error('Failed to clear cache:', error);
+                alert(`Failed to clear cache: ${error.message}`);
+            }
+        }
+    };
 
     // Handle setting updates with immediate UI feedback
     const handleSettingUpdate = async (key: string, value: any) => {
@@ -246,25 +271,124 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
             icon: <FaSync />,
             settings: [
                 {
-                    id: 'enableAnimations',
-                    name: 'Enable animations',
-                    type: 'toggle',
-                    value: settings.enableAnimations ?? true,
-                    key: 'enableAnimations'
+                    category: 'UI Performance',
+                    items: [
+                        {
+                            id: 'enableAnimations',
+                            name: 'Enable animations',
+                            description: 'Smooth transitions and animations throughout the app',
+                            type: 'toggle',
+                            value: settings.enableAnimations ?? true,
+                            key: 'enableAnimations'
+                        },
+                        {
+                            id: 'enableVirtualScrolling',
+                            name: 'Virtual scrolling',
+                            description: 'Render only visible items for better performance with large folders',
+                            type: 'toggle',
+                            value: settings.enableVirtualScrolling ?? true,
+                            key: 'enableVirtualScrolling'
+                        },
+                        {
+                            id: 'enableLazyLoading',
+                            name: 'Lazy loading',
+                            description: 'Load components on-demand for faster initial startup',
+                            type: 'toggle',
+                            value: settings.enableLazyLoading ?? true,
+                            key: 'enableLazyLoading'
+                        }
+                    ]
                 },
                 {
-                    id: 'enableFilePreview',
-                    name: 'Enable file preview',
-                    type: 'toggle',
-                    value: settings.enableFilePreview ?? true,
-                    key: 'enableFilePreview'
+                    category: 'Caching',
+                    items: [
+                        {
+                            id: 'enableCaching',
+                            name: 'Enable caching',
+                            description: 'Cache file/folder data for faster navigation',
+                            type: 'toggle',
+                            value: settings.enableCaching ?? true,
+                            key: 'enableCaching'
+                        },
+                        {
+                            id: 'cacheMaxSize',
+                            name: 'Cache size limit (MB)',
+                            description: 'Maximum memory used for caching',
+                            type: 'slider',
+                            value: settings.cacheMaxSize || 100,
+                            min: 10,
+                            max: 500,
+                            step: 10,
+                            key: 'cacheMaxSize'
+                        },
+                        {
+                            id: 'cacheMaxAge',
+                            name: 'Cache expiration (minutes)',
+                            description: 'How long to keep cached data',
+                            type: 'slider',
+                            value: settings.cacheMaxAge || 5,
+                            min: 1,
+                            max: 60,
+                            step: 1,
+                            key: 'cacheMaxAge'
+                        }
+                    ]
                 },
                 {
-                    id: 'maxPreviewFileSize',
-                    name: 'Max preview file size (MB)',
-                    type: 'number',
-                    value: settings.maxPreviewFileSize || 10,
-                    key: 'maxPreviewFileSize'
+                    category: 'Search & Input',
+                    items: [
+                        {
+                            id: 'enableDebouncing',
+                            name: 'Debounce user input',
+                            description: 'Delay search/filter operations to reduce system load',
+                            type: 'toggle',
+                            value: settings.enableDebouncing ?? true,
+                            key: 'enableDebouncing'
+                        },
+                        {
+                            id: 'debounceDelay',
+                            name: 'Debounce delay (ms)',
+                            description: 'Time to wait before processing input',
+                            type: 'slider',
+                            value: settings.debounceDelay || 300,
+                            min: 100,
+                            max: 1000,
+                            step: 50,
+                            key: 'debounceDelay'
+                        },
+                        {
+                            id: 'enableQuickSearch',
+                            name: 'Quick search',
+                            description: 'Enable fast in-memory search',
+                            type: 'toggle',
+                            value: settings.enableQuickSearch ?? true,
+                            key: 'enableQuickSearch'
+                        }
+                    ]
+                },
+                {
+                    category: 'File Preview',
+                    items: [
+                        {
+                            id: 'enableFilePreview',
+                            name: 'Enable file preview',
+                            description: 'Show file contents in details panel',
+                            type: 'toggle',
+                            value: settings.enableFilePreview ?? true,
+                            key: 'enableFilePreview'
+                        },
+                        {
+                            id: 'maxPreviewFileSize',
+                            name: 'Max preview file size (MB)',
+                            description: 'Maximum file size to preview',
+                            type: 'slider',
+                            value: settings.maxPreviewFileSize || 10,
+                            min: 1,
+                            max: 100,
+                            step: 1,
+                            key: 'maxPreviewFileSize'
+                        }
+                    ]
                 }
             ]
         }
@@ -312,6 +436,23 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
                         min="0"
                         max="100"
                     />
+                );
+
+            case 'slider':
+                return (
+                    <div className="slider-control">
+                        <input
+                            type="range"
+                            value={setting.value}
+                            onChange={(e) => handleSettingUpdate(setting.key, Number(e.target.value))}
+                            disabled={isLoading}
+                            className="setting-slider"
+                            min={setting.min || 0}
+                            max={setting.max || 100}
+                            step={setting.step || 1}
+                        />
+                        <span className="slider-value">{setting.value}{setting.unit || ''}</span>
+                    </div>
                 );
 
             default:
@@ -417,19 +558,97 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
                             <>
                                 <div className="settings-panel-header">
                                     <div className="panel-icon"><FaSync /></div>
-                                    <h2>Performance</h2>
+                                    <h2>Performance Settings</h2>
+                                </div>
+                                <div className="settings-description">
+                                    <p>Configure performance options to optimize FAST File Explorer for your system.</p>
                                 </div>
                                 <div className="settings-list">
                                     {settingsCategories
                                         .find(cat => cat.id === 'performance')
-                                        ?.settings?.map((setting) => (
-                                            <div key={setting.id} className="setting-item">
-                                                <label className="setting-label">{setting.name}</label>
-                                                <div className="setting-control">
-                                                    {renderSetting(setting)}
+                                        ?.settings?.map((settingGroup: any) => (
+                                            <div key={settingGroup.category} className="settings-subsection">
+                                                <h3 className="subsection-title">{settingGroup.category}</h3>
+                                                <div className="subsection-items">
+                                                    {settingGroup.items?.map((setting: any) => (
+                                                        <div key={setting.id} className="setting-item">
+                                                            <div className="setting-info">
+                                                                <label className="setting-label">{setting.name}</label>
+                                                                {setting.description && (
+                                                                    <p className="setting-description">{setting.description}</p>
+                                                                )}
+                                                            </div>
+                                                            <div className="setting-control">
+                                                                {renderSetting(setting)}
+                                                            </div>
+                                                        </div>
+                                                    ))}
                                                 </div>
                                             </div>
                                         )) || []}
+
+                                        {/* Cache Management Section */}
+                                        {settings.enableCaching && cacheStats && (
+                                            <div className="cache-management">
+                                                <h3 className="subsection-title">
+                                                    <FaDatabase /> Cache Management
+                                                </h3>
+                                                <div className="cache-stats">
+                                                    <div className="cache-stat-card">
+                                                        <div className="stat-label">Hit Rate</div>
+                                                        <div className="stat-value">
+                                                            {((cacheStats.hits / (cacheStats.hits + cacheStats.misses || 1)) * 100).toFixed(1)}%
+                                                        </div>
+                                                        <div className="stat-detail">
+                                                            {cacheStats.hits} hits / {cacheStats.misses} misses
+                                                        </div>
+                                                    </div>
+                                                    <div className="cache-stat-card">
+                                                        <div className="stat-label">Total Size</div>
+                                                        <div className="stat-value">
+                                                            {(cacheStats.totalSize / (1024 * 1024)).toFixed(2)} MB
+                                                        </div>
+                                                        <div className="stat-detail">
+                                                            {cacheStats.totalEntries} entries
+                                                        </div>
+                                                    </div>
+                                                    <div className="cache-stat-card">
+                                                        <div className="stat-label">Files Cached</div>
+                                                        <div className="stat-value">
+                                                            {cacheStats.fileCache?.size || 0}
+                                                        </div>
+                                                        <div className="stat-detail">
+                                                            File entries
+                                                        </div>
+                                                    </div>
+                                                    <div className="cache-stat-card">
+                                                        <div className="stat-label">Folders Cached</div>
+                                                        <div className="stat-value">
+                                                            {cacheStats.folderCache?.size || 0}
+                                                        </div>
+                                                        <div className="stat-detail">
+                                                            Folder entries
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="cache-actions">
+                                                    <button 
+                                                        onClick={handleClearCache} 
+                                                        className="modern-button danger"
+                                                        disabled={isLoading}
+                                                    >
+                                                        <FaTrash /> Clear All Cache
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => setCacheStats(cacheManager.getStats())} 
+                                                        className="modern-button secondary"
+                                                        disabled={isLoading}
+                                                    >
+                                                        <FaSync /> Refresh Stats
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
                                 </div>
                             </>
                         )}

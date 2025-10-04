@@ -6,6 +6,9 @@ import { ThisPCView } from './ThisPCView';
 import { FileList } from '../FileUtils/FileList';
 import { DriveItem } from './DriveItem';
 import { SettingsMenu } from '../SettingsMenu/SettingsMenu';
+import { QuickAccessEditor } from '../QuickAccessEditor';
+import { SortPreferencesEditor } from '../SortPreferencesEditor';
+import { quickAccessManager } from '../../utils/QuickAccessManager';
 import { Drive, FileItem } from 'shared/file-data';
 import { FileSystemItem } from '../../../shared/ipc-channels';
 import { useFileExplorerUI, NavigationUtils } from '../../utils';
@@ -20,12 +23,15 @@ interface TabContentProps {
     drivesLoading?: boolean;
     drivesError?: string | null;
     onRefreshDrives?: () => Promise<void>;
+    onPathChange?: (path: string, title: string) => void; // Callback to update tab title
 }
 
-export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActive, viewMode, setViewMode, drives, drivesLoading = false, drivesError = null, onRefreshDrives }) => {
+export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActive, viewMode, setViewMode, drives, drivesLoading = false, drivesError = null, onRefreshDrives, onPathChange }) => {
     const [selectedItem, setSelectedItem] = useState<FileItem | null>(null);
     const [hoveredDrive, setHoveredDrive] = useState<Drive | null>(null);
     const [showDetailsPanel, setShowDetailsPanel] = useState(true);
+    const [showQuickAccessEditor, setShowQuickAccessEditor] = useState(false);
+    const [showSortPreferences, setShowSortPreferences] = useState(false);
     const [sortBy, setSortBy] = useState<'name' | 'size' | 'date' | 'type'>('name');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
     const [activeRibbonTab, setActiveRibbonTab] = useState<'home' | 'share' | 'view' | 'manage' | 'organize' | 'tools' | 'help'>('home');
@@ -40,6 +46,15 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
     const fileExplorer = useFileExplorerUI(() => {
         setRefreshTrigger(prev => prev + 1);
     }, { enableShortcuts: isActive });
+
+    // Update tab title when path changes
+    useEffect(() => {
+        if (onPathChange && fileExplorer.currentPath) {
+            const pathSegments = fileExplorer.currentPath.split('\\').filter(Boolean);
+            const folderName = pathSegments.length > 0 ? pathSegments[pathSegments.length - 1] : fileExplorer.currentPath;
+            onPathChange(fileExplorer.currentPath, folderName || 'This PC');
+        }
+    }, [fileExplorer.currentPath, onPathChange]);
 
     // Use utilities from centralized hook
     const { 
@@ -67,6 +82,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
     const [detailsPanelWidth, setDetailsPanelWidth] = useState(320);
     const [isResizingSidebar, setIsResizingSidebar] = useState(false);
     const [isResizingDetails, setIsResizingDetails] = useState(false);
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
     // Convert drive to FileSystemItem for details panel
     const driveToFileSystemItem = (drive: Drive): FileSystemItem => {
@@ -733,6 +749,20 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                         >
                             Details
                         </button>
+                        <button
+                            className="toolbar-button"
+                            onClick={() => setShowQuickAccessEditor(true)}
+                            title="Customize Quick Access"
+                        >
+                            ⚡ Quick Access
+                        </button>
+                        <button
+                            className="toolbar-button"
+                            onClick={() => setShowSortPreferences(true)}
+                            title="Customize Sort Preferences"
+                        >
+                            <FaSortAlphaDown /> Sort
+                        </button>
                     </div>
                 </div>
 
@@ -1037,8 +1067,8 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                 <div className="file-explorer-content">
                     {/* Modern Sidebar */}
                     <div
-                        className="sidebar"
-                        style={{ width: `${sidebarWidth}px`, minWidth: '200px', maxWidth: '500px' }}
+                        className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}
+                        style={{ width: sidebarCollapsed ? '0px' : `${sidebarWidth}px`, minWidth: sidebarCollapsed ? '0px' : '200px', maxWidth: '500px' }}
                     >
                         <div className="sidebar-main">
                             {sidebarSections.map((section, index) => (
@@ -1082,11 +1112,22 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                     </div>
 
                     {/* Sidebar Resize Handle */}
-                    <div
-                        className={`resize-handle resize-handle-vertical ${isResizingSidebar ? 'active' : ''}`}
-                        onMouseDown={handleSidebarResize}
-                        title="Resize sidebar"
-                    />
+                    {!sidebarCollapsed && (
+                        <div
+                            className={`resize-handle resize-handle-vertical ${isResizingSidebar ? 'active' : ''}`}
+                            onMouseDown={handleSidebarResize}
+                            title="Resize sidebar"
+                        />
+                    )}
+
+                    {/* Sidebar Collapse/Expand Toggle */}
+                    <button
+                        className={`sidebar-toggle ${sidebarCollapsed ? 'collapsed' : ''}`}
+                        onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                        title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                    >
+                        {sidebarCollapsed ? '»' : '«'}
+                    </button>
 
                     {/* File Area */}
                     <div className="file-area">
@@ -1146,6 +1187,19 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
             <SettingsMenu
                 isOpen={showSettingsMenu}
                 onClose={() => setShowSettingsMenu(false)}
+            />
+
+            {/* Quick Access Editor */}
+            <QuickAccessEditor
+                isOpen={showQuickAccessEditor}
+                onClose={() => setShowQuickAccessEditor(false)}
+            />
+
+            {/* Sort Preferences Editor */}
+            <SortPreferencesEditor
+                isOpen={showSortPreferences}
+                onClose={() => setShowSortPreferences(false)}
+                currentPath={fileExplorer.currentPath}
             />
         </div>
     );

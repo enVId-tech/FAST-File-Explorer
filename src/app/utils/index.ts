@@ -37,6 +37,33 @@ export {
     type UIOperationHandlers
 } from './UIUtils';
 
+// Cache manager
+export {
+    cacheManager,
+    default as CacheManager,
+    type CacheConfig,
+    type CacheStats
+} from './CacheManager';
+
+// Keyboard shortcuts
+export {
+    KeyboardShortcutManager,
+    useKeyboardShortcuts as useKeyboardShortcutsAdvanced,
+    type KeyboardShortcutHandlers
+} from './KeyboardShortcuts';
+
+// Search utilities
+export {
+    debounce,
+    binarySearchFiles,
+    searchFilesByPrefix,
+    fuzzySearchFiles,
+    advancedSearchFiles,
+    highlightSearchTerm,
+    createDebouncedSearch,
+    SearchCache
+} from './SearchUtils';
+
 // Modern components (removed: unused experimental components)
 
 // Re-export commonly used types
