@@ -9,6 +9,7 @@ import { SettingsMenu } from '../SettingsMenu/SettingsMenu';
 import { QuickAccessEditor } from '../QuickAccessEditor';
 import { SortPreferencesEditor } from '../SortPreferencesEditor';
 import { BatchRenameDialog } from '../BatchRenameDialog';
+import { AdvancedSearchDialog } from '../AdvancedSearchDialog';
 import { quickAccessManager } from '../../utils/QuickAccessManager';
 import { Drive, FileItem } from 'shared/file-data';
 import { FileSystemItem } from '../../../shared/ipc-channels';
@@ -773,6 +774,13 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                         >
                             <FaEdit /> Batch Rename
                         </button>
+                        <button
+                            className="toolbar-button"
+                            onClick={() => setShowAdvancedSearch(true)}
+                            title="Advanced Search"
+                        >
+                            <FaSearch /> Advanced Search
+                        </button>
                     </div>
                 </div>
 
@@ -1223,6 +1231,18 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                     }}
                 />
             )}
+
+            {/* Advanced Search Dialog */}
+            <AdvancedSearchDialog
+                isOpen={showAdvancedSearch}
+                onClose={() => setShowAdvancedSearch(false)}
+                onNavigate={(path) => {
+                    fileExplorer.navigateToPath(path);
+                    setShowAdvancedSearch(false);
+                }}
+                currentPath={fileExplorer.currentPath}
+                items={selectedFiles}
+            />
         </div>
     );
 });
