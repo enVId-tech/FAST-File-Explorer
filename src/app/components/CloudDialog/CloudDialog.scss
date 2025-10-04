@@ -1,0 +1,179 @@
+.cloud-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.2s ease;
+}
+
+.cloud-dialog {
+  background: var(--background);
+  border-radius: 12px;
+  width: 90%;
+  max-width: 700px;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+}
+
+.cloud-dialog__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid var(--border-color);
+
+  h2 {
+    margin: 0;
+    font-size: 1.4rem;
+  }
+
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    border-radius: 6px;
+    width: 32px;
+    height: 32px;
+    transition: background 0.2s;
+
+    &:hover {
+      background: var(--hover-bg);
+    }
+  }
+}
+
+.cloud-dialog__content {
+  padding: 20px;
+  overflow-y: auto;
+  max-height: calc(90vh - 80px);
+
+  h3 {
+    margin: 0 0 15px 0;
+    font-size: 1.1rem;
+  }
+
+  .connect-section {
+    margin-bottom: 30px;
+
+    .form-group {
+      display: flex;
+      gap: 12px;
+
+      select {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        background: var(--input-bg);
+        font-size: 0.95rem;
+      }
+
+      button {
+        padding: 10px 24px;
+        border: none;
+        border-radius: 6px;
+        background: var(--primary-color);
+        color: white;
+        cursor: pointer;
+        font-weight: 500;
+
+        &:hover:not(:disabled) {
+          background: var(--primary-color-dark);
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+
+  .accounts-section {
+    .account-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      margin-bottom: 12px;
+      background: var(--item-bg);
+
+      .account-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        .icon {
+          font-size: 2rem;
+        }
+
+        .name {
+          font-weight: 600;
+          margin-bottom: 4px;
+        }
+
+        .email {
+          font-size: 0.9rem;
+          color: var(--text-secondary);
+          margin-bottom: 4px;
+        }
+
+        .quota {
+          font-size: 0.85rem;
+          color: var(--text-secondary);
+        }
+      }
+
+      .disconnect-btn {
+        padding: 8px 16px;
+        border: 1px solid var(--error-color);
+        border-radius: 6px;
+        background: transparent;
+        color: var(--error-color);
+        cursor: pointer;
+        font-weight: 500;
+
+        &:hover {
+          background: var(--error-color);
+          color: white;
+        }
+      }
+    }
+  }
+
+  .message {
+    margin-top: 20px;
+    padding: 12px;
+    border-radius: 6px;
+    background: var(--info-bg);
+    color: var(--text-primary);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

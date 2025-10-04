@@ -12,6 +12,10 @@ import { BatchRenameDialog } from '../BatchRenameDialog';
 import { AdvancedSearchDialog } from '../AdvancedSearchDialog';
 import { FileOperationsDialog } from '../FileOperationsDialog';
 import { PerformancePanel } from '../PerformancePanel';
+import { ArchiveDialog } from '../ArchiveDialog';
+import { CloudDialog } from '../CloudDialog';
+import { BackupDialog } from '../BackupDialog';
+import { PluginDialog } from '../PluginDialog';
 import { quickAccessManager } from '../../utils/QuickAccessManager';
 import { Drive, FileItem } from 'shared/file-data';
 import { FileSystemItem } from '../../../shared/ipc-channels';
@@ -39,6 +43,11 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
     const [showBatchRename, setShowBatchRename] = useState(false);
     const [showFileOperations, setShowFileOperations] = useState(false);
     const [showPerformancePanel, setShowPerformancePanel] = useState(false);
+    const [showArchive, setShowArchive] = useState(false);
+    const [showCloud, setShowCloud] = useState(false);
+    const [showBackup, setShowBackup] = useState(false);
+    const [showPlugin, setShowPlugin] = useState(false);
+    const [archiveMode, setArchiveMode] = useState<'create' | 'extract' | 'view'>('create');
     const [sortBy, setSortBy] = useState<'name' | 'size' | 'date' | 'type'>('name');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
     const [activeRibbonTab, setActiveRibbonTab] = useState<'home' | 'share' | 'view' | 'manage' | 'organize' | 'tools' | 'help'>('home');
@@ -770,35 +779,6 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                         >
                             <FaSortAlphaDown /> Sort
                         </button>
-                        <button
-                            className="toolbar-button"
-                            onClick={() => setShowBatchRename(true)}
-                            title="Batch Rename Selected Items"
-                            disabled={selectedFiles.length === 0}
-                        >
-                            <FaEdit /> Batch Rename
-                        </button>
-                        <button
-                            className="toolbar-button"
-                            onClick={() => setShowAdvancedSearch(true)}
-                            title="Advanced Search"
-                        >
-                            <FaSearch /> Advanced Search
-                        </button>
-                        <button
-                            className="toolbar-button"
-                            onClick={() => setShowFileOperations(true)}
-                            title="Advanced File Operations"
-                        >
-                            🛠️ File Ops
-                        </button>
-                        <button
-                            className="toolbar-button"
-                            onClick={() => setShowPerformancePanel(true)}
-                            title="Performance Monitor"
-                        >
-                            📊 Performance
-                        </button>
                     </div>
                 </div>
 
@@ -1054,21 +1034,84 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                         {activeRibbonTab === 'tools' && (
                             <>
                                 <div className="ribbon-group">
-                                    <div className="ribbon-group-label">Utilities</div>
-                                    <button className="ribbon-button">
-                                        <div className="ribbon-icon"><FaCog /></div>
-                                        <span>Options</span>
+                                    <div className="ribbon-group-label">File Tools</div>
+                                    <button 
+                                        className="ribbon-button"
+                                        onClick={() => setShowBatchRename(true)}
+                                        disabled={selectedFiles.length === 0}
+                                        title="Batch Rename Selected Items"
+                                    >
+                                        <div className="ribbon-icon"><FaEdit /></div>
+                                        <span>Batch Rename</span>
                                     </button>
-                                    <button className="ribbon-button">
-                                        <div className="ribbon-icon"><FaCog /></div>
-                                        <span>Batch Ops</span>
+                                    <button 
+                                        className="ribbon-button"
+                                        onClick={() => {
+                                            setArchiveMode('create');
+                                            setShowArchive(true);
+                                        }}
+                                        disabled={selectedFiles.length === 0}
+                                        title="Create Archive"
+                                    >
+                                        <div className="ribbon-icon">📦</div>
+                                        <span>Archive</span>
+                                    </button>
+                                    <button 
+                                        className="ribbon-button"
+                                        onClick={() => setShowFileOperations(true)}
+                                        title="Advanced File Operations"
+                                    >
+                                        <div className="ribbon-icon">🛠️</div>
+                                        <span>File Ops</span>
                                     </button>
                                 </div>
                                 <div className="ribbon-group">
-                                    <div className="ribbon-group-label">Advanced</div>
-                                    <button className="ribbon-button">
-                                        <div className="ribbon-icon"><FaInfoCircle /></div>
-                                        <span>Logs</span>
+                                    <div className="ribbon-group-label">Search & Organize</div>
+                                    <button 
+                                        className="ribbon-button"
+                                        onClick={() => setShowAdvancedSearch(true)}
+                                        title="Advanced Search"
+                                    >
+                                        <div className="ribbon-icon"><FaSearch /></div>
+                                        <span>Advanced Search</span>
+                                    </button>
+                                </div>
+                                <div className="ribbon-group">
+                                    <div className="ribbon-group-label">Cloud & Backup</div>
+                                    <button 
+                                        className="ribbon-button"
+                                        onClick={() => setShowCloud(true)}
+                                        title="Cloud Integration"
+                                    >
+                                        <div className="ribbon-icon">☁️</div>
+                                        <span>Cloud</span>
+                                    </button>
+                                    <button 
+                                        className="ribbon-button"
+                                        onClick={() => setShowBackup(true)}
+                                        title="Backup & Sync"
+                                    >
+                                        <div className="ribbon-icon">💾</div>
+                                        <span>Backup</span>
+                                    </button>
+                                </div>
+                                <div className="ribbon-group">
+                                    <div className="ribbon-group-label">System</div>
+                                    <button 
+                                        className="ribbon-button"
+                                        onClick={() => setShowPerformancePanel(true)}
+                                        title="Performance Monitor"
+                                    >
+                                        <div className="ribbon-icon">📊</div>
+                                        <span>Performance</span>
+                                    </button>
+                                    <button 
+                                        className="ribbon-button"
+                                        onClick={() => setShowPlugin(true)}
+                                        title="Plugin Manager"
+                                    >
+                                        <div className="ribbon-icon">🧩</div>
+                                        <span>Plugins</span>
                                     </button>
                                 </div>
                             </>
@@ -1274,6 +1317,32 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
             <PerformancePanel
                 isOpen={showPerformancePanel}
                 onClose={() => setShowPerformancePanel(false)}
+            />
+
+            {/* Archive Dialog */}
+            <ArchiveDialog
+                isOpen={showArchive}
+                onClose={() => setShowArchive(false)}
+                selectedPaths={selectedFiles.map(item => item.path)}
+                mode={archiveMode}
+            />
+
+            {/* Cloud Integration Dialog */}
+            <CloudDialog
+                isOpen={showCloud}
+                onClose={() => setShowCloud(false)}
+            />
+
+            {/* Backup & Sync Dialog */}
+            <BackupDialog
+                isOpen={showBackup}
+                onClose={() => setShowBackup(false)}
+            />
+
+            {/* Plugin Manager Dialog */}
+            <PluginDialog
+                isOpen={showPlugin}
+                onClose={() => setShowPlugin(false)}
             />
         </div>
     );

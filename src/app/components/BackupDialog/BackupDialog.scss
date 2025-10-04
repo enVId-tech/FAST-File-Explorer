@@ -1,0 +1,209 @@
+.backup-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.2s ease;
+}
+
+.backup-dialog {
+  background: var(--background);
+  border-radius: 12px;
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+}
+
+.backup-dialog__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid var(--border-color);
+
+  h2 {
+    margin: 0;
+    font-size: 1.4rem;
+  }
+
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    border-radius: 6px;
+    width: 32px;
+    height: 32px;
+    transition: background 0.2s;
+
+    &:hover {
+      background: var(--hover-bg);
+    }
+  }
+}
+
+.backup-dialog__content {
+  padding: 20px;
+  overflow-y: auto;
+  max-height: calc(90vh - 80px);
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-secondary);
+
+    p {
+      margin: 10px 0;
+    }
+
+    .hint {
+      font-size: 0.9rem;
+    }
+  }
+
+  .profiles-list {
+    .profile-card {
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 15px;
+      background: var(--item-bg);
+
+      .profile-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+
+        h3 {
+          margin: 0;
+          font-size: 1.1rem;
+        }
+
+        .toggle {
+          position: relative;
+          display: inline-block;
+          width: 50px;
+          height: 24px;
+
+          input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+
+            &:checked + .slider {
+              background-color: var(--primary-color);
+
+              &:before {
+                transform: translateX(26px);
+              }
+            }
+          }
+
+          .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.3s;
+            border-radius: 24px;
+
+            &:before {
+              position: absolute;
+              content: "";
+              height: 18px;
+              width: 18px;
+              left: 3px;
+              bottom: 3px;
+              background-color: white;
+              transition: 0.3s;
+              border-radius: 50%;
+            }
+          }
+        }
+      }
+
+      .profile-info {
+        margin-bottom: 15px;
+
+        .info-row {
+          display: flex;
+          justify-content: space-between;
+          padding: 8px 0;
+          border-bottom: 1px solid var(--border-color);
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          span {
+            color: var(--text-secondary);
+          }
+
+          strong {
+            color: var(--text-primary);
+          }
+        }
+      }
+
+      .backup-now-btn {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 6px;
+        background: var(--primary-color);
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover:not(:disabled) {
+          background: var(--primary-color-dark);
+          transform: translateY(-1px);
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+
+  .message {
+    margin-top: 20px;
+    padding: 12px;
+    border-radius: 6px;
+    background: var(--info-bg);
+    color: var(--text-primary);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
