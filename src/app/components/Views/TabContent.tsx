@@ -225,13 +225,23 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
         console.log('Directory selected:', directory);
     };
 
-    const handleSidebarNavigation = async (view: string, itemName: string) => {
+    const handleSidebarNavigation = async (view: string, itemName: string, drivePath?: string) => {
         if (view === 'thispc') {
             fileExplorer.navigateToThisPC();
             fileExplorer.clearSelection();
         } else if (view === 'recents') {
             fileExplorer.navigateToRecents();
             fileExplorer.clearSelection();
+        } else if (view === 'drive' && drivePath) {
+            // Direct drive navigation with explicit path
+            try {
+                const success = await fileExplorer.navigateToPath(drivePath);
+                if (!success) {
+                    console.error('Failed to navigate to drive:', drivePath);
+                }
+            } catch (error) {
+                console.error('Failed to navigate to drive:', error);
+            }
         } else {
             // Navigate to the selected folder using utility
             try {
@@ -251,7 +261,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                 } else if (itemName === 'Home') {
                     success = await fileExplorer.navigateToKnownFolder('home');
                 } else {
-                    // Handle drive navigation
+                    // Fallback: Handle drive navigation by name
                     const selectedDrive = drives.find(drive => drive.driveName === itemName);
                     if (selectedDrive) {
                         success = await fileExplorer.navigateToPath(selectedDrive.drivePath);
@@ -1171,7 +1181,7 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                                             key={`drive-${driveIndex}`}
                                             drive={drive}
                                             active={fileExplorer.currentView === 'folder' && selectedItem?.name === drive.driveName}
-                                            onClick={() => handleSidebarNavigation('folder', drive.driveName)}
+                                            onClick={() => handleSidebarNavigation('drive', drive.driveName, drive.drivePath)}
                                             onHover={handleDriveHover}
                                         />
                                     ))}
