@@ -10,6 +10,8 @@ import { QuickAccessEditor } from '../QuickAccessEditor';
 import { SortPreferencesEditor } from '../SortPreferencesEditor';
 import { BatchRenameDialog } from '../BatchRenameDialog';
 import { AdvancedSearchDialog } from '../AdvancedSearchDialog';
+import { FileOperationsDialog } from '../FileOperationsDialog';
+import { PerformancePanel } from '../PerformancePanel';
 import { quickAccessManager } from '../../utils/QuickAccessManager';
 import { Drive, FileItem } from 'shared/file-data';
 import { FileSystemItem } from '../../../shared/ipc-channels';
@@ -35,6 +37,8 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
     const [showQuickAccessEditor, setShowQuickAccessEditor] = useState(false);
     const [showSortPreferences, setShowSortPreferences] = useState(false);
     const [showBatchRename, setShowBatchRename] = useState(false);
+    const [showFileOperations, setShowFileOperations] = useState(false);
+    const [showPerformancePanel, setShowPerformancePanel] = useState(false);
     const [sortBy, setSortBy] = useState<'name' | 'size' | 'date' | 'type'>('name');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
     const [activeRibbonTab, setActiveRibbonTab] = useState<'home' | 'share' | 'view' | 'manage' | 'organize' | 'tools' | 'help'>('home');
@@ -781,6 +785,20 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                         >
                             <FaSearch /> Advanced Search
                         </button>
+                        <button
+                            className="toolbar-button"
+                            onClick={() => setShowFileOperations(true)}
+                            title="Advanced File Operations"
+                        >
+                            🛠️ File Ops
+                        </button>
+                        <button
+                            className="toolbar-button"
+                            onClick={() => setShowPerformancePanel(true)}
+                            title="Performance Monitor"
+                        >
+                            📊 Performance
+                        </button>
                     </div>
                 </div>
 
@@ -1242,6 +1260,20 @@ export const TabContent: React.FC<TabContentProps> = React.memo(({ tabId, isActi
                 }}
                 currentPath={fileExplorer.currentPath}
                 items={selectedFiles}
+            />
+
+            {/* File Operations Dialog */}
+            <FileOperationsDialog
+                isOpen={showFileOperations}
+                onClose={() => setShowFileOperations(false)}
+                currentPath={fileExplorer.currentPath}
+                selectedFiles={selectedFiles.map(item => item.path)}
+            />
+
+            {/* Performance Monitor Panel */}
+            <PerformancePanel
+                isOpen={showPerformancePanel}
+                onClose={() => setShowPerformancePanel(false)}
             />
         </div>
     );

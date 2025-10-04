@@ -1,6 +1,8 @@
 import { ipcMain, shell } from 'electron';
 import path from 'path';
 import fs from 'fs/promises';
+import * as fsSync from 'fs';
+import * as crypto from 'crypto';
 
 // Dynamic import for fast-transferlib
 let UnifiedTransferManagerClass: any;
@@ -208,6 +210,159 @@ export function registerFileOperationsHandlers(): void {
             throw error;
         }
     });
+
+    // === Advanced File Operations ===
+
+    // Calculate file hash
+    ipcMain.handle('fileOperations:calculateFileHash', async (_event, filePath: string, algorithm: 'MD5' | 'SHA-1' | 'SHA-256') => {
+        return new Promise((resolve, reject) => {
+            const hashAlgo = algorithm.toLowerCase().replace('-', '');
+            const hash = crypto.createHash(hashAlgo);
+            const stream = fsSync.createReadStream(filePath);
+
+            stream.on('data', (data) => hash.update(data));
+            stream.on('end', () => resolve(hash.digest('hex')));
+            stream.on('error', (error) => reject(error));
+        });
+    });
+
+    // Compare files
+    ipcMain.handle('fileOperations:compareFiles', async (_event, file1: string, file2: string, mode: 'binary' | 'text') => {
+        const [stats1, stats2] = await Promise.all([fs.stat(file1), fs.stat(file2)]);
+        
+        if (stats1.size !== stats2.size) {
+            return { identical: false, differences: [{ type: 'size' }], similarity: 0 };
+        }
+
+        if (mode === 'binary') {
+            const [buffer1, buffer2] = await Promise.all([fs.readFile(file1), fs.readFile(file2)]);
+            const identical = buffer1.equals(buffer2);
+            
+            if (identical) return { identical: true, differences: [], similarity: 100 };
+            
+            const differences: any[] = [];
+            for (let i = 0; i < buffer1.length && differences.length < 100; i++) {
+                if (buffer1[i] !== buffer2[i]) differences.push({ type: 'binary', position: i });
+            }
+            
+            return { identical: false, differences, similarity: ((stats1.size - differences.length) / stats1.size) * 100 };
+        } else {
+            const [content1, content2] = await Promise.all([fs.readFile(file1, 'utf-8'), fs.readFile(file2, 'utf-8')]);
+            
+            if (content1 === content2) return { identical: true, differences: [], similarity: 100 };
+            
+            const lines1 = content1.split('\n');
+            const lines2 = content2.split('\n');
+            const differences: any[] = [];
+            const maxLines = Math.max(lines1.length, lines2.length);
+            
+            for (let i = 0; i < maxLines && differences.length < 100; i++) {
+                if (lines1[i] !== lines2[i]) {
+                    differences.push({ type: 'text', line: i + 1, expected: lines1[i], actual: lines2[i] });
+                }
+            }
+            
+            return { identical: false, differences, similarity: ((maxLines - differences.length) / maxLines) * 100 };
+        }
+    });
+
+    // Merge files
+    ipcMain.handle('fileOperations:mergeFiles', async (_event, options: any) => {
+        const { files, outputPath, separator, addHeaders } = options;
+        const writeStream = fsSync.createWriteStream(outputPath);
+
+        for (let i = 0; i < files.length; i++) {
+            if (addHeaders) {
+                writeStream.write(`\n=== ${path.basename(files[i])} ===\n`);
+            }
+            const content = await fs.readFile(files[i]);
+            writeStream.write(content);
+            if (i < files.length - 1) writeStream.write(separator);
+        }
+
+        writeStream.end();
+        return new Promise((resolve, reject) => {
+            writeStream.on('finish', () => resolve(undefined));
+            writeStream.on('error', reject);
+        });
+    });
+
+    // Split file part
+    ipcMain.handle('fileOperations:splitFilePart', async (_event, filePath: string, partPath: string, offset: number, length: number) => {
+        const readStream = fsSync.createReadStream(filePath, { start: offset, end: offset + length - 1 });
+        const writeStream = fsSync.createWriteStream(partPath);
+
+        return new Promise((resolve, reject) => {
+            readStream.pipe(writeStream);
+            writeStream.on('finish', () => resolve(undefined));
+            writeStream.on('error', reject);
+            readStream.on('error', reject);
+        });
+    });
+
+    // Reconstruct file
+    ipcMain.handle('fileOperations:reconstructFile', async (_event, parts: string[], outputPath: string) => {
+        const writeStream = fsSync.createWriteStream(outputPath);
+
+        for (const partPath of parts) {
+            const content = await fs.readFile(partPath);
+            writeStream.write(content);
+        }
+
+        writeStream.end();
+        return new Promise((resolve, reject) => {
+            writeStream.on('finish', () => resolve(undefined));
+            writeStream.on('error', reject);
+        });
+    });
+
+    // Get file stats
+    ipcMain.handle('fileOperations:getFileStats', async (_event, filePath: string) => {
+        const stats = await fs.stat(filePath);
+        return { size: stats.size, modified: stats.mtimeMs, created: stats.birthtimeMs };
+    });
+
+    // File exists
+    ipcMain.handle('fileOperations:fileExists', async (_event, filePath: string) => {
+        try {
+            await fs.access(filePath);
+            return true;
+        } catch {
+            return false;
+        }
+    });
+
+    // Read file
+    ipcMain.handle('fileOperations:readFile', async (_event, filePath: string) => {
+        return await fs.readFile(filePath, 'utf-8');
+    });
+
+    // Write file
+    ipcMain.handle('fileOperations:writeFile', async (_event, filePath: string, content: string) => {
+        return await fs.writeFile(filePath, content, 'utf-8');
+    });
+
+    // List files
+    ipcMain.handle('fileOperations:listFiles', async (_event, directory: string, recursive: boolean) => {
+        const files: string[] = [];
+
+        async function scan(dir: string): Promise<void> {
+            const entries = await fs.readdir(dir, { withFileTypes: true });
+            for (const entry of entries) {
+                const fullPath = path.join(dir, entry.name);
+                if (entry.isFile()) {
+                    files.push(fullPath);
+                } else if (entry.isDirectory() && recursive) {
+                    await scan(fullPath);
+                }
+            }
+        }
+
+        await scan(directory);
+        return files;
+    });
+
+    console.log('✅ Advanced file operations IPC handlers registered');
 }
 
 /**

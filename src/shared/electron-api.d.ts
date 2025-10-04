@@ -73,6 +73,19 @@ declare global {
         showProperties: (path: string) => Promise<void>;
         showInExplorer: (path: string) => Promise<void>;
       },
+      // Advanced file operations
+      fileOperations: {
+        calculateFileHash: (filePath: string, algorithm: 'MD5' | 'SHA-1' | 'SHA-256') => Promise<string>;
+        compareFiles: (file1: string, file2: string, mode: 'binary' | 'text') => Promise<{ identical: boolean; differences: any[]; similarity: number }>;
+        mergeFiles: (options: { files: string[]; outputPath: string; separator: string; addHeaders: boolean }) => Promise<void>;
+        splitFilePart: (filePath: string, partPath: string, offset: number, length: number) => Promise<void>;
+        reconstructFile: (parts: string[], outputPath: string) => Promise<void>;
+        getFileStats: (filePath: string) => Promise<{ size: number; modified: number; created: number }>;
+        fileExists: (filePath: string) => Promise<boolean>;
+        readFile: (filePath: string) => Promise<string>;
+        writeFile: (filePath: string, content: string) => Promise<void>;
+        listFiles: (directory: string, recursive: boolean) => Promise<string[]>;
+      },
       // Clipboard operations
       clipboard: {
         copyFiles: (paths: string[]) => Promise<void>;
