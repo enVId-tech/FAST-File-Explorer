@@ -53,9 +53,9 @@
     "@electron-forge/plugin-auto-unpack-natives": "^7.9.0",
     "@electron-forge/plugin-fuses": "^7.9.0",
     "@electron/fuses": "^2.0.0",
-    "@rollup/rollup-win32-x64-msvc": "^4.52.3",
+    "@rollup/rollup-win32-x64-msvc": "^4.52.4",
     "@types/electron-squirrel-startup": "^1.0.2",
     "@types/react-dom": "^19.1.9",
-    "electron": "38.2.0"
+    "electron": "38.2.1"
   }
 }
