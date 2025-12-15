@@ -43,7 +43,7 @@
     "sass": "^1.96.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
-    "vite": "^7.2.7"
+    "vite": "^7.3.0"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.10.2",
@@ -57,6 +57,6 @@
     "@rollup/rollup-win32-x64-msvc": "^4.53.3",
     "@types/electron-squirrel-startup": "^1.0.2",
     "@types/react-dom": "^19.2.3",
-    "electron": "39.2.6"
+    "electron": "39.2.7"
   }
 }
