@@ -40,7 +40,7 @@
     "react-dom": "^19.2.3",
     "react-icons": "^5.5.0",
     "react-window": "^2.2.3",
-    "sass": "^1.97.0",
+    "sass": "^1.97.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
     "vite": "^7.3.0"
@@ -54,7 +54,7 @@
     "@electron-forge/plugin-auto-unpack-natives": "^7.10.2",
     "@electron-forge/plugin-fuses": "^7.10.2",
     "@electron/fuses": "^2.0.0",
-    "@rollup/rollup-win32-x64-msvc": "^4.53.5",
+    "@rollup/rollup-win32-x64-msvc": "^4.54.0",
     "@types/electron-squirrel-startup": "^1.0.2",
     "@types/react-dom": "^19.2.3",
     "electron": "39.2.7"
