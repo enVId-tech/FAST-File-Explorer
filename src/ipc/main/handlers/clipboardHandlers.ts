@@ -93,8 +93,32 @@ export function registerClipboardHandlers(): void {
                         const results = [];
                         for (const sourcePath of clipboardState.files) {
                             try {
+                                const fileName = path.basename(sourcePath);
+                                let destPath = path.join(destinationPath, fileName);
+                                
+                                // Check if trying to paste into the same directory
+                                const sourceDir = path.dirname(sourcePath);
+                                if (path.resolve(sourceDir) === path.resolve(destinationPath)) {
+                                    if (clipboardState.operation === 'copy') {
+                                        destPath = await getUniqueDestPath(destPath);
+                                        console.log(`Same directory copy, using unique name: ${path.basename(destPath)}`);
+                                    } else {
+                                        console.log(`Skipping cut operation to same directory: ${sourcePath}`);
+                                        results.push({ path: sourcePath, success: true, skipped: true });
+                                        continue;
+                                    }
+                                } else {
+                                    try {
+                                        await fs.access(destPath);
+                                        destPath = await getUniqueDestPath(destPath);
+                                        console.log(`Destination exists, using unique name: ${path.basename(destPath)}`);
+                                    } catch {
+                                        // Don't do anything
+                                    }
+                                }
+                                
                                 // Try with minimal options first to maximize compatibility
-                                const result = await manager.transfer(sourcePath, destinationPath, {
+                                const result = await manager.transfer(sourcePath, destPath, {
                                     recursive: true,
                                     archive: true,
                                     progress: false  // Disable progress to avoid issues
@@ -149,10 +173,35 @@ export function registerClipboardHandlers(): void {
             for (const sourcePath of clipboardState.files) {
                 try {
                     const fileName = path.basename(sourcePath);
-                    const destPath = path.join(destinationPath, fileName);
+                    let destPath = path.join(destinationPath, fileName);
                     
                     // Check if source exists
                     const stat = await fs.stat(sourcePath);
+                    
+                    // Check if trying to paste into the same directory
+                    const sourceDir = path.dirname(sourcePath);
+                    if (path.resolve(sourceDir) === path.resolve(destinationPath)) {
+                        // Same directory - need to generate unique name
+                        if (clipboardState.operation === 'copy') {
+                            destPath = await getUniqueDestPath(destPath);
+                            console.log(`Same directory copy, using unique name: ${path.basename(destPath)}`);
+                        } else {
+                            // Cut operation to same directory - skip
+                            console.log(`Skipping cut operation to same directory: ${sourcePath}`);
+                            results.push({ path: sourcePath, success: true, skipped: true });
+                            continue;
+                        }
+                    } else {
+                        // Different directory - check if destination already exists
+                        try {
+                            await fs.access(destPath);
+                            // File exists, generate unique name
+                            destPath = await getUniqueDestPath(destPath);
+                            console.log(`Destination exists, using unique name: ${path.basename(destPath)}`);
+                        } catch {
+                            // File doesn't exist, use original path
+                        }
+                    }
                     
                     console.log(`Copying: ${sourcePath} -> ${destPath}`);
                     
@@ -222,6 +271,27 @@ export function registerClipboardHandlers(): void {
         clipboard.clear();
         return { success: true };
     });
+}
+
+/**
+ * Generate a unique destination path if the file/folder already exists
+ * Adds _1, _2, etc. to the filename before the extension
+ */
+async function getUniqueDestPath(originalPath: string): Promise<string> {
+    let destPath = originalPath;
+    let counter = 1;
+    
+    const dir = path.dirname(originalPath);
+    const ext = path.extname(originalPath);
+    const nameWithoutExt = path.basename(originalPath, ext);
+    
+    // Check if file/folder exists and increment counter until we find a unique name
+    while (await fs.access(destPath).then(() => true).catch(() => false)) {
+        destPath = path.join(dir, `${nameWithoutExt}_${counter}${ext}`);
+        counter++;
+    }
+    
+    return destPath;
 }
 
 /**

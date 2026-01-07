@@ -372,12 +372,22 @@ const Main = React.memo(function Main(): React.JSX.Element {
         setActiveTabId(tabId);
         setTabs(prev => prev.map(tab => ({ ...tab, isActive: tab.id === tabId })));
 
-        // If switching to a "This PC" tab and drives are empty, trigger a refresh
-        const tab = tabs.find(t => t.id === tabId);
-        if (tab && tab.url === 'internal:home' && drives.length === 0 && !drivesLoading) {
-            console.log('Loading drives for This PC tab');
-            refreshDrives();
-        }
+        setTabs(prev => {
+            const tab = prev.find(t => t.id === tabId);
+            if (tab && tab.url === 'internal:home') {
+                setDrives(currentDrives => {
+                    setDrivesLoading(currentLoading => {
+                        if (currentDrives.length === 0 && !currentLoading) {
+                            console.log('Loading drives for This PC tab');
+                            refreshDrives();
+                        }
+                        return currentLoading;
+                    });
+                    return currentDrives;
+                });
+            }
+            return prev;
+        });
 
         // TODO: Re-enable when internal:home is implemented
         // try {
@@ -385,7 +395,7 @@ const Main = React.memo(function Main(): React.JSX.Element {
         // } catch (error) {
         //     console.error('Failed to switch tab:', error);
         // }
-    }, [tabs, drives, drivesLoading, refreshDrives]);
+    }, [refreshDrives]);
 
     const handleTabClose = async (tabId: string) => {
         if (tabs.length <= 1) {
@@ -664,6 +674,14 @@ const Main = React.memo(function Main(): React.JSX.Element {
         ));
     }, []);
 
+    const pathChangeHandlers = useMemo(() => {
+        const handlers: Record<string, (path: string, title: string) => void> = {};
+        tabs.forEach(tab => {
+            handlers[tab.id] = (path: string, title: string) => handlePathChange(tab.id, path, title);
+        });
+        return handlers;
+    }, [tabs.map(t => t.id).join(','), handlePathChange]);
+
     // UI is always ready immediately - drives load in background
     return (
         <SettingsProvider>
@@ -704,7 +722,7 @@ const Main = React.memo(function Main(): React.JSX.Element {
                                 drivesLoading={drivesLoading}
                                 drivesError={drivesError}
                                 onRefreshDrives={handleRefreshDrives}
-                                onPathChange={(path, title) => handlePathChange(tab.id, path, title)}
+                                onPathChange={pathChangeHandlers[tab.id]}
                             />
                         </LazyComponentErrorBoundary>
                     </Suspense>
