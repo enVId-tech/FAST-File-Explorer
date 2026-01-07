@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { FaCog, FaDesktop, FaSync, FaFolderOpen, FaInfoCircle, FaEdit, FaCheck, FaTimes, FaUndo, FaRocket, FaWrench, FaTerminal, FaTrash, FaDatabase } from 'react-icons/fa';
 import './SettingsMenu.scss';
-import { BUILD_VERSION, getBuildDateString, getVersionDisplayString } from '../../../version';
+import { getProjectVersion, getVersionInfo } from 'npm-version-lib';
 import { useSettings, AppSettings } from '../../contexts/SettingsContext';
 import { useNavigation } from '../../contexts/NavigationContext';
 import { DeveloperConsole } from '../DeveloperConsole/DeveloperConsole';
@@ -25,6 +25,16 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
     const [cacheStats, setCacheStats] = useState<any>(null);
     const menuRef = useRef<HTMLDivElement>(null);
     const consoleRef = useRef<HTMLDivElement | null>(null);
+
+    // Get version info safely
+    const versionInfo = useMemo(() => {
+        try {
+            return getVersionInfo();
+        } catch (error) {
+            console.warn('Failed to get version info:', error);
+            return null;
+        }
+    }, []);
 
     // Load cache statistics
     useEffect(() => {
@@ -787,7 +797,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
                                                     // Trigger some test console messages
                                                     setTimeout(() => {
                                                         console.log('Developer Console opened');
-                                                        console.info('Application version:', BUILD_VERSION);
+                                                        console.info('Application version:', getProjectVersion());
                                                         console.log('Settings:', settings);
                                                         console.warn('This is a test warning message');
                                                     }, 100);
@@ -877,9 +887,9 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, onS
                                 <div className="about-content">
                                     <div className="version-info">
                                         <h4>Version Information</h4>
-                                        <p><strong>Version:</strong><span>{getVersionDisplayString()}</span></p>
-                                        <p><strong>Build:</strong><span>{BUILD_VERSION}</span></p>
-                                        <p><strong>Built:</strong><span>{getBuildDateString()}</span></p>
+                                        <p><strong>Version:</strong><span>{getProjectVersion() || 'Unknown'}</span></p>
+                                        <p><strong>Build:</strong><span>#{versionInfo?.buildNumber || 'N/A'}</span></p>
+                                        <p><strong>Built:</strong><span>{versionInfo?.timestamp ? new Date(versionInfo.timestamp).toLocaleString() : 'Unknown'}</span></p>
                                         <p><strong>Platform:</strong><span>Windows (Electron)</span></p>
                                         <p><strong>Architecture:</strong><span>x64</span></p>
                                         <p><strong>Developer:</strong><span>enVId Tech</span></p>

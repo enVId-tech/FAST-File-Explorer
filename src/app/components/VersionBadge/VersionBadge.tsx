@@ -1,6 +1,6 @@
 import React from 'react';
-import { BUILD_VERSION, getBuildDateString, getVersionDisplayString, BUILD_DATE } from '../../../version';
 import './VersionBadge.scss';
+import { getProjectVersion, getVersionInfo } from 'npm-version-lib';
 
 interface VersionBadgeProps {
   className?: string;
@@ -11,20 +11,39 @@ export const VersionBadge: React.FC<VersionBadgeProps> = ({
   className = '',
   showTooltip = true
 }) => {
+  const version = getProjectVersion();
+  let versionInfo = null;
+  
+  try {
+    versionInfo = getVersionInfo();
+  } catch (error) {
+    console.warn('Failed to get version info:', error);
+  }
+
   const formatBuildDate = () => {
-    try {
-      return new Date(BUILD_DATE).toLocaleString();
-    } catch (error) {
-      return getBuildDateString();
+    if (versionInfo?.timestamp) {
+      try {
+        return new Date(versionInfo.timestamp).toLocaleString();
+      } catch (error) {
+        return new Date().toLocaleString();
+      }
     }
+    return new Date().toLocaleString();
+  };
+
+  const getBuildInfo = () => {
+    if (!versionInfo) {
+      return version || 'Unknown';
+    }
+    return `${versionInfo.version} (Build #${versionInfo.buildNumber})`;
   };
 
   return (
     <div
       className={`version-badge ${className}`}
-      title={showTooltip ? `Build: ${BUILD_VERSION}\nBuilt on: ${formatBuildDate()}` : undefined}
+      title={showTooltip ? `Version: ${version || 'Unknown'}\nBuild: #${versionInfo?.buildNumber || 'N/A'}\nRelease Type: ${versionInfo?.releaseType || 'Unknown'}\nBuilt on: ${formatBuildDate()}` : undefined}
     >
-      {getVersionDisplayString()}
+      {version || 'Unknown'}
     </div>
   );
 };

@@ -1,6 +1,5 @@
 import { ipcMain } from 'electron';
 import drivelist from 'drivelist';
-import nodeDiskInfo from 'node-disk-info';
 import { Drive } from 'shared/file-data';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -9,6 +8,39 @@ import { promisify } from 'util';
 import { isRunningAsAdmin, ensureAdminPrivileges } from '../../../utils/elevation';
 
 const execAsync = promisify(exec);
+
+/**
+ * Get disk information using PowerShell (Windows 11 compatible)
+ * Replaces node-disk-info which uses deprecated wmic
+ */
+async function getDiskInfoPowerShell(): Promise<any[]> {
+    if (process.platform !== 'win32') {
+        return [];
+    }
+
+    try {
+        const { stdout } = await execAsync(
+            `powershell -command "Get-CimInstance Win32_LogicalDisk | Select-Object DeviceID, VolumeName, Size, FreeSpace, FileSystem | ConvertTo-Json"`,
+            { timeout: 5000 }
+        );
+
+        const disks = JSON.parse(stdout);
+        const diskArray = Array.isArray(disks) ? disks : [disks];
+
+        return diskArray.map((disk: any) => ({
+            filesystem: disk.FileSystem || 'Unknown',
+            mounted: disk.DeviceID || '',
+            blocks: disk.Size || 0,
+            used: (disk.Size || 0) - (disk.FreeSpace || 0),
+            available: disk.FreeSpace || 0,
+            capacity: disk.Size > 0 ? Math.round(((disk.Size - disk.FreeSpace) / disk.Size) * 100) + '%' : '0%',
+            volumeName: disk.VolumeName || null
+        }));
+    } catch (error) {
+        console.error('Failed to get disk info via PowerShell:', error);
+        return [];
+    }
+}
 
 // Drive cache for performance optimization
 let driveCache: Drive[] = [];
@@ -26,18 +58,18 @@ async function getVolumeLabel(drivePath: string): Promise<string | null> {
         const driveLetter = drivePath.replace(/[:\\\/]/g, '').toUpperCase();
         
         if (process.platform === 'win32') {
-            // Use Windows WMIC command to get volume label
+            // Use PowerShell command to get volume label (Windows 11 compatible)
             const { stdout } = await execAsync(
-                `wmic logicaldisk where "DeviceID='${driveLetter}:'" get VolumeName /format:list`,
+                `powershell -command "Get-CimInstance Win32_LogicalDisk | Where-Object {$_.DeviceID -eq '${driveLetter}:'} | Select-Object -ExpandProperty VolumeName"`,
                 { timeout: 3000 }
             );
             
-            // Parse the output: "VolumeName=Label"
-            const match = stdout.match(/VolumeName=(.*)$/m);
-            if (match && match[1]) {
-                const label = match[1].trim();
-                return label || null;
+            // Parse the output
+            const label = stdout.trim();
+            if (label) {
+                return label;
             }
+            return null;
         } else {
             // For Linux/Mac, try to read from mount point
             // This is a fallback and may not work on all systems
@@ -106,7 +138,7 @@ export function registerDriveHandlers(): void {
             // Use timeout to prevent hanging
             const drivePromise = Promise.all([
                 drivelist.list(),
-                nodeDiskInfo.getDiskInfo()
+                getDiskInfoPowerShell()
             ]);
 
             let timeoutId: NodeJS.Timeout | undefined;
@@ -138,12 +170,11 @@ export function registerDriveHandlers(): void {
                     percentageUsed: disk.capacity,
                 };
 
-                // Get volume label for this drive
-                const volumeLabel = await getVolumeLabel(disk.mounted);
-                if (volumeLabel) {
-                    details.volumeLabel = volumeLabel;
+                // Use volume label from disk info (already fetched in one call)
+                if (disk.volumeName) {
+                    details.volumeLabel = disk.volumeName;
                     // Use volume label as the display name if available
-                    details.driveName = volumeLabel;
+                    details.driveName = disk.volumeName;
                 }
 
                 // Find matching drive for additional metadata

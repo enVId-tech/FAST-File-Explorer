@@ -3,7 +3,7 @@ import path from 'node:path';
 import started from 'electron-squirrel-startup';
 import { initializeIpcHandlers } from './ipc/main/ipcSetup';
 import { setupWindowCleanup } from './ipc/main/handlers/windowHandlers';
-import { getVersionDisplayString } from './version';
+import { getProjectVersion } from 'npm-version-lib';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -19,7 +19,7 @@ const createWindow = () => {
     height: 800,
     minWidth: 800,
     minHeight: 600,
-    title: `Fast File Explorer ${getVersionDisplayString()}`,
+    title: `Fast File Explorer ${getProjectVersion()}`,
     frame: false,
     titleBarStyle: 'hidden',
     icon: path.join(app.getAppPath(), 'assets', 'icon.png'),
@@ -86,7 +86,7 @@ app.whenReady().then(() => {
   });
 
   // Log application startup with version info
-  console.log(`Fast File Explorer ${getVersionDisplayString()} started successfully`);
+  console.log(`Fast File Explorer ${getProjectVersion()} started successfully`);
 
   // Security: Prevent navigation to external URLs
   mainWindow.webContents.on('will-navigate', (event, url) => {

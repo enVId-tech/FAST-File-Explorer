@@ -4,11 +4,47 @@ import fs from 'fs/promises';
 import fsStat from 'fs';
 import drivelist from 'drivelist';
 import os from 'os';
-import nodeDiskInfo from 'node-disk-info';
+import { exec } from 'child_process';
+import { promisify } from 'util';
 import { Drive } from 'shared/file-data';
 import { settingsManager } from '../../functions/settingsManager';
 import { getCachedResult, listDirectoryContents, setCachedResult, dataExists, getFolderContents, getMetadata, getFolderMetadata } from '../../functions/dataFuncs';
 import { DirectoryContents } from 'shared/ipc-channels';
+
+const execAsync = promisify(exec);
+
+/**
+ * Get disk information using PowerShell (Windows 11 compatible)
+ * Replaces node-disk-info which uses deprecated wmic
+ */
+async function getDiskInfoPowerShell(): Promise<any[]> {
+    if (process.platform !== 'win32') {
+        return [];
+    }
+
+    try {
+        const { stdout } = await execAsync(
+            `powershell -command "Get-CimInstance Win32_LogicalDisk | Select-Object DeviceID, VolumeName, Size, FreeSpace, FileSystem | ConvertTo-Json"`,
+            { timeout: 5000 }
+        );
+
+        const disks = JSON.parse(stdout);
+        const diskArray = Array.isArray(disks) ? disks : [disks];
+
+        return diskArray.map((disk: any) => ({
+            filesystem: disk.FileSystem || 'Unknown',
+            mounted: disk.DeviceID || '',
+            blocks: disk.Size || 0,
+            used: (disk.Size || 0) - (disk.FreeSpace || 0),
+            available: disk.FreeSpace || 0,
+            capacity: disk.Size > 0 ? Math.round(((disk.Size - disk.FreeSpace) / disk.Size) * 100) + '%' : '0%',
+            volumeName: disk.VolumeName || null
+        }));
+    } catch (error) {
+        console.error('Failed to get disk info via PowerShell:', error);
+        return [];
+    }
+}
 
 export default function initializeDataHandlers() {
     console.log('Initializing enhanced data handlers...');
@@ -158,7 +194,7 @@ export default function initializeDataHandlers() {
 
             let diskInfoTimeoutId: NodeJS.Timeout | undefined;
             const diskInfoPromise = Promise.race([
-                nodeDiskInfo.getDiskInfo(),
+                getDiskInfoPowerShell(),
                 new Promise<never>((_, reject) => {
                     diskInfoTimeoutId = setTimeout(() => reject(new Error('diskinfo timeout')), 8000);
                 })
@@ -195,12 +231,17 @@ export default function initializeDataHandlers() {
             if (diskInfo && Object.keys(diskInfo).length > 0) {
                 Object.values(diskInfo).forEach((disk: any) => {
                     let details: Drive = {
-                        driveName: disk.filesystem || 'Unknown',
+                        driveName: disk.volumeName || disk.filesystem || 'Unknown',
                         drivePath: disk.mounted || '',
                         available: disk.available || 0,
                         used: disk.used || 0,
                         total: disk.blocks || 0,
                         percentageUsed: typeof disk.capacity === 'string' ? disk.capacity : `${disk.capacity || 0}%`,
+                    }
+
+                    // Add volume label if available
+                    if (disk.volumeName) {
+                        details.volumeLabel = disk.volumeName;
                     }
 
                     // Match drive information with disk information

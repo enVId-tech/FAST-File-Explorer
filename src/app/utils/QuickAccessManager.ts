@@ -39,13 +39,21 @@ class QuickAccessManagerClass {
     private changeCallbacks: Array<(items: QuickAccessItem[]) => void> = [];
 
     constructor() {
-        this.loadFromSettings();
+        // Don't call loadFromSettings here - it will be called by initialize()
+        this.items = [];
+    }
+
+    /**
+     * Initialize the manager - must be called after construction
+     */
+    async initialize(): Promise<void> {
+        await this.loadFromSettings();
     }
 
     /**
      * Initialize from settings
      */
-    private loadFromSettings(): void {
+    private async loadFromSettings(): Promise<void> {
         try {
             const saved = localStorage.getItem('quickAccessItems');
             if (saved) {
@@ -56,20 +64,29 @@ class QuickAccessManagerClass {
                 this.autoCleanupInvalidPaths = data.autoCleanupInvalidPaths ?? true;
             } else {
                 // Initialize with default Quick Access items
-                this.initializeDefaults();
+                await this.initializeDefaults();
             }
         } catch (error) {
             console.error('Failed to load Quick Access settings:', error);
-            this.initializeDefaults();
+            await this.initializeDefaults();
         }
     }
 
     /**
      * Initialize with default Quick Access folders
      */
-    private initializeDefaults(): void {
-        // Use a simple default path structure
-        const userProfile = process.env.USERPROFILE || 'C:\\Users\\Default';
+    private async initializeDefaults(): Promise<void> {
+        // Get user home directory from electron API
+        let userProfile = 'C:\\Users\\Default';
+        
+        try {
+            // Try to get home directory from known folders
+            if (window.electronAPI?.settings?.getKnownFolder) {
+                userProfile = await window.electronAPI.settings.getKnownFolder('home');
+            }
+        } catch (error) {
+            console.warn('Failed to get user profile, using default:', error);
+        }
         
         const defaults: Omit<QuickAccessItem, 'id' | 'dateAdded'>[] = [
             {

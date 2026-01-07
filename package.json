@@ -1,7 +1,7 @@
 {
   "name": "fast-file-explorer",
   "productName": "Fast File Explorer",
-  "version": "26.01.06-dev.1",
+  "version": "26.01.06-dev.2",
   "description": "Fast File Explorer is a powerful tool for quickly navigating and managing your file system.",
   "main": ".vite/build/main.js",
   "config": {
@@ -31,6 +31,7 @@
     "@electron-forge/plugin-vite": "^7.10.2",
     "@types/react": "^19.2.7",
     "@types/react-window": "^2.0.0",
+    "dotenv": "^17.2.3",
     "drivelist": "^12.0.2",
     "electron-squirrel-startup": "^1.0.1",
     "fast-transferlib": "^25.10.2-release.6",
