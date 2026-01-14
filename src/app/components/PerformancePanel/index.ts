@@ -1,1 +1,0 @@
-export { PerformancePanel } from './PerformancePanel';

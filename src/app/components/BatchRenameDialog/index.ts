@@ -1,1 +1,0 @@
-export { BatchRenameDialog } from './BatchRenameDialog';

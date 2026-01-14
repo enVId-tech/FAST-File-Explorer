@@ -1,1 +1,0 @@
-export { DetailsPanel } from './DetailsPanel';

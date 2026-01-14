@@ -1,26 +1,25 @@
 {
   "compilerOptions": {
-    "target": "es2020", // Or a target supported by your Electron version
-    "module": "esnext", // Or "esnext" if using modules
-    "moduleResolution": "node",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "strict": true,
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
     "skipLibCheck": true,
-    "jsx": "react", // If you're using React
-    "outDir": "./dist", // Output directory for compiled JavaScript
-    "baseUrl": "./src", // Base directory for module resolution
-    "allowImportingTsExtensions": true, // Allow importing TypeScript files with .ts extension
-    "allowJs": true, // Allow JavaScript files to be compiled
-    "noEmit": true, // Set to true if you want to use tsc for type checking only
-    "resolveJsonModule": true, // If you need to import JSON files
-    "paths": {
-      "*": [
-        "./*"
-      ] // Allows imports relative to the src folder
-    }
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true
   },
-  "include": [
-    "src/**/*" // Include all TypeScript files in the src directory
-  ]
+  "include": ["src"],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }

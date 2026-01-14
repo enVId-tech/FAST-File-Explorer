@@ -1,1 +1,0 @@
-export { QuickAccessEditor } from './QuickAccessEditor';
