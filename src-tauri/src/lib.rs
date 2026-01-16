@@ -1,40 +1,34 @@
-use tauri::{AppHandle, Emitter}; // For sending events to UI
-use std::process::{Command, Stdio};
 use std::io::{BufRead, BufReader};
-
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
+use std::process::{Command, Stdio};
+use tauri::{AppHandle, Emitter}; // For sending events to UI
+use tauri_plugin_shell::ShellExt;
 
 #[tauri::command]
-async fn transfer_file(
-    app: AppHandle,
-    source: String,
-    dest: String
-) -> Result<String, String> {
-    if source.is_empty() || dest.is_empty() {
-        return Err("Source and destination paths must be provided".to_string());
-    }
+async fn transfer_file(app: AppHandle, source: String, dest: String) {
+    let sidecar =
+        app.shell()
+            .sidecar("rsync")
+            .unwrap()
+            .args(["-av", "--info=progress2", &source, &dest]);
 
-    let mut child = Command::new("rsync")
-        .args(["-av", "--info=progress2", &source, &dest])
-        .stdout(Stdio::piped()) // Capture the output
-        .spawn()
-        .map_err(|e| e.to_string())?;
+    let (mut rx, mut _child) = sidecar.spawn().expect("Failed to spawn rsync");
 
-    let stdout = child.stdout.take().ok_or("Failed to capture stdout")?;
-    let reader = BufReader::new(stdout);
+    tauri::async_runtime::spawn(async move {
+        while let Some(event) = rx.recv().await {
+            match event {
+                tauri_plugin_shell::process::CommandEvent::Stdout(line) => {
+                    let output = String::from_utf8_lossy(&line).to_string();
 
-    // 2. Read the rsync output line by line in real-time
-    for line in reader.lines() {
-        if let Ok(content) = line {
-            app.emit("rsync-progress", content).ok();
+                    app.emit("rsync-output", output).unwrap();
+                }
+                tauri_plugin_shell::process::CommandEvent::Stderr(line) => {
+                    let error = String::from_utf8_lossy(&line).to_string();
+                    app.emit("rsync-error", error).unwrap();
+                }
+                _ => {}
+            }
         }
-    }
-
-    Ok("Transfer Complete".to_string())
+    });
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -42,7 +36,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![greet, transfer_file])
+        .invoke_handler(tauri::generate_handler![transfer_file])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
