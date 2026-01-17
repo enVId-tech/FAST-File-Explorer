@@ -1,20 +1,22 @@
 {
-  "$schema": "https://schema.tauri.app/config/2",
-  "productName": "tauri-app",
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "fast-file-explorer",
   "version": "0.1.0",
   "identifier": "dev.etran.fast-file-explorer",
   "build": {
+    "frontendDist": "../out",
+    "devUrl": "http://localhost:3000",
     "beforeDevCommand": "npm run dev",
-    "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "npm run build",
-    "frontendDist": "../dist"
+    "beforeBuildCommand": "npm run build"
   },
   "app": {
     "windows": [
       {
-        "title": "tauri-app",
+        "title": "FAST File Explorer",
         "width": 800,
-        "height": 600
+        "height": 600,
+        "resizable": true,
+        "fullscreen": false
       }
     ],
     "security": {
@@ -30,6 +32,9 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
+    ],
+    "externalBin": [
+      "bin/rsync"
     ]
   }
 }

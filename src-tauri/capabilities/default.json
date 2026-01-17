@@ -8,6 +8,7 @@
     "opener:default",
     "shell:allow-execute",
     "core:event:default",
+    "dialog:allow-open",
     {
       "identifier": "shell:allow-execute",
       "allow": [
