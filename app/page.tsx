@@ -1,8 +1,9 @@
 "use client";
-import { useState } from "react";
-import { invoke } from "@tauri-apps/api/core"; 
+import { useEffect, useState } from "react";
+import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import { platform } from '@tauri-apps/plugin-os';
+import { listen } from "@tauri-apps/api/event";
 
 function formatPathForRsync(windowsPath: string): string {
   let unixPath = windowsPath.replace(/\\/g, '/');
@@ -49,12 +50,30 @@ function App() {
     }
 
     try {
-      await invoke("transfer_file", { source: sendPath as string, dest: destPath as string });
+      await invoke("transfer_file", {
+        source: sendPath as string,
+        dest: destPath as string
+      });
       setCount(count + 1);
     } catch (error) {
       console.error("File transfer failed:", error);
     }
   }
+
+  useEffect(() => {
+    const unlisten = listen("rsync-output", (event) => {
+      console.log("Rsync Progress:", event.payload);
+    });
+
+    const unlistenErr = listen("rsync-error", (event) => {
+      console.error("Rsync Error:", event.payload);
+    });
+
+    return () => {
+      unlisten.then(f => f());
+      unlistenErr.then(f => f());
+    };
+  }, []);
 
   return (
     <div className="App">

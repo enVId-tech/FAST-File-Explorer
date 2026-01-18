@@ -1,16 +1,24 @@
-use tauri::{AppHandle, Emitter};
+use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_shell::ShellExt;
 
 #[tauri::command]
 async fn transfer_file(app: AppHandle, source: String, dest: String) -> Result<(), String> {
-    // Configure rsync command
-    let sidecar = app
-        .shell()
-        .sidecar("rsync")
-        .map_err(|e| format!("Failed to access rsync sidecar: {}", e))?
-        .args(["-av", "--info=progress2", &source, &dest]);
+    let sidecar_command = app.shell().sidecar("rsync").unwrap();
 
-    println!("Starting rsync from {} to {}", source, dest);
+    let sidecar_path = app
+        .path()
+        .resolve("bin", tauri::path::BaseDirectory::Resource)
+        .unwrap();
+
+    // Configure rsync command
+    let sidecar = sidecar_command.env("PATH", &sidecar_path).args([
+        "-av",
+        "--info=progress2",
+        &source,
+        &dest,
+    ]);
+
+    println!("Starting rsync from {} to {}", &source, &dest);
 
     // Spawn the process
     let (mut rx, child) = sidecar
@@ -28,29 +36,17 @@ async fn transfer_file(app: AppHandle, source: String, dest: String) -> Result<(
             match event {
                 tauri_plugin_shell::process::CommandEvent::Stdout(line) => {
                     let output = String::from_utf8_lossy(&line).to_string();
-                    if let Err(e) = app.emit("rsync-output", output) {
-                        eprintln!("Failed to emit rsync-output: {}", e);
-                    }
+                    println!("RSYNC OUT: {}", output); // Log directly to Rust console
+                    let _ = app.emit("rsync-output", output);
                 }
                 tauri_plugin_shell::process::CommandEvent::Stderr(line) => {
                     let error = String::from_utf8_lossy(&line).to_string();
-                    if let Err(e) = app.emit("rsync-error", error) {
-                        eprintln!("Failed to emit rsync-error: {}", e);
-                    }
+                    eprintln!("RSYNC ERR: {}", error); // Log errors to Rust console
+                    let _ = app.emit("rsync-error", error);
                 }
                 tauri_plugin_shell::process::CommandEvent::Terminated(payload) => {
-                    if payload.code == Some(0) {
-                        let _ = app.emit("rsync-complete", "Transfer completed successfully");
-                    } else {
-                        let _ = app.emit(
-                            "rsync-failed",
-                            format!("Transfer failed with exit code: {:?}", payload.code),
-                        );
-                    }
-                    break;
-                }
-                tauri_plugin_shell::process::CommandEvent::Error(error) => {
-                    let _ = app.emit("rsync-failed", format!("Process error: {}", error));
+                    println!("RSYNC FINISHED with code: {:?}", payload.code);
+                    let _ = app.emit("rsync-complete", payload.code);
                     break;
                 }
                 _ => {}

@@ -8,7 +8,6 @@
   "permissions": [
     "core:default",
     "opener:default",
-    "shell:allow-execute",
     "core:event:default",
     "dialog:allow-open",
     "os:default",
@@ -16,17 +15,13 @@
       "identifier": "shell:allow-execute",
       "allow": [
         {
-          "name": "binaries/rsync",
+          "name": "bin/rsync",
           "sidecar": true,
           "args": [
             "-av",
             "--info=progress2",
-            {
-              "validator": ".*"
-            },
-            {
-              "validator": ".*"
-            }
+            { "validator": ".*" },
+            { "validator": ".*" }
           ]
         }
       ]
