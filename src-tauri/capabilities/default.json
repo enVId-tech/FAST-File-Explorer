@@ -2,13 +2,16 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Capability for the main window",
-  "windows": ["main"],
+  "windows": [
+    "main"
+  ],
   "permissions": [
     "core:default",
     "opener:default",
     "shell:allow-execute",
     "core:event:default",
     "dialog:allow-open",
+    "os:default",
     {
       "identifier": "shell:allow-execute",
       "allow": [
@@ -16,7 +19,14 @@
           "name": "binaries/rsync",
           "sidecar": true,
           "args": [
-            { "validator": "-.*" } 
+            "-av",
+            "--info=progress2",
+            {
+              "validator": ".*"
+            },
+            {
+              "validator": ".*"
+            }
           ]
         }
       ]

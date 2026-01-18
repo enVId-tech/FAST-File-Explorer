@@ -33,6 +33,9 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
+    "resources": [
+      "bin/*.dll"
+    ],
     "externalBin": [
       "bin/rsync"
     ]
