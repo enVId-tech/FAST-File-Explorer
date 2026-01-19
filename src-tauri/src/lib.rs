@@ -1,61 +1,4 @@
-use tauri::{AppHandle, Emitter, Manager};
-use tauri_plugin_shell::ShellExt;
-
-#[tauri::command]
-async fn transfer_file(app: AppHandle, source: String, dest: String) -> Result<(), String> {
-    let sidecar_command = app.shell().sidecar("rsync").unwrap();
-
-    let sidecar_path = app
-        .path()
-        .resolve("bin", tauri::path::BaseDirectory::Resource)
-        .unwrap();
-
-    // Configure rsync command
-    let sidecar = sidecar_command.env("PATH", &sidecar_path).args([
-        "-av",
-        "--info=progress2",
-        &source,
-        &dest,
-    ]);
-
-    println!("Starting rsync from {} to {}", &source, &dest);
-
-    // Spawn the process
-    let (mut rx, child) = sidecar
-        .spawn()
-        .map_err(|e| format!("Failed to spawn rsync: {}", e))?;
-
-    println!("rsync process started with PID: {}", child.pid());
-
-    // Handle process events in a background task
-    tauri::async_runtime::spawn(async move {
-        // Keep child alive to prevent process termination
-        let _child_guard = child;
-
-        while let Some(event) = rx.recv().await {
-            match event {
-                tauri_plugin_shell::process::CommandEvent::Stdout(line) => {
-                    let output = String::from_utf8_lossy(&line).to_string();
-                    println!("RSYNC OUT: {}", output); // Log directly to Rust console
-                    let _ = app.emit("rsync-output", output);
-                }
-                tauri_plugin_shell::process::CommandEvent::Stderr(line) => {
-                    let error = String::from_utf8_lossy(&line).to_string();
-                    eprintln!("RSYNC ERR: {}", error); // Log errors to Rust console
-                    let _ = app.emit("rsync-error", error);
-                }
-                tauri_plugin_shell::process::CommandEvent::Terminated(payload) => {
-                    println!("RSYNC FINISHED with code: {:?}", payload.code);
-                    let _ = app.emit("rsync-complete", payload.code);
-                    break;
-                }
-                _ => {}
-            }
-        }
-    });
-
-    Ok(())
-}
+mod funcs;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -64,7 +7,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![transfer_file])
+        .invoke_handler(tauri::generate_handler![funcs::copy::start_test_transfer])
         .run(tauri::generate_context!("tauri.conf.json"))
         .expect("error while running tauri application");
 }

@@ -34,7 +34,8 @@
       "icons/icon.ico"
     ],
     "externalBin": [
-      "bin/rsync"
+      "bin/rsync",
+      "bin/rclone"
     ],
     "resources": [
       "bin/*"

@@ -2,22 +2,7 @@
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
-import { platform } from '@tauri-apps/plugin-os';
 import { listen } from "@tauri-apps/api/event";
-
-function formatPathForRsync(windowsPath: string): string {
-  let unixPath = windowsPath.replace(/\\/g, '/');
-
-  unixPath = unixPath.replace(/^([a-zA-Z]):/, (match, drive) => {
-    return `/cygdrive/${drive.toLowerCase()}`;
-  });
-
-  if (!unixPath.endsWith('/')) {
-    unixPath += '/';
-  }
-
-  return unixPath;
-}
 
 function App() {
   const [count, setCount] = useState(0);
@@ -43,16 +28,15 @@ function App() {
       return;
     }
 
-    const os = await platform();
-    if (os === 'windows') {
-      sendPath = formatPathForRsync(sendPath as string);
-      destPath = formatPathForRsync(destPath as string);
-    }
+    sendPath = sendPath.replaceAll("\\", "/");
+    destPath = destPath.replaceAll("\\", "/");
 
+    console.log(`Transferring from ${sendPath} to ${destPath}`);
+    
     try {
-      await invoke("transfer_file", {
+      await invoke("start_test_transfer", {
         source: sendPath as string,
-        dest: destPath as string
+        destination: destPath as string
       });
       setCount(count + 1);
     } catch (error) {

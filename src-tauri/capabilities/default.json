@@ -11,6 +11,7 @@
     "core:event:default",
     "dialog:allow-open",
     "os:default",
+    "shell:default",
     {
       "identifier": "shell:allow-execute",
       "allow": [
@@ -20,9 +21,23 @@
           "args": [
             "-av",
             "--info=progress2",
-            { "validator": ".*" },
-            { "validator": ".*" }
+            {
+              "validator": ".*"
+            },
+            {
+              "validator": ".*"
+            }
           ]
+        }
+      ]
+    },
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "args": true,
+          "name": "bin/rclone",
+          "sidecar": true
         }
       ]
     }
