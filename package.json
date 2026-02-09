@@ -29,9 +29,9 @@
   "license": "MIT",
   "dependencies": {
     "@electron-forge/plugin-vite": "^7.11.1",
-    "@types/react": "^19.2.10",
+    "@types/react": "^19.2.13",
     "@types/react-window": "^2.0.0",
-    "dotenv": "^17.2.3",
+    "dotenv": "^17.2.4",
     "drivelist": "^12.0.2",
     "electron-squirrel-startup": "^1.0.1",
     "fast-transferlib": "^25.10.2-release.6",
@@ -59,6 +59,6 @@
     "@rollup/rollup-win32-x64-msvc": "^4.57.1",
     "@types/electron-squirrel-startup": "^1.0.2",
     "@types/react-dom": "^19.2.3",
-    "electron": "40.1.0"
+    "electron": "40.2.1"
   }
 }
