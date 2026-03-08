@@ -50,16 +50,22 @@ export function registerClipboardHandlers(): void {
             }
             
             return { success: true };
-        } catch (error) {
+        } catch (error: any) {
             console.error('Clipboard copy failed:', error);
-            throw error;
+            // Don't throw - return error result instead to prevent app crash
+            return { success: false, error: error.message || 'Failed to copy to clipboard' };
         }
     });
 
     // Cut files to clipboard  
     ipcMain.handle('clipboard-cut', async (event, paths: string[]) => {
-        clipboardState = { operation: 'cut', files: paths };
-        return { success: true };
+        try {
+            clipboardState = { operation: 'cut', files: paths };
+            return { success: true };
+        } catch (error: any) {
+            console.error('Clipboard cut failed:', error);
+            return { success: false, error: error.message || 'Failed to cut to clipboard' };
+        }
     });
 
     // Paste files from clipboard
@@ -249,9 +255,14 @@ export function registerClipboardHandlers(): void {
 
             const allSuccessful = results.every(r => r.success);
             return { success: allSuccessful, results };
-        } catch (error) {
+        } catch (error: any) {
             console.error('Clipboard paste failed:', error);
-            throw error;
+            // Don't throw - return error result instead to prevent app crash
+            return { 
+                success: false, 
+                error: error.message || 'Unknown error occurred',
+                results: [] 
+            };
         }
     });
 
