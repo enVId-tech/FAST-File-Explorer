@@ -40,7 +40,7 @@
     "npm-version-lib": "^25.12.26-release.17",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "react-icons": "^5.5.0",
+    "react-icons": "^5.6.0",
     "react-window": "^2.2.7",
     "sass": "^1.97.3",
     "ts-node": "^10.9.2",
@@ -59,6 +59,6 @@
     "@rollup/rollup-win32-x64-msvc": "^4.59.0",
     "@types/electron-squirrel-startup": "^1.0.2",
     "@types/react-dom": "^19.2.3",
-    "electron": "40.6.1"
+    "electron": "40.8.0"
   }
 }
