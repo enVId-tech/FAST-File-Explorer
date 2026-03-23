@@ -45,7 +45,7 @@
     "sass": "^1.98.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
-    "vite": "^7.3.1"
+    "vite": "^8.0.1"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.11.1",
