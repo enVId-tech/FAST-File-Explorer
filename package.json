@@ -38,7 +38,7 @@
     "electron-squirrel-startup": "^1.0.1",
     "fast-transferlib": "^25.10.2-release.6",
     "node-disk-info": "^1.3.0",
-    "npm-check-updates": "^22.2.7",
+    "npm-check-updates": "^22.2.9",
     "npm-version-lib": "^25.12.26-release.17",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
@@ -47,7 +47,7 @@
     "sass": "^1.101.0",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3",
-    "vite": "^8.0.16"
+    "vite": "^8.1.0"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.11.2",
@@ -70,6 +70,6 @@
     "@rollup/rollup-win32-x64-msvc": "^4.62.2",
     "@types/electron-squirrel-startup": "^1.0.2",
     "@types/react-dom": "^19.2.3",
-    "electron": "42.4.1"
+    "electron": "42.5.0"
   }
 }
