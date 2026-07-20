@@ -70,6 +70,6 @@
     "@rollup/rollup-win32-x64-msvc": "^4.62.2",
     "@types/electron-squirrel-startup": "^1.0.2",
     "@types/react-dom": "^19.2.3",
-    "electron": "42.5.0"
+    "electron": "43.1.1"
   }
 }
